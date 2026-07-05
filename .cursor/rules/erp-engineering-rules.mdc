@@ -1,0 +1,54 @@
+---
+description: ERP Intelligence Platform — core engineering rules (always applied)
+globs:
+alwaysApply: true
+---
+
+# ERP Intelligence Platform — Engineering Rules
+
+This is a documentation-first, AI-assisted ERP project. It follows Modular
+Monolith, Clean Architecture, Domain-Driven Design and SOLID. Full context:
+start from `docs/00-Overview.md`.
+
+## Hard constraints
+
+- Never bypass the Domain layer. Business logic belongs exclusively there.
+- Never put business rules in controllers. Keep the API layer thin.
+- Never couple the Domain layer to Infrastructure or any external framework.
+- Use Repository Pattern / Unit of Work abstractions for persistence; never
+  embed business logic in EF Core code.
+- Follow the naming, API, database and Git conventions in
+  `docs/database/Naming-Conventions.md`.
+- Every significant implementation needs Unit Tests (and Integration Tests
+  when applicable) — code without tests is incomplete.
+- Update the relevant documentation in the same change as the code (docs and
+  code evolve together, per `docs/04-Engineering-Handbook.md`).
+- Never hardcode secrets, disable security mechanisms, or trust unvalidated
+  input.
+
+## Decision hierarchy
+
+When documents conflict, resolve in this order (see
+`docs/ai/Cursor-Rules.md` Section 17 for the full rationale):
+
+1. `docs/03-Software-Architecture-Document.md`
+2. `docs/04-Engineering-Handbook.md`
+3. `docs/decisions/` (ADRs)
+4. `docs/02-Product-Requirements-Document.md`
+5. Current Sprint under `docs/backlog/`
+6. `docs/backlog/Product-Backlog.md`
+
+## Do not
+
+- Invent business requirements or assume undocumented decisions — ask instead
+  of guessing.
+- Scaffold new tooling (databases, CI/CD, containers) without checking
+  whether `docs/devops/DevOps-Strategy.md` or the current Sprint already
+  defines how to do it.
+
+## Full detail
+
+This file is a condensed, always-on digest. For the complete rule set, see
+`docs/ai/Cursor-Rules.md`. For AI collaboration specifics, see
+`docs/ai/Codex-Guidelines.md`, `docs/ai/Claude-Guidelines.md` and
+`docs/ai/AI-Agents.md`.

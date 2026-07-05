@@ -101,9 +101,19 @@ Everything else in this folder is reference material, consulted as needed rather
 | [AI Strategy](ai/AI-Strategy.md) | Overall vision and governance for AI-assisted engineering. |
 | [AI Agent Specifications](ai/AI-Agents.md) | Detailed responsibilities of each Engineering and Product AI agent. |
 | [Prompt Templates](ai/Prompt-Templates.md) | Standard prompt structure used across the project. |
+| [Onboarding Prompts](ai/Onboarding-Prompts.md) | Ready-to-use prompts for onboarding Codex/Cursor onto the project. |
 | [Claude Guidelines](ai/Claude-Guidelines.md) | How Claude Code should be used on this project. |
 | [Codex Guidelines](ai/Codex-Guidelines.md) | How Codex should be used on this project. |
 | [Cursor Rules](ai/Cursor-Rules.md) | Rules that apply to any AI coding assistant, including Cursor. |
+
+## Auto-Loaded AI Configuration
+
+These files are not read manually — each tool loads them automatically, so they only need to stay in sync with the documents above, not be read on their own:
+
+| File | Purpose |
+| --- | --- |
+| [`AGENTS.md`](../AGENTS.md) | Condensed context Codex loads automatically at the repository root. |
+| [`.cursor/rules/erp-engineering-rules.mdc`](../.cursor/rules/erp-engineering-rules.mdc) | Condensed engineering rules Cursor applies automatically to every request. |
 
 ---
 
