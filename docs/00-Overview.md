@@ -43,11 +43,19 @@ Everything else in this folder is reference material, consulted as needed rather
 | [Software Architecture Document](03-Software-Architecture-Document.md) | Technical architecture, technology stack, architectural patterns. |
 | [Engineering Handbook](04-Engineering-Handbook.md) | Engineering rules, conventions and Definition of Done. |
 
+## Architecture (`architecture/`)
+
+| Document | Purpose |
+| --- | --- |
+| [C4 Diagrams](architecture/C4-Diagrams.md) | System Context, Container and Component diagrams. |
+
 ## Architecture Decisions (`decisions/`)
 
 | Document | Purpose |
 | --- | --- |
 | [ADR-0001](decisions/ADR-0001.md) | Adoption of Modular Monolith, Clean Architecture and DDD. |
+| [ADR-0002](decisions/ADR-0002.md) | Scope CQRS to modules with divergent read/write needs. |
+| [ADR-0003](decisions/ADR-0003.md) | Defer multi-tenancy beyond the MVP. |
 
 ## Roadmap (`roadmap/`)
 

@@ -3,7 +3,7 @@
 ## ERP Intelligence Platform
 
 **Version:** 1.0  
-**Status:** Draft  
+**Status:** Approved  
 **Owner:** Helder Gonçalves
 
 ---
@@ -209,6 +209,8 @@ Assistants, Agents, Prompt Templates.
 - Specification Pattern
 - Dependency Injection
 
+CQRS is applied selectively rather than universally: Identity and Master Data use simple Application Services, while CQRS with dedicated read models is reserved for modules with genuinely divergent read/write needs (starting with Business Intelligence). See [ADR-0002](decisions/ADR-0002.md).
+
 ---
 
 # 9. Security Strategy
@@ -357,6 +359,8 @@ The architecture shall allow:
 - Multi-company support.
 - Multi-user support.
 - Cloud Native deployment.
+
+Multi-company support remains a long-term goal but is explicitly deferred beyond the MVP: no tenant or company identifier exists in the current Data Model or Domain Model. See [ADR-0003](decisions/ADR-0003.md).
 
 ---
 

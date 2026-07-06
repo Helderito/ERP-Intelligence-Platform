@@ -107,9 +107,9 @@ Excluded:
 ## Architecture
 
 * [x] Define Bounded Contexts
-* [ ] Create C4 diagrams
+* [x] Create C4 diagrams
 * [x] Create ER Diagram
-* [ ] Validate architecture
+* [x] Validate architecture
 
 ---
 
