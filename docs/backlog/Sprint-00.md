@@ -4,7 +4,7 @@
 
 **Sprint Number:** 00
 
-**Status:** Planned
+**Status:** Done
 
 **Estimated Duration:** 2 Weeks
 
@@ -116,8 +116,8 @@ Excluded:
 ## DevOps
 
 * [x] Configure GitHub
-* [ ] Configure GitHub Projects
-* [ ] Configure Branch Strategy
+* [x] Configure GitHub Projects
+* [x] Configure Branch Strategy
 
 ---
 
