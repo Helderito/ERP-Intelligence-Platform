@@ -143,6 +143,51 @@ ERP-Intelligence-Platform/
 
 ---
 
+## Local Development
+
+### Backend
+
+```bash
+dotnet restore ERP-Intelligence.sln
+dotnet build ERP-Intelligence.sln
+dotnet test ERP-Intelligence.sln
+dotnet run --project src/ERP.Api/ERP.Api.csproj
+```
+
+`appsettings.json` ships without database credentials on purpose (see [DevOps Strategy](docs/devops/DevOps-Strategy.md), Section 10). To run the API outside Docker against a local PostgreSQL instance, create a git-ignored `src/ERP.Api/appsettings.Development.json` with your own `ConnectionStrings:DefaultConnection`. Running via `docker compose` (below) does not require this — the connection string is supplied through environment variables instead.
+
+The API exposes:
+
+- Health checks: `http://localhost:5000/health`
+- Swagger UI: `http://localhost:5000/swagger`
+
+### Frontend
+
+```bash
+cd src/erp.web
+npm install
+npm test
+npm run build
+npm run dev
+```
+
+The React application runs locally at `http://localhost:5173`.
+
+### Docker Compose
+
+```bash
+docker compose up --build
+```
+
+The compose stack starts:
+
+- API: `http://localhost:5000`
+- Web: `http://localhost:5173`
+- PostgreSQL: `localhost:5432`
+- Redis: `localhost:6379`
+
+---
+
 ## Documentation
 
 All project documentation is available under the `docs/` directory. Start with [docs/00-Overview.md](docs/00-Overview.md) for a full index of every document and how they relate to each other.
@@ -163,8 +208,8 @@ Documents should be read in the following order:
 
 | Item             | Value                  |
 | ---------------- | ---------------------- |
-| Current Phase    | Planning & Architecture |
-| Current Sprint   | Sprint 00               |
+| Current Phase    | Platform Foundation     |
+| Current Sprint   | Sprint 01               |
 | Current Version  | 0.1.0                   |
 
 ---

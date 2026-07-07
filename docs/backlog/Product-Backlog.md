@@ -83,6 +83,9 @@ P0
 
 ### Features
 
+* Clean Architecture solution structure
+* Backend API bootstrap
+* Frontend application bootstrap
 * Authentication
 * Authorization
 * Navigation
@@ -226,6 +229,7 @@ P0
 ### Features
 
 * Docker
+* Docker Compose
 * CI/CD
 * Infrastructure
 * Monitoring
