@@ -154,6 +154,8 @@ dotnet test ERP-Intelligence.sln
 dotnet run --project src/ERP.Api/ERP.Api.csproj
 ```
 
+`appsettings.json` ships without database credentials on purpose (see [DevOps Strategy](docs/devops/DevOps-Strategy.md), Section 10). To run the API outside Docker against a local PostgreSQL instance, create a git-ignored `src/ERP.Api/appsettings.Development.json` with your own `ConnectionStrings:DefaultConnection`. Running via `docker compose` (below) does not require this — the connection string is supplied through environment variables instead.
+
 The API exposes:
 
 - Health checks: `http://localhost:5000/health`
