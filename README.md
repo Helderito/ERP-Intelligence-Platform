@@ -161,6 +161,7 @@ The API exposes:
 - Health checks: `http://localhost:5000/health`
 - Swagger UI: `http://localhost:5000/swagger`
 - Authentication: `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `POST /auth/refresh`, `GET /auth/me`
+- Authorization: `GET /roles`, `POST /roles`, `PUT /roles/{id}`, `DELETE /roles/{id}`, `GET /permissions`, `POST /roles/{id}/permissions`, `POST /users/{id}/roles`
 
 ### Frontend
 
@@ -217,7 +218,7 @@ Documents should be read in the following order:
 | Item             | Value                  |
 | ---------------- | ---------------------- |
 | Current Phase    | Identity & Security     |
-| Current Sprint   | Sprint 02               |
+| Current Sprint   | Sprint 03               |
 | Current Version  | 0.1.0                   |
 
 ---

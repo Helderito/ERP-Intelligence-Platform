@@ -107,6 +107,10 @@ public sealed class AuthController : ControllerBase
             new GetCurrentUserQuery(userId),
             cancellationToken);
 
-        return Ok(new CurrentUserResponse(currentUser.UserId, currentUser.Email));
+        return Ok(new CurrentUserResponse(
+            currentUser.UserId,
+            currentUser.Email,
+            currentUser.Roles,
+            currentUser.Permissions));
     }
 }

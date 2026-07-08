@@ -47,13 +47,13 @@ Domain Events represent significant business occurrences and are raised by Aggre
 - Aggregate Root: `RefreshToken` (inherits `Entity<Guid>`)
 - Domain Events: `RefreshTokenIssued`, `RefreshTokenRevoked`
 
-## Role Aggregate — *Planned, Sprint 03*
+## Role Aggregate — *Implemented, Sprint 03*
 
-- Aggregate Root: `Role`
-- Entities: `Permission` (assigned to a Role)
+- Aggregate Root: `Role` (inherits `Entity<Guid>`)
+- Entities: `Permission`, `RolePermission`, `UserRole` (inherit `Entity<Guid>`)
 - Domain Events: `RoleCreated`, `PermissionAssigned`, `RoleAssignedToUser`
 
-Not yet implemented — see [Sprint 03](../backlog/Sprint-03.md).
+Implemented in [Sprint 03](../backlog/Sprint-03.md).
 
 ---
 

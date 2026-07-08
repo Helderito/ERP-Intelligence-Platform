@@ -6,4 +6,6 @@ public sealed record AuthenticationResult(
     string AccessToken,
     DateTime AccessTokenExpiresAtUtc,
     string RefreshToken,
-    DateTime RefreshTokenExpiresAtUtc);
+    DateTime RefreshTokenExpiresAtUtc,
+    IReadOnlyCollection<string> Roles,
+    IReadOnlyCollection<string> Permissions);

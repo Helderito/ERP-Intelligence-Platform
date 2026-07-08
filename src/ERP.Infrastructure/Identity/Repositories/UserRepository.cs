@@ -16,12 +16,16 @@ public sealed class UserRepository : IUserRepository
 
     public Task<User?> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return _dbContext.Users.FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
+        return _dbContext.Users
+            .Include("_userRoles")
+            .FirstOrDefaultAsync(user => user.Id == userId, cancellationToken);
     }
 
     public Task<User?> GetByEmailAsync(EmailAddress email, CancellationToken cancellationToken = default)
     {
-        return _dbContext.Users.FirstOrDefaultAsync(user => user.Email.Value == email.Value, cancellationToken);
+        return _dbContext.Users
+            .Include("_userRoles")
+            .FirstOrDefaultAsync(user => user.Email.Value == email.Value, cancellationToken);
     }
 
     public Task<bool> ExistsByEmailAsync(EmailAddress email, CancellationToken cancellationToken = default)

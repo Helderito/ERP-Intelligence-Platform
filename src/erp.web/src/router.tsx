@@ -3,7 +3,10 @@ import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { AppLayout } from "./shared/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
+import { PermissionsPage } from "./pages/PermissionsPage";
+import { RolesPage } from "./pages/RolesPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { UserRolesPage } from "./pages/UserRolesPage";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +28,30 @@ export const router = createBrowserRouter([
       {
         path: "settings",
         element: <SettingsPage />
+      },
+      {
+        path: "roles",
+        element: (
+          <ProtectedRoute requiredPermission="roles.manage">
+            <RolesPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "permissions",
+        element: (
+          <ProtectedRoute requiredPermission="roles.manage">
+            <PermissionsPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "users/roles",
+        element: (
+          <ProtectedRoute requiredPermission="users.manage">
+            <UserRolesPage />
+          </ProtectedRoute>
+        )
       }
     ]
   }

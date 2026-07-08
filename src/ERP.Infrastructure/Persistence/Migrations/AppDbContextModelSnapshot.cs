@@ -22,6 +22,43 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ERP.Domain.Identity.Permission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Permission", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("6fe633a8-dbed-4dc1-a572-f0e42f7d0d3a"),
+                            Code = "roles.manage",
+                            Description = "Manage roles and permissions"
+                        },
+                        new
+                        {
+                            Id = new Guid("97388676-8f9c-4f9c-a2f1-9c972dd4c19d"),
+                            Code = "users.manage",
+                            Description = "Manage user role assignments"
+                        });
+                });
+
             modelBuilder.Entity("ERP.Domain.Identity.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -54,6 +91,60 @@ namespace ERP.Infrastructure.Persistence.Migrations
                     b.ToTable("RefreshToken", (string)null);
                 });
 
+            modelBuilder.Entity("ERP.Domain.Identity.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeactivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Role", (string)null);
+                });
+
+            modelBuilder.Entity("ERP.Domain.Identity.RolePermission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PermissionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PermissionId");
+
+                    b.HasIndex("RoleId", "PermissionId")
+                        .IsUnique();
+
+                    b.ToTable("RolePermission", (string)null);
+                });
+
             modelBuilder.Entity("ERP.Domain.Identity.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -73,11 +164,50 @@ namespace ERP.Infrastructure.Persistence.Migrations
                     b.ToTable("User", (string)null);
                 });
 
+            modelBuilder.Entity("ERP.Domain.Identity.UserRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId", "RoleId")
+                        .IsUnique();
+
+                    b.ToTable("UserRole", (string)null);
+                });
+
             modelBuilder.Entity("ERP.Domain.Identity.RefreshToken", b =>
                 {
                     b.HasOne("ERP.Domain.Identity.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.Identity.RolePermission", b =>
+                {
+                    b.HasOne("ERP.Domain.Identity.Permission", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Domain.Identity.Role", null)
+                        .WithMany("_rolePermissions")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -130,6 +260,31 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
                     b.Navigation("PasswordHash")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.Identity.UserRole", b =>
+                {
+                    b.HasOne("ERP.Domain.Identity.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Domain.Identity.User", null)
+                        .WithMany("_userRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.Identity.Role", b =>
+                {
+                    b.Navigation("_rolePermissions");
+                });
+
+            modelBuilder.Entity("ERP.Domain.Identity.User", b =>
+                {
+                    b.Navigation("_userRoles");
                 });
 #pragma warning restore 612, 618
         }

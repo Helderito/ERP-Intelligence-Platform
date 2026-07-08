@@ -34,7 +34,7 @@ Os conceitos estão agrupados por área (Engenharia de Software, Backend, Fronte
 - **Erros comuns a evitar**
 - **Relação com outros conceitos**
 
-Este é um documento vivo: cresce a cada Sprint fechado. A versão atual cobre os conceitos aplicados nos Sprints 00, 01 e 02.
+Este é um documento vivo: cresce a cada Sprint fechado. A versão atual cobre os conceitos aplicados nos Sprints 00, 01, 02 e 03.
 
 ---
 
@@ -90,7 +90,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** Um ERP tem, por natureza, muitos conceitos de negócio interligados (Clientes, Fornecedores, Stock, Vendas). DDD dá vocabulário e estrutura para organizar isso sem que tudo dependa de tudo.
 
-**Como foi aplicado no projeto?** O [Domain Model](../database/Domain-Model.md) define os Bounded Contexts (Identity, Master Data, Inventory, Sales, …). No Sprint 02, o Bounded Context de Identity ganhou os seus primeiros Aggregates reais: `User` e `RefreshToken`, cada um com o seu Aggregate Root, e *Value Objects* (`EmailAddress`, `PasswordHash`) — objetos sem identidade própria, comparados pelo seu valor, não por um Id.
+**Como foi aplicado no projeto?** O [Domain Model](../database/Domain-Model.md) define os Bounded Contexts (Identity, Master Data, Inventory, Sales, …). No Sprint 02, o Bounded Context de Identity ganhou os seus primeiros Aggregates reais: `User` e `RefreshToken`, cada um com o seu Aggregate Root, e *Value Objects* (`EmailAddress`, `PasswordHash`) — objetos sem identidade própria, comparados pelo seu valor, não por um Id. No Sprint 03, o mesmo contexto foi expandido com `Role`, `Permission`, `UserRole` e `RolePermission` para suportar autorização baseada em permissões.
 
 **Exemplo prático:** `EmailAddress.Create("User@Example.com")` valida o formato do email e normaliza-o para minúsculas antes de o `User` sequer existir — a regra de negócio "um email tem de ser válido" vive dentro do próprio Value Object, não espalhada pela aplicação.
 
@@ -122,7 +122,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** Porque `User`, `RefreshToken` (Identity) e, no futuro, `Customer`, `Product` (Master Data) partilham conceitos DDD idênticos: têm uma identidade própria (`Entity`), podem ter Value Objects com igualdade por valor (`ValueObject`), e podem levantar eventos de domínio (`IDomainEvent`).
 
-**Como foi aplicado no projeto?** O projeto `ERP.SharedKernel` foi criado no Sprint 02 com três blocos de construção: `Entity<TId>`, `ValueObject` e `IDomainEvent`. Inicialmente, o Domain não tinha sequer referência ao Shared Kernel, e o teste de arquitetura existente proibia *qualquer* referência a partir do Domain — o que impedia fisicamente o seu uso. Isto foi corrigido: o `ERP.Domain` passou a referenciar apenas o `ERP.SharedKernel`, e `User`, `RefreshToken`, `EmailAddress` e `PasswordHash` foram refeitos para herdar destes tipos em vez de reimplementar a mesma lógica.
+**Como foi aplicado no projeto?** O projeto `ERP.SharedKernel` foi criado no Sprint 02 com três blocos de construção: `Entity<TId>`, `ValueObject` e `IDomainEvent`. Inicialmente, o Domain não tinha sequer referência ao Shared Kernel, e o teste de arquitetura existente proibia *qualquer* referência a partir do Domain — o que impedia fisicamente o seu uso. Isto foi corrigido: o `ERP.Domain` passou a referenciar apenas o `ERP.SharedKernel`, e `User`, `RefreshToken`, `EmailAddress` e `PasswordHash` foram refeitos para herdar destes tipos em vez de reimplementar a mesma lógica. No Sprint 03, `Role`, `Permission`, `UserRole` e `RolePermission` já nasceram a usar o mesmo padrão.
 
 **Erros comuns a evitar:** construir um Shared Kernel e não o usar de facto (foi exatamente o que aconteceu inicialmente neste projeto, e foi corrigido em revisão) — se o primeiro Bounded Context não o usa, é pouco provável que os seguintes o venham a usar.
 
@@ -196,7 +196,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** Porque a implementação de código passou a ser feita pelo Codex, e a revisão é feita no Claude Code — o Pull Request é o ponto de entrega entre os dois.
 
-**Como foi aplicado no projeto?** Em cada Sprint com código (01 e 02), o Codex implementou numa branch `feature/...` e abriu um Pull Request. A revisão no Claude Code não se limitou a ler a descrição do PR — voltou a correr `dotnet build` e `dotnet test` de forma independente, e encontrou problemas reais em ambos os Sprints (uma password commitada no Sprint 01; duplicação de código do Shared Kernel no Sprint 02) que não eram visíveis apenas pela descrição do PR.
+**Como foi aplicado no projeto?** Em cada Sprint com código (01, 02 e 03), o Codex implementou numa branch `feature/...` e abriu um Pull Request. A revisão no Claude Code não se limita a ler a descrição do PR — volta a correr `dotnet build` e `dotnet test` de forma independente, e já encontrou problemas reais em Sprints anteriores (uma password commitada no Sprint 01; duplicação de código do Shared Kernel no Sprint 02) que não eram visíveis apenas pela descrição do PR.
 
 **Erros comuns a evitar:** confiar cegamente na descrição de verificação de um Pull Request sem voltar a correr os testes — foi exatamente isso que permitiu apanhar os dois problemas reais mencionados acima.
 
@@ -232,7 +232,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Para que serve?** Evita escrever SQL manualmente para a maior parte das operações, e mantém o esquema da base de dados sincronizado com o código através de histórico versionado (as migrations ficam no Git, tal como o resto do código).
 
-**Como foi aplicado no projeto?** O `AppDbContext` mapeia `User` e `RefreshToken`. Como estas entidades usam Value Objects (`EmailAddress`, `PasswordHash`), a configuração usa `OwnsOne` — uma forma de dizer ao EF Core "este Value Object faz parte da mesma tabela do seu dono, não é uma tabela à parte". A migration `AddIdentityAuthentication` foi gerada no Sprint 02 para criar as tabelas `User` e `RefreshToken`.
+**Como foi aplicado no projeto?** O `AppDbContext` mapeia `User` e `RefreshToken`. Como estas entidades usam Value Objects (`EmailAddress`, `PasswordHash`), a configuração usa `OwnsOne` — uma forma de dizer ao EF Core "este Value Object faz parte da mesma tabela do seu dono, não é uma tabela à parte". A migration `AddIdentityAuthentication` foi gerada no Sprint 02 para criar as tabelas `User` e `RefreshToken`; no Sprint 03, a migration `AddRolesAndPermissions` adicionou `Role`, `Permission`, `UserRole` e `RolePermission`, com seed inicial do catálogo mínimo de permissões.
 
 **Erros comuns a evitar:** editar manualmente ficheiros de migration já aplicados, ou esquecer de rever o SQL gerado antes de o aplicar em produção (ver [Migration Strategy](../database/Migration-Strategy.md)).
 
@@ -358,7 +358,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **O que é?** Testes unitários verificam uma unidade de código isolada (por exemplo, uma regra de validação de um Value Object), normalmente sem tocar em base de dados ou rede. Testes de integração verificam que várias partes do sistema funcionam corretamente em conjunto — incluindo, muitas vezes, uma base de dados real.
 
-**Como foi aplicado no projeto?** `tests/ERP.UnitTests` cobre regras de domínio (por exemplo, `EmailAddress` rejeita formatos inválidos). `tests/ERP.IntegrationTests` cobre o fluxo completo de autenticação — registo, login com password errada rejeitado, login válido, acesso a `/auth/me` sem token rejeitado, acesso autenticado aceite, renovação do token, logout, e reutilização do token revogado rejeitada — tudo isto contra uma instância real de PostgreSQL, criada e destruída automaticamente através de *Testcontainers*.
+**Como foi aplicado no projeto?** `tests/ERP.UnitTests` cobre regras de domínio (por exemplo, `EmailAddress` rejeita formatos inválidos, `Role` rejeita nomes vazios e `User.AssignRole` regista o evento esperado). `tests/ERP.IntegrationTests` cobre o fluxo completo de autenticação — registo, login com password errada rejeitado, login válido, acesso a `/auth/me` sem token rejeitado, acesso autenticado aceite, renovação do token, logout, e reutilização do token revogado rejeitada — e, desde o Sprint 03, cobre também autorização: criar role, atribuir permission, atribuir role a utilizador, fazer login e validar acesso permitido/proibido. Tudo isto corre contra uma instância real de PostgreSQL, criada e destruída automaticamente através de *Testcontainers*.
 
 **Relação com outros conceitos:** dá confiança real de que o sistema funciona, complementando a Integração Contínua, que garante que estes testes correm em cada alteração.
 
@@ -406,6 +406,30 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 ---
 
+## RBAC (Role-Based Access Control)
+
+**O que é?** Um modelo de autorização em que utilizadores recebem *roles* (papéis) e as roles agregam *permissions* (permissões). O utilizador não recebe normalmente permissões uma a uma; recebe uma role que representa uma responsabilidade operacional.
+
+**Para que serve?** Torna a autorização mais fácil de gerir. Em vez de configurar cada utilizador manualmente em dezenas de endpoints, configura-se a role uma vez e atribui-se essa role aos utilizadores certos.
+
+**Como foi aplicado no projeto?** No Sprint 03, o Identity Bounded Context passou a ter `Role`, `Permission`, `UserRole` e `RolePermission`. O catálogo mínimo inicial de permissões é semeado pela migration `AddRolesAndPermissions`, com `roles.manage` e `users.manage`. A API permite criar/atualizar/desativar roles, listar permissions, atribuir permissions a roles e atribuir roles a utilizadores.
+
+**Relação com outros conceitos:** RBAC depende de autenticação, mas não é a mesma coisa. Autenticação responde "quem és?"; autorização responde "o que podes fazer?".
+
+---
+
+## Policy-Based Authorization
+
+**O que é?** Um modelo do ASP.NET Core em que endpoints são protegidos por políticas nomeadas, por exemplo `[Authorize(Policy = "roles.manage")]`. A política decide que requisitos precisam de ser satisfeitos para o pedido continuar.
+
+**Para que serve?** Permite expressar regras de acesso de forma explícita no endpoint e manter a lógica de verificação centralizada, em vez de espalhar `if` manuais pelos Controllers.
+
+**Como foi aplicado no projeto?** O Sprint 03 adicionou um `IAuthorizationPolicyProvider` customizado que cria policies dinamicamente a partir do código da permission, e um `PermissionAuthorizationHandler` que consulta as permissões efetivas do utilizador autenticado em runtime. Um utilizador sem token recebe `401 Unauthorized`; um utilizador autenticado mas sem a permission necessária recebe `403 Forbidden`.
+
+**Relação com outros conceitos:** usa claims do JWT para identificar o utilizador e Application Services para carregar as suas permissions reais. Isto mantém os Controllers finos e preserva a separação entre API, Application e Infrastructure.
+
+---
+
 ## Hashing de Passwords (BCrypt)
 
 **O que é?** Uma forma de transformar uma password em texto (por exemplo, "MinhaPassword123") num valor irreversível, de forma que, mesmo que a base de dados seja comprometida, a password original não possa ser recuperada diretamente. BCrypt é o algoritmo usado neste projeto.
@@ -436,7 +460,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** Ferramentas diferentes têm pontos fortes diferentes. Definir papéis claros evita confusão sobre "quem faz o quê" e mantém consistência entre Sprints.
 
-**Como foi aplicado no projeto?** Documentado em [Claude-Guidelines.md](../ai/Claude-Guidelines.md), [Codex-Guidelines.md](../ai/Codex-Guidelines.md), [Cursor-Rules.md](../ai/Cursor-Rules.md) e [AI-Agents.md](../ai/AI-Agents.md). Na prática, a partir do Sprint 01: o Claude Code prepara o plano (estrutura da solução, decomposição em tarefas, prompt de handoff) e revê o Pull Request depois de implementado; o Codex implementa o código. Esta divisão foi usada de forma consistente nos Sprints 01 e 02, e as revisões de código são feitas sempre no Claude Code — os resultados são partilhados com o Codex apenas como contexto, não como pedido de nova ação.
+**Como foi aplicado no projeto?** Documentado em [Claude-Guidelines.md](../ai/Claude-Guidelines.md), [Codex-Guidelines.md](../ai/Codex-Guidelines.md), [Cursor-Rules.md](../ai/Cursor-Rules.md) e [AI-Agents.md](../ai/AI-Agents.md). Na prática, a partir do Sprint 01: o Claude Code prepara o plano (estrutura da solução, decomposição em tarefas, prompt de handoff) e revê o Pull Request depois de implementado; o Codex implementa o código. Esta divisão foi usada de forma consistente nos Sprints 01, 02 e 03, e as revisões de código são feitas sempre no Claude Code — os resultados são partilhados com o Codex apenas como contexto, não como pedido de nova ação.
 
 **Erros comuns a evitar:** usar a ferramenta errada para a tarefa errada (por exemplo, pedir a uma ferramenta de implementação para tomar uma decisão de arquitetura não documentada) — daí a importância da hierarquia de decisão definida em [Cursor-Rules.md](../ai/Cursor-Rules.md).
 
@@ -448,7 +472,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Para que serve?** Reduz ambiguidade e aumenta a probabilidade de o resultado estar alinhado com o que é realmente necessário, sem suposições erradas por parte da IA.
 
-**Como foi aplicado no projeto?** A estrutura está definida em [Prompt-Templates.md](../ai/Prompt-Templates.md), e os prompts reais de handoff para o Codex (Sprints 01 e 02) seguem-na explicitamente, incluindo sempre uma secção clara de "fora de âmbito" para evitar scope creep.
+**Como foi aplicado no projeto?** A estrutura está definida em [Prompt-Templates.md](../ai/Prompt-Templates.md), e os prompts reais de handoff para o Codex (Sprints 01, 02 e 03) seguem-na explicitamente, incluindo sempre uma secção clara de "fora de âmbito" para evitar scope creep.
 
 **Relação com outros conceitos:** os [Onboarding Prompts](../ai/Onboarding-Prompts.md) são um exemplo guardado e reutilizável desta prática.
 

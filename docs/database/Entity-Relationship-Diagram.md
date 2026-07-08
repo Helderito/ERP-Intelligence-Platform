@@ -12,7 +12,7 @@
 
 This document provides the conceptual Entity Relationship Diagram (ERD) for the entities currently defined in the [Data Model](Data-Model.md) and the [Domain Model](Domain-Model.md).
 
-It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02 and the columns below match the actual `AppDbContext` mapping; `Role` and `Permission` are still planned for Sprint 03.
+It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03. The columns below match the actual `AppDbContext` mapping.
 
 Inventory, Sales, Purchasing, Finance, Business Intelligence and AI entities will be added here as their corresponding Epics are planned in detail.
 
@@ -29,8 +29,10 @@ The diagram uses Mermaid ER notation. `||--o{` denotes a one-to-many relationshi
 ```mermaid
 erDiagram
     USER ||--o{ REFRESH_TOKEN : issues
-    USER }o--o{ ROLE : "assigned to"
-    ROLE ||--o{ PERMISSION : grants
+    USER ||--o{ USER_ROLE : has
+    ROLE ||--o{ USER_ROLE : assigned
+    ROLE ||--o{ ROLE_PERMISSION : has
+    PERMISSION ||--o{ ROLE_PERMISSION : grants
 
     USER {
         guid Id PK
@@ -50,16 +52,32 @@ erDiagram
     }
     ROLE {
         guid Id PK
-        string Name
+        string Name "unique, max 100 chars"
+        bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
     }
     PERMISSION {
         guid Id PK
+        string Code "unique, max 100 chars"
+        string Description "max 250 chars"
+    }
+    USER_ROLE {
+        guid Id PK
+        guid UserId FK
         guid RoleId FK
-        string Code
+        datetime AssignedAtUtc
+    }
+    ROLE_PERMISSION {
+        guid Id PK
+        guid RoleId FK
+        guid PermissionId FK
+        datetime AssignedAtUtc
     }
 ```
 
-`ROLE` and `PERMISSION` are shown for the target Identity model but are not yet implemented (planned for [Sprint 03](../backlog/Sprint-03.md)); only `USER` and `REFRESH_TOKEN` exist in the database today.
+`ROLE`, `PERMISSION`, `USER_ROLE` and `ROLE_PERMISSION` were implemented in [Sprint 03](../backlog/Sprint-03.md).
 
 ---
 

@@ -17,7 +17,8 @@ public sealed class AuthenticationServiceTests
             userRepository,
             refreshTokenRepository,
             new FakePasswordHasher(),
-            new FakeJwtTokenGenerator());
+            new FakeJwtTokenGenerator(),
+            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository));
 
         var result = await service.RegisterAsync(new RegisterUserCommand("user@example.com", "password"));
 
@@ -37,7 +38,8 @@ public sealed class AuthenticationServiceTests
             userRepository,
             refreshTokenRepository,
             new FakePasswordHasher(),
-            new FakeJwtTokenGenerator());
+            new FakeJwtTokenGenerator(),
+            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository));
 
         await service.RegisterAsync(new RegisterUserCommand("user@example.com", "password"));
 
@@ -97,6 +99,68 @@ public sealed class AuthenticationServiceTests
         }
     }
 
+    private sealed class FakeRoleRepository : IRoleRepository
+    {
+        public Task AddAsync(Role role, CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<Role?> GetByIdAsync(Guid roleId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Role?>(null);
+        }
+
+        public Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Role?>(null);
+        }
+
+        public Task<IReadOnlyCollection<Role>> GetByIdsAsync(
+            IReadOnlyCollection<Guid> roleIds,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyCollection<Role>>([]);
+        }
+
+        public Task<IReadOnlyCollection<Role>> ListAsync(
+            bool includeInactive,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyCollection<Role>>([]);
+        }
+
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakePermissionRepository : IPermissionRepository
+    {
+        public Task<Permission?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Permission?>(null);
+        }
+
+        public Task<Permission?> GetByIdAsync(Guid permissionId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Permission?>(null);
+        }
+
+        public Task<IReadOnlyCollection<Permission>> GetByIdsAsync(
+            IReadOnlyCollection<Guid> permissionIds,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyCollection<Permission>>([]);
+        }
+
+        public Task<IReadOnlyCollection<Permission>> ListAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyCollection<Permission>>([]);
+        }
+    }
+
     private sealed class FakePasswordHasher : IPasswordHasher
     {
         public string Hash(string password)
@@ -112,7 +176,7 @@ public sealed class AuthenticationServiceTests
 
     private sealed class FakeJwtTokenGenerator : IJwtTokenGenerator
     {
-        public AccessTokenResult Generate(User user)
+        public AccessTokenResult Generate(User user, IReadOnlyCollection<string> roleNames)
         {
             return new AccessTokenResult($"token:{user.Id}", DateTime.UtcNow.AddMinutes(15));
         }

@@ -5,6 +5,8 @@ namespace ERP.Domain.Identity;
 
 public sealed class User : Entity<Guid>
 {
+    private readonly List<UserRole> _userRoles = [];
+
     private User()
         : base(Guid.Empty)
     {
@@ -31,6 +33,10 @@ public sealed class User : Entity<Guid>
 
     public bool IsActive { get; private set; }
 
+    public IReadOnlyCollection<Guid> RoleIds => _userRoles
+        .Select(userRole => userRole.RoleId)
+        .ToArray();
+
     public static User Register(EmailAddress email, PasswordHash passwordHash, DateTime createdAtUtc)
     {
         var user = new User(Guid.NewGuid(), email, passwordHash, createdAtUtc);
@@ -43,5 +49,21 @@ public sealed class User : Entity<Guid>
     {
         LastAuthenticatedAtUtc = authenticatedAtUtc;
         RaiseDomainEvent(new UserAuthenticated(Id, authenticatedAtUtc));
+    }
+
+    public void AssignRole(Guid roleId, DateTime assignedAtUtc)
+    {
+        if (roleId == Guid.Empty)
+        {
+            throw new ArgumentException("Role id is required.", nameof(roleId));
+        }
+
+        if (_userRoles.Any(userRole => userRole.RoleId == roleId))
+        {
+            return;
+        }
+
+        _userRoles.Add(UserRole.Create(Id, roleId, assignedAtUtc));
+        RaiseDomainEvent(new RoleAssignedToUser(Id, roleId, assignedAtUtc));
     }
 }

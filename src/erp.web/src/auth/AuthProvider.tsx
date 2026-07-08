@@ -4,6 +4,7 @@ import { AuthenticationSession, authenticationService } from "./authenticationSe
 type AuthContextValue = {
   session: AuthenticationSession | null;
   isAuthenticated: boolean;
+  hasPermission: (permission: string) => boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -48,6 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [persistSession, session]);
 
+  const hasPermission = useCallback(
+    (permission: string) => Boolean(session?.permissions.includes(permission)),
+    [session]
+  );
+
   useEffect(() => {
     if (!session) {
       return;
@@ -74,10 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       session,
       isAuthenticated: Boolean(session),
+      hasPermission,
       login,
       logout
     }),
-    [login, logout, session]
+    [hasPermission, login, logout, session]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

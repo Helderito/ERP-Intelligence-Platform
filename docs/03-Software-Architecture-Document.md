@@ -228,6 +228,7 @@ Future:
 Authorization:
 
 - Role-Based Access Control
+- Permission-based policies implemented for Identity administration endpoints
 
 ---
 
