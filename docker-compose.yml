@@ -5,7 +5,8 @@ services:
       dockerfile: src/ERP.Api/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=ERPIntelligence;Username=erp;Password=erp_dev_password
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB:-ERPIntelligence};Username=${POSTGRES_USER:-erp};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY}
     ports:
       - "5000:8080"
     depends_on:
@@ -26,15 +27,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ERPIntelligence
-      POSTGRES_USER: erp
-      POSTGRES_PASSWORD: erp_dev_password
+      POSTGRES_DB: ${POSTGRES_DB:-ERPIntelligence}
+      POSTGRES_USER: ${POSTGRES_USER:-erp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U erp -d ERPIntelligence"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erp} -d ${POSTGRES_DB:-ERPIntelligence}"]
       interval: 10s
       timeout: 5s
       retries: 5

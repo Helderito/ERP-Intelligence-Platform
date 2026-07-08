@@ -154,12 +154,13 @@ dotnet test ERP-Intelligence.sln
 dotnet run --project src/ERP.Api/ERP.Api.csproj
 ```
 
-`appsettings.json` ships without database credentials on purpose (see [DevOps Strategy](docs/devops/DevOps-Strategy.md), Section 10). To run the API outside Docker against a local PostgreSQL instance, create a git-ignored `src/ERP.Api/appsettings.Development.json` with your own `ConnectionStrings:DefaultConnection`. Running via `docker compose` (below) does not require this — the connection string is supplied through environment variables instead.
+`appsettings.json` ships without database credentials or JWT signing keys on purpose (see [DevOps Strategy](docs/devops/DevOps-Strategy.md), Section 10). To run the API outside Docker against a local PostgreSQL instance, create a git-ignored `src/ERP.Api/appsettings.Development.json` with your own `ConnectionStrings:DefaultConnection` and `Jwt:SigningKey`.
 
 The API exposes:
 
 - Health checks: `http://localhost:5000/health`
 - Swagger UI: `http://localhost:5000/swagger`
+- Authentication: `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `POST /auth/refresh`, `GET /auth/me`
 
 ### Frontend
 
@@ -177,6 +178,13 @@ The React application runs locally at `http://localhost:5173`.
 
 ```bash
 docker compose up --build
+```
+
+Before starting Docker Compose, provide local-only secrets through your shell or a git-ignored `.env` file:
+
+```bash
+POSTGRES_PASSWORD=change-me-locally
+JWT_SIGNING_KEY=change-me-locally-with-at-least-32-characters
 ```
 
 The compose stack starts:
@@ -208,8 +216,8 @@ Documents should be read in the following order:
 
 | Item             | Value                  |
 | ---------------- | ---------------------- |
-| Current Phase    | Platform Foundation     |
-| Current Sprint   | Sprint 01               |
+| Current Phase    | Identity & Security     |
+| Current Sprint   | Sprint 02               |
 | Current Version  | 0.1.0                   |
 
 ---

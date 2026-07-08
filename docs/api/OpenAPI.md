@@ -258,6 +258,18 @@ Authentication shall use:
 
 - JWT Bearer Tokens
 
+Sprint 02 introduces the following authentication endpoints:
+
+```
+POST /auth/register
+POST /auth/login
+POST /auth/logout
+POST /auth/refresh
+GET /auth/me
+```
+
+`GET /auth/me` requires a valid Bearer token.
+
 Future support:
 
 - OAuth2

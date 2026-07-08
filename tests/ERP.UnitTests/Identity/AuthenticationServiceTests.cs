@@ -1,0 +1,125 @@
+using ERP.Application.Identity.Abstractions;
+using ERP.Application.Identity.Commands;
+using ERP.Application.Identity.Models;
+using ERP.Application.Identity.Services;
+using ERP.Domain.Identity;
+
+namespace ERP.UnitTests.Identity;
+
+public sealed class AuthenticationServiceTests
+{
+    [Fact]
+    public async Task RegisterAsync_ShouldCreateUserAndIssueTokens_WhenDataIsValid()
+    {
+        var userRepository = new FakeUserRepository();
+        var refreshTokenRepository = new FakeRefreshTokenRepository();
+        var service = new AuthenticationService(
+            userRepository,
+            refreshTokenRepository,
+            new FakePasswordHasher(),
+            new FakeJwtTokenGenerator());
+
+        var result = await service.RegisterAsync(new RegisterUserCommand("user@example.com", "password"));
+
+        Assert.Equal("user@example.com", result.Email);
+        Assert.Single(userRepository.Users);
+        Assert.Single(refreshTokenRepository.RefreshTokens);
+        Assert.False(string.IsNullOrWhiteSpace(result.AccessToken));
+        Assert.False(string.IsNullOrWhiteSpace(result.RefreshToken));
+    }
+
+    [Fact]
+    public async Task LoginAsync_ShouldThrow_WhenPasswordIsInvalid()
+    {
+        var userRepository = new FakeUserRepository();
+        var refreshTokenRepository = new FakeRefreshTokenRepository();
+        var service = new AuthenticationService(
+            userRepository,
+            refreshTokenRepository,
+            new FakePasswordHasher(),
+            new FakeJwtTokenGenerator());
+
+        await service.RegisterAsync(new RegisterUserCommand("user@example.com", "password"));
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            () => service.LoginAsync(new LoginCommand("user@example.com", "wrong-password")));
+    }
+
+    private sealed class FakeUserRepository : IUserRepository
+    {
+        public List<User> Users { get; } = [];
+
+        public Task AddAsync(User user, CancellationToken cancellationToken = default)
+        {
+            Users.Add(user);
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> ExistsByEmailAsync(EmailAddress email, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Users.Any(user => user.Email.Equals(email)));
+        }
+
+        public Task<User?> GetByEmailAsync(EmailAddress email, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Users.FirstOrDefault(user => user.Email.Equals(email)));
+        }
+
+        public Task<User?> GetByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Users.FirstOrDefault(user => user.Id == userId));
+        }
+
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
+    {
+        public List<RefreshToken> RefreshTokens { get; } = [];
+
+        public Task AddAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
+        {
+            RefreshTokens.Add(refreshToken);
+            return Task.CompletedTask;
+        }
+
+        public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(RefreshTokens.FirstOrDefault(refreshToken => refreshToken.Token == token));
+        }
+
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakePasswordHasher : IPasswordHasher
+    {
+        public string Hash(string password)
+        {
+            return $"hashed:{password}";
+        }
+
+        public bool Verify(string password, string passwordHash)
+        {
+            return passwordHash == $"hashed:{password}";
+        }
+    }
+
+    private sealed class FakeJwtTokenGenerator : IJwtTokenGenerator
+    {
+        public AccessTokenResult Generate(User user)
+        {
+            return new AccessTokenResult($"token:{user.Id}", DateTime.UtcNow.AddMinutes(15));
+        }
+
+        public Guid? Validate(string accessToken)
+        {
+            return null;
+        }
+    }
+}

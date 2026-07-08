@@ -1,10 +1,10 @@
 const foundationItems = [
-  "Backend ASP.NET Core",
-  "Frontend React",
-  "PostgreSQL",
-  "Redis",
-  "Docker Compose",
-  "CI inicial"
+  "Registo de utilizadores",
+  "Autenticacao JWT",
+  "Refresh Tokens",
+  "Rotas protegidas",
+  "Logout seguro",
+  "Sessao persistente"
 ];
 
 export function DashboardPage() {
@@ -13,7 +13,7 @@ export function DashboardPage() {
       <div className="border-b border-slate-200 pb-5">
         <h2 className="text-2xl font-semibold">Painel inicial</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Base tecnica da Sprint 01, sem funcionalidades de negocio.
+          Area protegida da Sprint 02, focada apenas em autenticacao.
         </p>
       </div>
 
