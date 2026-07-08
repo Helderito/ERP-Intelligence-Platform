@@ -30,51 +30,57 @@ Value Objects are immutable and compared by value rather than identity.
 
 Domain Events represent significant business occurrences and are raised by Aggregate Roots.
 
+`Entity<TId>`, `ValueObject` and `IDomainEvent` — the concrete base types backing this modelling approach — live in `ERP.SharedKernel` and are reused across Bounded Contexts rather than reimplemented per Aggregate. Domain projects may reference `ERP.SharedKernel` only; they may never reference `ERP.Application`, `ERP.Infrastructure` or `ERP.Api` (enforced by the `DomainReferenceTests` architecture test).
+
 ---
 
 # 3. Identity Bounded Context
 
-## User Aggregate
+## User Aggregate — *Implemented, Sprint 02*
 
-- Aggregate Root: `User`
-- Value Objects: `EmailAddress`, `PasswordHash`
+- Aggregate Root: `User` (inherits `Entity<Guid>`)
+- Value Objects: `EmailAddress`, `PasswordHash` (inherit `ValueObject`)
 - Domain Events: `UserRegistered`, `UserAuthenticated`
 
-## RefreshToken Aggregate
+## RefreshToken Aggregate — *Implemented, Sprint 02*
 
-- Aggregate Root: `RefreshToken`
+- Aggregate Root: `RefreshToken` (inherits `Entity<Guid>`)
 - Domain Events: `RefreshTokenIssued`, `RefreshTokenRevoked`
 
-## Role Aggregate
+## Role Aggregate — *Planned, Sprint 03*
 
 - Aggregate Root: `Role`
 - Entities: `Permission` (assigned to a Role)
 - Domain Events: `RoleCreated`, `PermissionAssigned`, `RoleAssignedToUser`
 
+Not yet implemented — see [Sprint 03](../backlog/Sprint-03.md).
+
 ---
 
 # 4. Master Data Bounded Context
 
-## Customer Aggregate
+Not yet implemented — planned for [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md).
+
+## Customer Aggregate — *Planned, Sprint 05*
 
 - Aggregate Root: `Customer`
 - Entities: `CustomerContact`, `CustomerAddress`
 - Domain Events: `CustomerCreated`, `CustomerDeactivated`
 
-## Supplier Aggregate
+## Supplier Aggregate — *Planned, Sprint 06*
 
 - Aggregate Root: `Supplier`
 - Entities: `SupplierContact`, `SupplierAddress`
 - Domain Events: `SupplierCreated`, `SupplierDeactivated`
 
-## Product Aggregate
+## Product Aggregate — *Planned, Sprint 04*
 
 - Aggregate Root: `Product`
 - Value Objects: `UnitPrice`
 - Related Reference Entities: `Category`, `UnitOfMeasure`, `TaxCode`
 - Domain Events: `ProductCreated`, `ProductDeactivated`
 
-## Warehouse Aggregate
+## Warehouse Aggregate — *Planned, Sprint 07*
 
 - Aggregate Root: `Warehouse`
 - Related Reference Entities: `WarehouseType`

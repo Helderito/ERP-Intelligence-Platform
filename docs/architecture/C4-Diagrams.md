@@ -14,7 +14,7 @@ This document provides the C4 model diagrams for the ERP Intelligence Platform: 
 
 It renders visually what is already described in prose in the [Software Architecture Document](../03-Software-Architecture-Document.md) (architecture overview, technology stack, Clean Architecture layers) and the [Product Requirements Document](../02-Product-Requirements-Document.md) (personas).
 
-The Code level (C4 Level 4) is intentionally omitted: it is generated from actual source code, which does not exist yet in this project.
+The Code level (C4 Level 4) is intentionally omitted: it would need to be regenerated continuously as the codebase grows, and is better explored directly in the source tree or an IDE than maintained as a diagram.
 
 ---
 
@@ -92,8 +92,9 @@ C4Component
     Container_Boundary(api, "ASP.NET Core API") {
         Component(controllers, "Controllers / Endpoints", "ASP.NET Core", "Thin HTTP layer: routing, JWT, Swagger, versioning")
         Component(application, "Application Layer", "Use Cases / Commands / Queries", "Orchestrates use cases; contains DTOs and validators")
-        Component(identity, "Identity (Domain)", "DDD Bounded Context", "User, Role, Permission, RefreshToken aggregates")
-        Component(masterdata, "Master Data (Domain)", "DDD Bounded Context", "Customer, Supplier, Product, Warehouse aggregates")
+        Component(identity, "Identity (Domain)", "DDD Bounded Context", "Implemented: User, RefreshToken aggregates. Planned (Sprint 03): Role, Permission")
+        Component(masterdata, "Master Data (Domain)", "DDD Bounded Context", "Planned (Sprint 04-08): Customer, Supplier, Product, Warehouse aggregates")
+        Component(sharedkernel, "Shared Kernel", "DDD Building Blocks", "Entity, ValueObject, IDomainEvent - referenced by Identity and, in future, every other Bounded Context")
         Component(infrastructure, "Infrastructure Layer", "EF Core, Redis, Azure SDKs", "Persistence, caching, external integrations")
     }
 
@@ -104,6 +105,8 @@ C4Component
     Rel(controllers, application, "Calls")
     Rel(application, identity, "Uses")
     Rel(application, masterdata, "Uses")
+    Rel(identity, sharedkernel, "Depends on")
+    Rel(masterdata, sharedkernel, "Depends on")
     Rel(application, infrastructure, "Uses interfaces implemented by")
     Rel(infrastructure, db, "Reads/writes")
     Rel(infrastructure, cache, "Reads/writes")

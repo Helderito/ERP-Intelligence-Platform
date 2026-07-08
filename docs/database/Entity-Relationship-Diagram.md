@@ -12,7 +12,7 @@
 
 This document provides the conceptual Entity Relationship Diagram (ERD) for the entities currently defined in the [Data Model](Data-Model.md) and the [Domain Model](Domain-Model.md).
 
-It covers the Identity and Master Data Bounded Contexts, which correspond to the scope already planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md).
+It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02 and the columns below match the actual `AppDbContext` mapping; `Role` and `Permission` are still planned for Sprint 03.
 
 Inventory, Sales, Purchasing, Finance, Business Intelligence and AI entities will be added here as their corresponding Epics are planned in detail.
 
@@ -34,15 +34,19 @@ erDiagram
 
     USER {
         guid Id PK
-        string Email
-        string PasswordHash
-        string Status
+        string Email "unique, max 320 chars"
+        string PasswordHash "BCrypt, max 200 chars"
+        datetime CreatedAtUtc
+        datetime LastAuthenticatedAtUtc "nullable"
+        bool IsActive
     }
     REFRESH_TOKEN {
         guid Id PK
         guid UserId FK
-        datetime ExpiresAt
-        bool Revoked
+        string Token "unique, max 512 chars"
+        datetime ExpiresAtUtc
+        datetime CreatedAtUtc
+        datetime RevokedAtUtc "nullable"
     }
     ROLE {
         guid Id PK
@@ -55,9 +59,13 @@ erDiagram
     }
 ```
 
+`ROLE` and `PERMISSION` are shown for the target Identity model but are not yet implemented (planned for [Sprint 03](../backlog/Sprint-03.md)); only `USER` and `REFRESH_TOKEN` exist in the database today.
+
 ---
 
 # 4. Master Data Bounded Context
+
+Not yet implemented — planned for [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Shown here as the target model.
 
 ```mermaid
 erDiagram
