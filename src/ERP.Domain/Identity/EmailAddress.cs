@@ -1,8 +1,9 @@
 using System.Net.Mail;
+using ERP.SharedKernel;
 
 namespace ERP.Domain.Identity;
 
-public sealed class EmailAddress : IEquatable<EmailAddress>
+public sealed class EmailAddress : ValueObject
 {
     private EmailAddress(string value)
     {
@@ -37,23 +38,13 @@ public sealed class EmailAddress : IEquatable<EmailAddress>
         return new EmailAddress(normalizedValue);
     }
 
-    public bool Equals(EmailAddress? other)
-    {
-        return other is not null && Value == other.Value;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as EmailAddress);
-    }
-
-    public override int GetHashCode()
-    {
-        return Value.GetHashCode(StringComparison.Ordinal);
-    }
-
     public override string ToString()
     {
         return Value;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Value;
     }
 }

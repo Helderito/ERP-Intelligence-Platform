@@ -4,7 +4,7 @@
 
 **Sprint Number:** 02
 
-**Status:** Implemented
+**Status:** Done
 
 **Sprint Type:** Goal-Based Sprint
 
@@ -74,86 +74,86 @@ These features belong to Sprint 03 or future releases.
 
 ## Domain
 
-* [ ] Create User entity
-* [ ] Create RefreshToken entity
-* [ ] Define authentication contracts
-* [ ] Define User validation rules
+* [x] Create User entity
+* [x] Create RefreshToken entity
+* [x] Define authentication contracts
+* [x] Define User validation rules
 
 ---
 
 ## Application
 
-* [ ] Register User Use Case
-* [ ] Login Use Case
-* [ ] Logout Use Case
-* [ ] Refresh Token Use Case
-* [ ] Validate Token Use Case
-* [ ] Get Current User Use Case
+* [x] Register User Use Case
+* [x] Login Use Case
+* [x] Logout Use Case
+* [x] Refresh Token Use Case
+* [x] Validate Token Use Case
+* [x] Get Current User Use Case
 
 ---
 
 ## Infrastructure
 
-* [ ] Configure Identity repositories
-* [ ] Configure Password Hasher
-* [ ] Configure JWT authentication
-* [ ] Configure Refresh Token storage
-* [ ] Configure Token Lifetime
+* [x] Configure Identity repositories
+* [x] Configure Password Hasher
+* [x] Configure JWT authentication
+* [x] Configure Refresh Token storage
+* [x] Configure Token Lifetime
 
 ---
 
 ## API
 
-* [ ] POST /auth/register
-* [ ] POST /auth/login
-* [ ] POST /auth/logout
-* [ ] POST /auth/refresh
-* [ ] GET /auth/me
+* [x] POST /auth/register
+* [x] POST /auth/login
+* [x] POST /auth/logout
+* [x] POST /auth/refresh
+* [x] GET /auth/me
 
 ---
 
 ## Database
 
-* [ ] Users table
-* [ ] RefreshTokens table
+* [x] Users table
+* [x] RefreshTokens table
 
 ---
 
 ## Frontend
 
-* [ ] Login page
-* [ ] Login form validation
-* [ ] Authentication service
-* [ ] Protected routes
-* [ ] Session persistence
-* [ ] Automatic token refresh
-* [ ] Logout functionality
+* [x] Login page
+* [x] Login form validation
+* [x] Authentication service
+* [x] Protected routes
+* [x] Session persistence
+* [x] Automatic token refresh
+* [x] Logout functionality
 
 ---
 
 ## Security
 
-* [ ] Password hashing validation
-* [ ] Token expiration
-* [ ] Invalid token handling
-* [ ] Unauthorized response handling
+* [x] Password hashing validation
+* [x] Token expiration
+* [x] Invalid token handling
+* [x] Unauthorized response handling
 
 ---
 
 ## Testing
 
-* [ ] Unit Tests
-* [ ] Integration Tests
-* [ ] Authentication flow tests
+* [x] Unit Tests
+* [x] Integration Tests
+* [x] Authentication flow tests
 
 ---
 
 ## Documentation
 
-* [ ] Update SAD
-* [ ] Update API Documentation
-* [ ] Update Product Backlog
-* [ ] Update Sprint documentation
+* [x] Update SAD
+* [x] Update API Documentation
+* [x] Update Product Backlog
+* [x] Update Sprint documentation
 
 ---
 

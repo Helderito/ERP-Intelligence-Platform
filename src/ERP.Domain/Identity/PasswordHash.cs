@@ -1,6 +1,8 @@
+using ERP.SharedKernel;
+
 namespace ERP.Domain.Identity;
 
-public sealed class PasswordHash : IEquatable<PasswordHash>
+public sealed class PasswordHash : ValueObject
 {
     private PasswordHash(string value)
     {
@@ -19,23 +21,13 @@ public sealed class PasswordHash : IEquatable<PasswordHash>
         return new PasswordHash(value);
     }
 
-    public bool Equals(PasswordHash? other)
-    {
-        return other is not null && Value == other.Value;
-    }
-
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as PasswordHash);
-    }
-
-    public override int GetHashCode()
-    {
-        return Value.GetHashCode(StringComparison.Ordinal);
-    }
-
     public override string ToString()
     {
         return Value;
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Value;
     }
 }

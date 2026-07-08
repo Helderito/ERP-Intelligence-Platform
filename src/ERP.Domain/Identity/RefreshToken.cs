@@ -1,26 +1,24 @@
 using ERP.Domain.Identity.Events;
+using ERP.SharedKernel;
 
 namespace ERP.Domain.Identity;
 
-public sealed class RefreshToken
+public sealed class RefreshToken : Entity<Guid>
 {
-    private readonly List<object> _domainEvents = [];
-
     private RefreshToken()
+        : base(Guid.Empty)
     {
         Token = string.Empty;
     }
 
     private RefreshToken(Guid id, Guid userId, string token, DateTime expiresAtUtc, DateTime createdAtUtc)
+        : base(id)
     {
-        Id = id;
         UserId = userId;
         Token = token;
         ExpiresAtUtc = expiresAtUtc;
         CreatedAtUtc = createdAtUtc;
     }
-
-    public Guid Id { get; private set; }
 
     public Guid UserId { get; private set; }
 
@@ -33,8 +31,6 @@ public sealed class RefreshToken
     public DateTime? RevokedAtUtc { get; private set; }
 
     public bool IsRevoked => RevokedAtUtc.HasValue;
-
-    public IReadOnlyCollection<object> DomainEvents => _domainEvents.AsReadOnly();
 
     public bool IsExpired(DateTime utcNow)
     {
@@ -78,15 +74,5 @@ public sealed class RefreshToken
 
         RevokedAtUtc = revokedAtUtc;
         RaiseDomainEvent(new RefreshTokenRevoked(Id, UserId, revokedAtUtc));
-    }
-
-    public void ClearDomainEvents()
-    {
-        _domainEvents.Clear();
-    }
-
-    private void RaiseDomainEvent(object domainEvent)
-    {
-        _domainEvents.Add(domainEvent);
     }
 }
