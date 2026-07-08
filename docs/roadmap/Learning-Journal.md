@@ -90,15 +90,42 @@ Each entry records, briefly:
 
 ---
 
-# 5. Cumulative Progress Against the Learning Roadmap
+# 5. Sprint 02 — Authentication
+
+**Closed:** 2026-07-08 · **Release:** 0.1.0
+
+## What Was Delivered
+
+- Codex implemented the Identity domain and full authentication flow: `User` and `RefreshToken` aggregates with `EmailAddress` and `PasswordHash` value objects; simple Application Services (not full CQRS, per ADR-0002) for register/login/logout/refresh/get-current-user/validate-token; BCrypt password hashing; JWT Bearer authentication with a fail-fast check if the signing key is missing; `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `POST /auth/refresh`, `GET /auth/me` (the last one `[Authorize]`-protected); a React login page, session persistence, automatic token refresh and protected routes.
+- Codex proactively extended the Sprint 01 secrets-management fix beyond what was asked: it removed the hardcoded PostgreSQL password from `docker-compose.yml` too (not just `appsettings.json`), requiring `POSTGRES_PASSWORD` and `JWT_SIGNING_KEY` as mandatory environment variables that fail fast if unset.
+- Claude reviewed the PR by independently re-running `dotnet build`/`dotnet test` (11/11 passing, including a full register→login→refresh→logout integration test against a real PostgreSQL via Testcontainers) rather than trusting the PR description, and found one real architectural defect: the `ERP.SharedKernel` building blocks (`Entity<TId>`, `ValueObject`, `IDomainEvent`) added in this same PR were never actually used by the Identity domain — `User`/`RefreshToken` re-implemented their own equality and domain-event bookkeeping, and `EmailAddress`/`PasswordHash` re-implemented `IEquatable<T>` by hand.
+- Root cause: `ERP.Domain.csproj` had zero project references, and the existing `DomainReferenceTests` architecture test asserted Domain must reference *no* `ERP.*` assembly at all — including the Shared Kernel — which made it physically impossible for Codex to use the types it had just built. Claude fixed this directly: added a `ERP.Domain → ERP.SharedKernel` reference (the Shared Kernel is DDD vocabulary shared across Bounded Contexts, not an architectural layer, so this does not weaken Clean Architecture), corrected the architecture test to assert Domain references *only* `ERP.SharedKernel`, and refactored `User`, `RefreshToken`, `EmailAddress` and `PasswordHash` to inherit from the Shared Kernel base types instead of duplicating their logic.
+- Per explicit instruction, code review of Codex's work is done in Claude Code — findings are fixed directly here (when mechanical/well-scoped) rather than bounced back to Codex, and a plain-language summary of what was reviewed and fixed is shared with Codex afterward for its own context, not as an action request.
+
+## What Was Learned
+
+- A newly created shared abstraction is only as good as the first thing that references it. The Shared Kernel was built correctly in isolation but nothing forced its consumption — the fix was not just "add the missing code" but "notice the architecture test was silently enforcing the wrong boundary" (no `ERP.*` reference at all, instead of no reference to *Application/Infrastructure/Api specifically*).
+- The DRY finding here is the same shape as the Sprint 01 secrets finding: whatever precedent ships first in a pattern-setting file (an `appsettings.json`, a `Shared Kernel`) is the one every future Sprint will copy. Catching it in the second Sprint that touches the pattern — not the fifth — keeps the fix small.
+- Reviewing AI-generated architecture work sometimes means questioning the test suite, not just the production code. The existing `DomainReferenceTests` was green and "protecting the architecture," but it was protecting an overly strict version of the rule that the SAD and Domain Model never actually specified.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: Authentication is now done (JWT, Refresh Tokens, `/auth/*` endpoints); CRUD operations for business modules are still pending (Sprint 04+). |
+| Stage 1 — Software Architecture | Reinforced: the Shared Kernel / Domain boundary was clarified in practice, not just on paper. |
+
+---
+
+# 6. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00 |
-| Stage 2 — Backend Development | Partial | Sprint 01 (Authentication pending: Sprint 02) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02 |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02 (Authentication done; business CRUD pending: Sprint 04+) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01 |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02 (login flow done; remaining business UI pending) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01 (cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -107,17 +134,18 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 6. Relationship with Other Documents
+# 7. Relationship with Other Documents
 
 This document should be read together with:
 
 - Learning Roadmap
+- [Technical Learning Guide Guidelines](Technical-Learning-Guide.md) and [Technical-Learning-Guide-PT.md](Technical-Learning-Guide-PT.md) — this journal records *what happened*; the Technical Learning Guide explains *the concepts behind it*, in Portuguese.
 - Product Backlog
 - Sprint documents under `backlog/`
 - Architecture Decision Records under `decisions/`
 
 ---
 
-# 7. Success Criteria
+# 8. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

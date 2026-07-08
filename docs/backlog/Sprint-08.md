@@ -220,6 +220,7 @@ Sprint 08 is considered Done only when:
 - Documentation has been updated.
 - Code review has been completed.
 - CI pipeline succeeds.
+- Learning Journal and Technical Learning Guide (PT) updated.
 
 ---
 

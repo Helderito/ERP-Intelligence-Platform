@@ -63,6 +63,8 @@ Everything else in this folder is reference material, consulted as needed rather
 | --- | --- |
 | [Learning Roadmap](roadmap/Learning-Roadmap.md) | The author's structured learning path through the project. |
 | [Learning Journal](roadmap/Learning-Journal.md) | What was actually built and learned, Sprint by Sprint, against the Learning Roadmap. |
+| [Technical Learning Guide Guidelines](roadmap/Technical-Learning-Guide.md) | Rules for maintaining the Portuguese academic learning guide below. |
+| [Technical Learning Guide (PT)](roadmap/Technical-Learning-Guide-PT.md) | Portuguese, academic explanation of the technical concepts, tools and decisions applied in the project. |
 | [Product Roadmap](roadmap/Product-Roadmap.md) | Long-term product evolution, from MVP to full ERP. |
 | [Release Plan](roadmap/Release-Plan.md) | Versioned releases (0.1.0 → 1.0.0) and their quality gates. |
 

@@ -194,6 +194,7 @@ Sprint 04 is considered Done only when:
 * Documentation updated.
 * Code review completed.
 * CI pipeline succeeds.
+* Learning Journal and Technical Learning Guide (PT) updated.
 
 ---
 

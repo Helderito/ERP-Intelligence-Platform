@@ -175,6 +175,8 @@ A feature shall only be considered complete when:
 - Code Review completed
 - Acceptance Criteria satisfied
 
+At Sprint level, closing a Sprint additionally requires the [Learning Journal](roadmap/Learning-Journal.md) and the [Technical Learning Guide (PT)](roadmap/Technical-Learning-Guide-PT.md) to be reviewed and updated, per [Technical-Learning-Guide.md](roadmap/Technical-Learning-Guide.md) Section 8.
+
 ---
 
 # 10. Test Strategy

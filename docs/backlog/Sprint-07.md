@@ -192,6 +192,7 @@ Sprint 07 is considered Done only when:
 - Documentation is updated.
 - Code review has been completed.
 - CI pipeline succeeds.
+- Learning Journal and Technical Learning Guide (PT) updated.
 
 ---
 
