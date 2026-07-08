@@ -144,6 +144,22 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 ---
 
+## Documentation Drift (Desalinhamento entre Documentação e Código)
+
+**O que é?** O fenómeno em que a documentação deixa de refletir o estado real do código — não porque esteja errada desde o início, mas porque o código evoluiu e a documentação não acompanhou.
+
+**Para que serve (evitar)?** Documentação desalinhada é pior do que nenhuma documentação, porque continua a ser lida e confiada como se fosse verdade. Um leitor (humano ou IA) que confie num diagrama desatualizado toma decisões erradas com confiança total.
+
+**Por que foi relevante neste projeto?** Depois do Sprint 02, o `Domain-Model.md`, o `Entity-Relationship-Diagram.md` e o `C4-Diagrams.md` descreviam os Aggregates `User`/`RefreshToken` (já implementados) e `Role`/`Permission`/todos os Aggregates de Master Data (ainda só planeados) exatamente da mesma forma — sem nenhuma distinção visual ou textual entre "isto já existe" e "isto é o plano".
+
+**Como foi aplicado no projeto?** Antes de começar o Sprint 03, os três documentos foram auditados contra o código real e cada Aggregate passou a ter uma etiqueta explícita — "*Implemented, Sprint 02*" ou "*Planned, Sprint 0X*" — com link para o Sprint correspondente. Também se confirmou, contra o [ADR-0001](../decisions/ADR-0001.md), que nenhuma correção alterava uma decisão de arquitetura aprovada — era só a documentação a apanhar o código, nunca o contrário.
+
+**Erros comuns a evitar:** assumir que documentação escrita corretamente numa fase inicial do projeto permanece correta para sempre — precisa de ser revista sempre que o código que descreve muda, tal como os testes precisam de ser corridos novamente a cada alteração.
+
+**Relação com outros conceitos:** é a razão de existir do [Learning Journal](Learning-Journal.md) e deste próprio guia — ambos são, em parte, um mecanismo para forçar essa revisão a acontecer no fim de cada Sprint, em vez de "algum dia".
+
+---
+
 # 5. Fluxo de Trabalho: Git e GitHub
 
 ## Git e GitHub
