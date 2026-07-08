@@ -199,6 +199,7 @@ Sprint 03 is considered Done only when:
 * Integration Tests pass.
 * Documentation updated.
 * CI pipeline succeeds.
+* Learning Journal and Technical Learning Guide (PT) updated.
 
 ---
 
