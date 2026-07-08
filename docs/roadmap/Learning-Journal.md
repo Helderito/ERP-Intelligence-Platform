@@ -108,6 +108,12 @@ Each entry records, briefly:
 - The DRY finding here is the same shape as the Sprint 01 secrets finding: whatever precedent ships first in a pattern-setting file (an `appsettings.json`, a `Shared Kernel`) is the one every future Sprint will copy. Catching it in the second Sprint that touches the pattern — not the fifth — keeps the fix small.
 - Reviewing AI-generated architecture work sometimes means questioning the test suite, not just the production code. The existing `DomainReferenceTests` was green and "protecting the architecture," but it was protecting an overly strict version of the rule that the SAD and Domain Model never actually specified.
 
+## Post-Sprint Documentation Sync
+
+Before starting Sprint 03, the architecture documents were audited against what Sprint 02 actually built, rather than assumed to still be accurate: `Domain-Model.md`, `Entity-Relationship-Diagram.md` and `C4-Diagrams.md` had described `User`/`RefreshToken` (implemented) and `Role`/`Permission`/all Master Data Aggregates (still only planned) as if all were equally real, with no way for a reader to tell them apart. Each Aggregate was labelled "Implemented, Sprint 02" or "Planned, Sprint 0X"; the `RefreshToken.Token` ERD annotation was completed to match the real EF Core configuration (unique, max 512 chars); and the Shared Kernel was added to the C4 Component diagram as an explicit dependency of Identity. This was cross-checked against ADR-0001 specifically to confirm the fixes did not touch any approved architectural decision — they corrected documentation to match code, not the other way around.
+
+This is the same discipline the Learning Journal itself exists for: documentation that silently drifts from what the code actually does is worse than no documentation, because it is trusted. Catching the drift here — one Sprint after it was introduced — kept the fix to three files instead of a much larger reconciliation later.
+
 ## Learning Roadmap Mapping
 
 | Stage | Contribution |
