@@ -99,6 +99,10 @@ P0
 ### Features
 
 * Users
+* JWT Authentication
+* Refresh Tokens
+* Protected API Endpoints
+* Login UI
 * Roles
 * Permissions
 * MFA

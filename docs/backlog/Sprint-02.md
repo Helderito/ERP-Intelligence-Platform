@@ -4,7 +4,7 @@
 
 **Sprint Number:** 02
 
-**Status:** Planned
+**Status:** Implemented
 
 **Sprint Type:** Goal-Based Sprint
 

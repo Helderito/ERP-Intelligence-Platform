@@ -1,12 +1,13 @@
-using Microsoft.AspNetCore.Mvc.Testing;
+using ERP.IntegrationTests.Support;
 
 namespace ERP.IntegrationTests.Health;
 
-public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+[Collection(AuthenticationTestCollection.Name)]
+public sealed class HealthEndpointTests
 {
-    private readonly WebApplicationFactory<Program> factory;
+    private readonly AuthenticationWebApplicationFactory factory;
 
-    public HealthEndpointTests(WebApplicationFactory<Program> factory)
+    public HealthEndpointTests(AuthenticationWebApplicationFactory factory)
     {
         this.factory = factory;
     }
