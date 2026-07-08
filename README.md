@@ -191,7 +191,7 @@ The compose stack starts:
 
 - API: `http://localhost:5000`
 - Web: `http://localhost:5173`
-- PostgreSQL: `localhost:5432`
+- PostgreSQL: `localhost:5433` (mapped away from the default `5432` to avoid clashing with a locally installed PostgreSQL server; the container's internal port, used by other services on the Docker network, is still `5432`)
 - Redis: `localhost:6379`
 
 ---
