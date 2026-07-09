@@ -414,6 +414,10 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Como foi aplicado no projeto?** No Sprint 03, o Identity Bounded Context passou a ter `Role`, `Permission`, `UserRole` e `RolePermission`. O catálogo mínimo inicial de permissões é semeado pela migration `AddRolesAndPermissions`, com `roles.manage` e `users.manage`. A API permite criar/atualizar/desativar roles, listar permissions, atribuir permissions a roles e atribuir roles a utilizadores.
 
+**O problema do "primeiro administrador" (bootstrap):** Um sistema RBAC tem um paradoxo inicial. Se gerir roles exige a permissão `roles.manage`, e essa permissão só chega através de uma role atribuída por alguém que já a tenha... quem cria a primeira role numa base de dados vazia? Ninguém — ficava tudo bloqueado. Este projeto resolve-o de duas formas combinadas: uma role `Administrator` (com todas as permissões) é semeada pela migration, e o **primeiro utilizador a registar-se** recebe automaticamente essa role. Os utilizadores seguintes não recebem nenhuma role por omissão. Foi uma lacuna encontrada em revisão — a implementação cumpria todos os critérios de aceitação, mas não havia forma de a usar de ponta a ponta sem esta correção.
+
+**Erros comuns a evitar:** desenhar o mecanismo de permissões e esquecer o bootstrap — o sistema parece completo (e passa nos testes) mas é impossível de operar numa instalação nova.
+
 **Relação com outros conceitos:** RBAC depende de autenticação, mas não é a mesma coisa. Autenticação responde "quem és?"; autorização responde "o que podes fazer?".
 
 ---

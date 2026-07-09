@@ -135,11 +135,16 @@ This is the same discipline the Learning Journal itself exists for: documentatio
 - The React app now includes role management, permission listing, user-role assignment, permission-aware protected routes and a dynamic navigation menu filtered by the current user's permissions.
 - Unit and integration tests cover the new authorization rules, including a full flow against PostgreSQL: create role, assign permission, assign role to user, login, access a protected endpoint, and confirm users without the permission receive `403`.
 
+## Review Finding — RBAC Bootstrap Gap
+
+The implementation passed all of its own acceptance criteria, but the review found a chicken-and-egg gap they did not cover: permissions were seeded, yet no role was seeded and no user received one, while every management endpoint required a permission. On a fresh database nobody could create the first role — the integration test only worked because it manipulated the database directly. This was surfaced as a decision rather than silently patched, and the chosen fix was applied on the PR branch: seed an `Administrator` role (holding every permission) via migration, and grant it automatically to the first user who registers. A unit test now pins that behaviour (first user gets the role, second does not). Two minor items were also cleaned up: redundant NuGet references (NU1510 warnings) and a missing `PermissionRevoked` domain event for symmetry with `PermissionAssigned`.
+
 ## What Was Learned
 
 - Sprint 03 turned the Sprint 02 Shared Kernel correction into a pattern rather than a one-off fix: new domain types were built on `Entity<Guid>` and `IDomainEvent` from the start.
 - Authorization is a separate concern from authentication. JWT proves who the user is; dynamic permission policies decide what the authenticated user can do. Keeping that distinction visible in both API behavior (`401` vs `403`) and tests makes the security model easier to reason about.
 - ADR-0002 continued to hold: Identity administration still did not need full CQRS/read-model separation. Simple Application Services were sufficient for the current complexity while preserving clean boundaries.
+- Passing every acceptance criterion is not the same as being usable end to end. A permission system with no way to create the first administrator satisfies "unauthorized users receive 403" perfectly while being impossible to operate. Reviewing for the missing path — not just the specified ones — is what caught it.
 
 ## Learning Roadmap Mapping
 

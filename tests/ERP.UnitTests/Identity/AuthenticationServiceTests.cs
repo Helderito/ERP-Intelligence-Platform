@@ -30,6 +30,27 @@ public sealed class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task RegisterAsync_ShouldAssignAdministratorRole_OnlyToTheFirstUser()
+    {
+        var userRepository = new FakeUserRepository();
+        var service = new AuthenticationService(
+            userRepository,
+            new FakeRefreshTokenRepository(),
+            new FakePasswordHasher(),
+            new FakeJwtTokenGenerator(),
+            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository));
+
+        await service.RegisterAsync(new RegisterUserCommand("first@example.com", "password"));
+        await service.RegisterAsync(new RegisterUserCommand("second@example.com", "password"));
+
+        var firstUser = userRepository.Users[0];
+        var secondUser = userRepository.Users[1];
+
+        Assert.Contains(IdentitySeed.AdministratorRoleId, firstUser.RoleIds);
+        Assert.Empty(secondUser.RoleIds);
+    }
+
+    [Fact]
     public async Task LoginAsync_ShouldThrow_WhenPasswordIsInvalid()
     {
         var userRepository = new FakeUserRepository();
@@ -60,6 +81,11 @@ public sealed class AuthenticationServiceTests
         public Task<bool> ExistsByEmailAsync(EmailAddress email, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(Users.Any(user => user.Email.Equals(email)));
+        }
+
+        public Task<bool> HasAnyAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Users.Count > 0);
         }
 
         public Task<User?> GetByEmailAsync(EmailAddress email, CancellationToken cancellationToken = default)

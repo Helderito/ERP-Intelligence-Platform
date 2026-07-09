@@ -77,7 +77,7 @@ public sealed class Role : Entity<Guid>
         RaiseDomainEvent(new PermissionAssigned(Id, permissionId, assignedAtUtc));
     }
 
-    public void RevokePermission(Guid permissionId)
+    public void RevokePermission(Guid permissionId, DateTime revokedAtUtc)
     {
         if (permissionId == Guid.Empty)
         {
@@ -89,6 +89,7 @@ public sealed class Role : Entity<Guid>
         if (rolePermission is not null)
         {
             _rolePermissions.Remove(rolePermission);
+            RaiseDomainEvent(new PermissionRevoked(Id, permissionId, revokedAtUtc));
         }
     }
 

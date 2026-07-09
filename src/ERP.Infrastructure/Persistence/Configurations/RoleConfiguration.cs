@@ -41,5 +41,13 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
 
         builder.Navigation("_rolePermissions")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasData(new
+        {
+            Id = IdentitySeed.AdministratorRoleId,
+            Name = IdentitySeed.AdministratorRoleName,
+            IsActive = true,
+            CreatedAtUtc = RoleSeed.SeededAtUtc
+        });
     }
 }

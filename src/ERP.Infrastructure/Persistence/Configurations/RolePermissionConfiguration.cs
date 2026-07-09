@@ -33,5 +33,21 @@ public sealed class RolePermissionConfiguration : IEntityTypeConfiguration<RoleP
             .WithMany()
             .HasForeignKey(rolePermission => rolePermission.PermissionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasData(
+            new
+            {
+                Id = RoleSeed.AdministratorRolesManageLinkId,
+                RoleId = IdentitySeed.AdministratorRoleId,
+                PermissionId = PermissionSeed.RolesManageId,
+                AssignedAtUtc = RoleSeed.SeededAtUtc
+            },
+            new
+            {
+                Id = RoleSeed.AdministratorUsersManageLinkId,
+                RoleId = IdentitySeed.AdministratorRoleId,
+                PermissionId = PermissionSeed.UsersManageId,
+                AssignedAtUtc = RoleSeed.SeededAtUtc
+            });
     }
 }

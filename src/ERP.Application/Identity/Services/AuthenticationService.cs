@@ -44,7 +44,17 @@ public sealed class AuthenticationService
 
         var passwordHash = PasswordHash.Create(_passwordHasher.Hash(command.Password));
         var utcNow = DateTime.UtcNow;
+        var isFirstUser = !await _userRepository.HasAnyAsync(cancellationToken);
         var user = User.Register(email, passwordHash, utcNow);
+
+        // Bootstrap: the very first registered user becomes the Administrator,
+        // otherwise no one could ever manage roles (every management endpoint
+        // requires a permission that is only reachable through the seeded
+        // Administrator role).
+        if (isFirstUser)
+        {
+            user.AssignRole(IdentitySeed.AdministratorRoleId, utcNow);
+        }
 
         await _userRepository.AddAsync(user, cancellationToken);
         await _userRepository.SaveChangesAsync(cancellationToken);
