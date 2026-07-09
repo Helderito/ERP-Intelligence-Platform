@@ -92,7 +92,7 @@ C4Component
     Container_Boundary(api, "ASP.NET Core API") {
         Component(controllers, "Controllers / Endpoints", "ASP.NET Core", "Thin HTTP layer: routing, JWT, Swagger, versioning")
         Component(application, "Application Layer", "Use Cases / Commands / Queries", "Orchestrates use cases; contains DTOs and validators")
-        Component(identity, "Identity (Domain)", "DDD Bounded Context", "Implemented: User, RefreshToken aggregates. Planned (Sprint 03): Role, Permission")
+        Component(identity, "Identity (Domain)", "DDD Bounded Context", "Implemented: User, RefreshToken, Role and Permission")
         Component(masterdata, "Master Data (Domain)", "DDD Bounded Context", "Planned (Sprint 04-08): Customer, Supplier, Product, Warehouse aggregates")
         Component(sharedkernel, "Shared Kernel", "DDD Building Blocks", "Entity, ValueObject, IDomainEvent - referenced by Identity and, in future, every other Bounded Context")
         Component(infrastructure, "Infrastructure Layer", "EF Core, Redis, Azure SDKs", "Persistence, caching, external integrations")

@@ -286,6 +286,21 @@ Authorization shall follow:
 - Claims-Based Authorization
 - Policy-Based Authorization
 
+Sprint 03 introduces permission-based RBAC endpoints:
+
+```
+GET /roles
+POST /roles
+PUT /roles/{id}
+DELETE /roles/{id}
+GET /permissions
+POST /roles/{id}/permissions
+POST /users/{id}/roles
+```
+
+Role and permission management endpoints require `roles.manage`. User role assignment requires `users.manage`.
+Authenticated users without the required permission receive `403 Forbidden`.
+
 ---
 
 # 15. Error Handling

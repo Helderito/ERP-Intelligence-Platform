@@ -13,17 +13,20 @@ public sealed class AuthenticationService
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
+    private readonly AuthorizationService _authorizationService;
 
     public AuthenticationService(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
-        IJwtTokenGenerator jwtTokenGenerator)
+        IJwtTokenGenerator jwtTokenGenerator,
+        AuthorizationService authorizationService)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
+        _authorizationService = authorizationService;
     }
 
     public async Task<AuthenticationResult> RegisterAsync(
@@ -41,7 +44,17 @@ public sealed class AuthenticationService
 
         var passwordHash = PasswordHash.Create(_passwordHasher.Hash(command.Password));
         var utcNow = DateTime.UtcNow;
+        var isFirstUser = !await _userRepository.HasAnyAsync(cancellationToken);
         var user = User.Register(email, passwordHash, utcNow);
+
+        // Bootstrap: the very first registered user becomes the Administrator,
+        // otherwise no one could ever manage roles (every management endpoint
+        // requires a permission that is only reachable through the seeded
+        // Administrator role).
+        if (isFirstUser)
+        {
+            user.AssignRole(IdentitySeed.AdministratorRoleId, utcNow);
+        }
 
         await _userRepository.AddAsync(user, cancellationToken);
         await _userRepository.SaveChangesAsync(cancellationToken);
@@ -117,7 +130,10 @@ public sealed class AuthenticationService
             throw new UnauthorizedAccessException("Current user was not found.");
         }
 
-        return new CurrentUserDto(user.Id, user.Email.Value);
+        var roles = await _authorizationService.ListUserRolesAsync(user, cancellationToken);
+        var permissions = await _authorizationService.ListUserPermissionsAsync(user, cancellationToken);
+
+        return new CurrentUserDto(user.Id, user.Email.Value, roles, permissions);
     }
 
     public Guid? ValidateToken(ValidateTokenQuery query)
@@ -129,7 +145,9 @@ public sealed class AuthenticationService
         User user,
         CancellationToken cancellationToken)
     {
-        var accessToken = _jwtTokenGenerator.Generate(user);
+        var roles = await _authorizationService.ListUserRolesAsync(user, cancellationToken);
+        var permissions = await _authorizationService.ListUserPermissionsAsync(user, cancellationToken);
+        var accessToken = _jwtTokenGenerator.Generate(user, roles);
         var utcNow = DateTime.UtcNow;
         var refreshTokenExpiresAtUtc = utcNow.AddDays(7);
         var refreshToken = RefreshToken.Issue(
@@ -147,7 +165,9 @@ public sealed class AuthenticationService
             accessToken.AccessToken,
             accessToken.ExpiresAtUtc,
             refreshToken.Token,
-            refreshToken.ExpiresAtUtc);
+            refreshToken.ExpiresAtUtc,
+            roles,
+            permissions);
     }
 
     private static string GenerateRefreshTokenValue()

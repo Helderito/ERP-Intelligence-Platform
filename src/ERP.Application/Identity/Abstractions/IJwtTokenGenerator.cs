@@ -5,7 +5,7 @@ namespace ERP.Application.Identity.Abstractions;
 
 public interface IJwtTokenGenerator
 {
-    AccessTokenResult Generate(User user);
+    AccessTokenResult Generate(User user, IReadOnlyCollection<string> roleNames);
 
     Guid? Validate(string accessToken);
 }

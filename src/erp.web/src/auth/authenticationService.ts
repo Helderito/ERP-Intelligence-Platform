@@ -5,6 +5,8 @@ export type AuthenticationSession = {
   accessTokenExpiresAtUtc: string;
   refreshToken: string;
   refreshTokenExpiresAtUtc: string;
+  roles: string[];
+  permissions: string[];
 };
 
 type LoginRequest = {

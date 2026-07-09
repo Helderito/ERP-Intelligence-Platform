@@ -4,7 +4,7 @@
 
 **Sprint Number:** 03
 
-**Status:** Planned
+**Status:** Done
 
 **Sprint Type:** Goal-Based Sprint
 
@@ -67,79 +67,79 @@ These capabilities are planned for future releases.
 
 ## Domain
 
-* [ ] Create Role Aggregate
-* [ ] Create Permission Entity
-* [ ] Define Role-Permission relationship
-* [ ] Define Authorization Policies
+* [x] Create Role Aggregate
+* [x] Create Permission Entity
+* [x] Define Role-Permission relationship
+* [x] Define Authorization Policies
 
 ---
 
 ## Application
 
-* [ ] Create Role
-* [ ] Update Role
-* [ ] Delete Role
-* [ ] Assign Permissions
-* [ ] Assign Roles to Users
-* [ ] List User Permissions
+* [x] Create Role
+* [x] Update Role
+* [x] Delete Role
+* [x] Assign Permissions
+* [x] Assign Roles to Users
+* [x] List User Permissions
 
 ---
 
 ## Infrastructure
 
-* [ ] Configure Authorization Middleware
-* [ ] Configure Policy Providers
-* [ ] Configure Role Claims
-* [ ] Configure Permission Claims
+* [x] Configure Authorization Middleware
+* [x] Configure Policy Providers
+* [x] Configure Role Claims
+* [x] Configure Permission Claims
 
 ---
 
 ## API
 
-* [ ] GET /roles
-* [ ] POST /roles
-* [ ] PUT /roles/{id}
-* [ ] DELETE /roles/{id}
-* [ ] GET /permissions
-* [ ] POST /roles/{id}/permissions
-* [ ] POST /users/{id}/roles
+* [x] GET /roles
+* [x] POST /roles
+* [x] PUT /roles/{id}
+* [x] DELETE /roles/{id}
+* [x] GET /permissions
+* [x] POST /roles/{id}/permissions
+* [x] POST /users/{id}/roles
 
 ---
 
 ## Frontend
 
-* [ ] Roles Management Page
-* [ ] Permissions Management Page
-* [ ] Assign Roles UI
-* [ ] Protected Navigation
-* [ ] Dynamic Menu based on Permissions
+* [x] Roles Management Page
+* [x] Permissions Management Page
+* [x] Assign Roles UI
+* [x] Protected Navigation
+* [x] Dynamic Menu based on Permissions
 
 ---
 
 ## Security
 
-* [ ] Role validation
-* [ ] Permission validation
-* [ ] Endpoint authorization
-* [ ] Unauthorized response handling
+* [x] Role validation
+* [x] Permission validation
+* [x] Endpoint authorization
+* [x] Unauthorized response handling
 
 ---
 
 ## Testing
 
-* [ ] Unit Tests
-* [ ] Integration Tests
-* [ ] Authorization Tests
-* [ ] Permission Tests
+* [x] Unit Tests
+* [x] Integration Tests
+* [x] Authorization Tests
+* [x] Permission Tests
 
 ---
 
 ## Documentation
 
-* [ ] Update Software Architecture Document
-* [ ] Update API Documentation
-* [ ] Update Product Backlog
-* [ ] Update Security Documentation
+* [x] Update Software Architecture Document
+* [x] Update API Documentation
+* [x] Update Product Backlog
+* [x] Update Security Documentation
 
 ---
 

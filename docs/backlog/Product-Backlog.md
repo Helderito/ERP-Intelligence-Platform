@@ -105,6 +105,8 @@ P0
 * Login UI
 * Roles
 * Permissions
+* Permission-Based Authorization
+* Dynamic Navigation
 * MFA
 * Password Management
 

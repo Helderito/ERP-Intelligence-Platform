@@ -228,6 +228,9 @@ Future:
 Authorization:
 
 - Role-Based Access Control
+- Permission-based policies implemented for Identity administration endpoints
+
+Bootstrap: an `Administrator` role holding every administrative permission is seeded via migration, and the first user to register is automatically granted that role. Without this, no user could ever manage roles, because every management endpoint requires a permission only reachable through an existing administrator. Subsequent users receive no role by default.
 
 ---
 

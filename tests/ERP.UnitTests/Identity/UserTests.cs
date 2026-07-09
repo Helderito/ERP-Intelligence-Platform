@@ -24,4 +24,19 @@ public sealed class UserTests
     {
         Assert.Throws<ArgumentException>(() => PasswordHash.Create(""));
     }
+
+    [Fact]
+    public void AssignRole_ShouldAddRoleAndRegisterEvent_WhenRoleIsNew()
+    {
+        var user = User.Register(
+            EmailAddress.Create("user@example.com"),
+            PasswordHash.Create("hashed-password"),
+            DateTime.UtcNow);
+        var roleId = Guid.NewGuid();
+
+        user.AssignRole(roleId, DateTime.UtcNow);
+
+        Assert.Contains(roleId, user.RoleIds);
+        Assert.Contains(user.DomainEvents, domainEvent => domainEvent is RoleAssignedToUser);
+    }
 }

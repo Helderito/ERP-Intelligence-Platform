@@ -8,7 +8,9 @@ public sealed record AuthenticationResponse(
     string AccessToken,
     DateTime AccessTokenExpiresAtUtc,
     string RefreshToken,
-    DateTime RefreshTokenExpiresAtUtc)
+    DateTime RefreshTokenExpiresAtUtc,
+    IReadOnlyCollection<string> Roles,
+    IReadOnlyCollection<string> Permissions)
 {
     public static AuthenticationResponse FromResult(AuthenticationResult result)
     {
@@ -18,6 +20,8 @@ public sealed record AuthenticationResponse(
             result.AccessToken,
             result.AccessTokenExpiresAtUtc,
             result.RefreshToken,
-            result.RefreshTokenExpiresAtUtc);
+            result.RefreshTokenExpiresAtUtc,
+            result.Roles,
+            result.Permissions);
     }
 }

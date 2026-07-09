@@ -123,15 +123,48 @@ This is the same discipline the Learning Journal itself exists for: documentatio
 
 ---
 
-# 6. Cumulative Progress Against the Learning Roadmap
+# 6. Sprint 03 — Authorization & Access Control
+
+**Closed:** 2026-07-08 · **Release:** 0.1.0
+
+## What Was Delivered
+
+- Codex extended the Identity domain with `Role`, `Permission`, `UserRole` and `RolePermission`, reusing the Shared Kernel building blocks instead of reimplementing equality or domain-event handling. `User` now supports role assignment and `Role` supports permission assignment/deactivation.
+- The Application and Infrastructure layers now expose simple authorization Application Services, EF Core mappings, repositories, a migration with the initial permission catalog (`roles.manage`, `users.manage`), JWT role claims, and dynamic permission policies backed by a custom authorization policy provider and handler.
+- The API now exposes role, permission and user-role endpoints: `GET /roles`, `POST /roles`, `PUT /roles/{id}`, `DELETE /roles/{id}`, `GET /permissions`, `POST /roles/{id}/permissions`, and `POST /users/{id}/roles`. Endpoints distinguish authentication from authorization: authenticated users without the required permission receive `403 Forbidden`.
+- The React app now includes role management, permission listing, user-role assignment, permission-aware protected routes and a dynamic navigation menu filtered by the current user's permissions.
+- Unit and integration tests cover the new authorization rules, including a full flow against PostgreSQL: create role, assign permission, assign role to user, login, access a protected endpoint, and confirm users without the permission receive `403`.
+
+## Review Finding — RBAC Bootstrap Gap
+
+The implementation passed all of its own acceptance criteria, but the review found a chicken-and-egg gap they did not cover: permissions were seeded, yet no role was seeded and no user received one, while every management endpoint required a permission. On a fresh database nobody could create the first role — the integration test only worked because it manipulated the database directly. This was surfaced as a decision rather than silently patched, and the chosen fix was applied on the PR branch: seed an `Administrator` role (holding every permission) via migration, and grant it automatically to the first user who registers. A unit test now pins that behaviour (first user gets the role, second does not). Two minor items were also cleaned up: redundant NuGet references (NU1510 warnings) and a missing `PermissionRevoked` domain event for symmetry with `PermissionAssigned`.
+
+## What Was Learned
+
+- Sprint 03 turned the Sprint 02 Shared Kernel correction into a pattern rather than a one-off fix: new domain types were built on `Entity<Guid>` and `IDomainEvent` from the start.
+- Authorization is a separate concern from authentication. JWT proves who the user is; dynamic permission policies decide what the authenticated user can do. Keeping that distinction visible in both API behavior (`401` vs `403`) and tests makes the security model easier to reason about.
+- ADR-0002 continued to hold: Identity administration still did not need full CQRS/read-model separation. Simple Application Services were sufficient for the current complexity while preserving clean boundaries.
+- Passing every acceptance criterion is not the same as being usable end to end. A permission system with no way to create the first administrator satisfies "unauthorized users receive 403" perfectly while being impossible to operate. Reviewing for the missing path — not just the specified ones — is what caught it.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: RBAC, policy-based authorization, EF Core relationships and permission-protected API endpoints are implemented. |
+| Stage 4 — Frontend Development | Advanced: role/permission screens, protected routes and permission-filtered navigation are implemented. |
+| Stage 1 — Software Architecture | Reinforced: Shared Kernel reuse, Clean Architecture dependency direction and selective CQRS were applied to a second Identity feature. |
+
+---
+
+# 7. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02 |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02 (Authentication done; business CRUD pending: Sprint 04+) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03 |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03 (Authentication and Authorization done; business CRUD pending: Sprint 04+) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02 (login flow done; remaining business UI pending) |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03 (login flow and authorization UI done; remaining business UI pending) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01 (cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -140,7 +173,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 7. Relationship with Other Documents
+# 8. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -152,6 +185,6 @@ This document should be read together with:
 
 ---
 
-# 8. Success Criteria
+# 9. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

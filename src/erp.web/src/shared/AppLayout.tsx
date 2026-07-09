@@ -3,11 +3,17 @@ import { useAuth } from "../auth/useAuth";
 
 const navigationItems = [
   { label: "Painel", to: "/" },
+  { label: "Roles", to: "/roles", permission: "roles.manage" },
+  { label: "Permissions", to: "/permissions", permission: "roles.manage" },
+  { label: "Utilizadores", to: "/users/roles", permission: "users.manage" },
   { label: "Definicoes", to: "/settings" }
 ];
 
 export function AppLayout() {
-  const { session, logout } = useAuth();
+  const { hasPermission, session, logout } = useAuth();
+  const visibleNavigationItems = navigationItems.filter(
+    (item) => !item.permission || hasPermission(item.permission)
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -18,7 +24,7 @@ export function AppLayout() {
             <h1 className="text-xl font-semibold">Fundacao da plataforma</h1>
           </div>
           <nav aria-label="Navegacao principal" className="flex gap-2">
-            {navigationItems.map((item) => (
+            {visibleNavigationItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

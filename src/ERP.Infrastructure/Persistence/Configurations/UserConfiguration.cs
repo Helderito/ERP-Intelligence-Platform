@@ -43,5 +43,13 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(user => user.IsActive)
             .IsRequired();
+
+        builder.HasMany<UserRole>("_userRoles")
+            .WithOne()
+            .HasForeignKey(userRole => userRole.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation("_userRoles")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
