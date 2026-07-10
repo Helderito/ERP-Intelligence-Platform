@@ -183,8 +183,9 @@ At Sprint level, closing a Sprint additionally requires the [Learning Journal](r
 
 ## Mandatory
 
-- Unit Tests
-- Integration Tests
+- Unit Tests (backend)
+- Integration Tests (backend, against real PostgreSQL via Testcontainers)
+- Frontend Tests (Vitest + React Testing Library) for any new UI; the frontend `npm test` script must run the test suite, not only type-checking
 
 ## Desirable
 
@@ -193,6 +194,7 @@ At Sprint level, closing a Sprint additionally requires the [Learning Journal](r
 ## Minimum Coverage
 
 - 80%
+- Backend line coverage is measured on every CI run and reported in the job summary.
 
 ---
 

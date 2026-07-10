@@ -17,11 +17,13 @@ APIs, database, docs, Git).
 ## Current state
 
 - Documentation-first foundation complete: see `docs/`.
-- Git repository initialised and pushed to GitHub (`main` branch).
-- No application code yet. `src/`, `database/`, `infrastructure/`, `tests/`,
-  `powerbi/`, `assets/`, `tools/` are still empty.
-- Sprint plan lives in `docs/backlog/`; current sprint is `Sprint-00.md`
-  (engineering foundation), not yet fully closed.
+- Git repository on GitHub; `main` is protected (PR required, no direct push).
+  Work on a `feature/` branch and open a PR — never push or merge to `main`.
+- Sprints 00–04 are done. The solution exists: Clean Architecture backend
+  (`ERP.Domain` / `ERP.SharedKernel` / `ERP.Application` / `ERP.Infrastructure`
+  / `ERP.Api`), React frontend (`src/erp.web`), Docker Compose, CI. Implemented
+  modules: Identity (auth + RBAC) and Master Data → Product Catalog. Sprint
+  plan lives in `docs/backlog/`; check it for the current sprint.
 
 ## Before making any change
 
@@ -34,6 +36,35 @@ APIs, database, docs, Git).
    flag ambiguity instead of guessing.
 4. Do not scaffold new projects (.NET, React, Docker, CI/CD) unless the
    current Sprint explicitly calls for it.
+
+## Standing engineering checklist (apply to every change)
+
+These are recurring rules distilled from past code reviews. Follow them from
+the start so they don't come back as review findings:
+
+- **Language.** All engineering artefacts — code, exception messages, logs,
+  comments — are in English. Only end-user-facing text (the React frontend)
+  is Portuguese-first. Never put a Portuguese string in a domain/application
+  exception; user-facing localization belongs at the presentation layer.
+- **Error handling.** Distinguish failure kinds with typed exceptions and map
+  them to HTTP status by *type* in the controller. Never branch control flow
+  on the text of a message (no `ex.Message.Contains(...)`).
+- **Shared Kernel.** Reuse `ERP.SharedKernel` (`Entity<TId>`, `ValueObject`,
+  `IDomainEvent`) for every new domain type. Never reimplement equality or
+  domain-event bookkeeping. `ERP.Domain` may reference only `ERP.SharedKernel`.
+- **Bootstrap path.** Every new module must be usable end to end on a *fresh*
+  database — seed whatever reference data or permissions are needed (as done
+  for the Administrator role and Product Catalog reference data).
+- **Secrets.** Never commit secrets. `appsettings.json` carries no
+  credentials; use env vars or the git-ignored `appsettings.Development.json`.
+- **Soft delete.** Business entities are deactivated (status/`IsActive`), not
+  physically deleted. `DELETE` endpoints return `204` and soft-deactivate.
+- **Tests.** New backend behaviour needs unit tests plus integration tests
+  against real PostgreSQL (Testcontainers). New frontend UI needs tests
+  (Vitest + React Testing Library); the frontend `npm test` script must run
+  the test suite, not only type-checking.
+- **Living docs.** Closing a Sprint updates `docs/roadmap/Learning-Journal.md`
+  and `docs/roadmap/Technical-Learning-Guide-PT.md` (part of Definition of Done).
 
 ## Your role here
 

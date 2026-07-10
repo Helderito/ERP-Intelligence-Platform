@@ -28,7 +28,30 @@ jobs:
         run: dotnet build ERP-Intelligence.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test ERP-Intelligence.sln --configuration Release --no-build -m:1
+        run: >-
+          dotnet test ERP-Intelligence.sln --configuration Release --no-build -m:1
+          --collect:"XPlat Code Coverage"
+          --results-directory ${{ github.workspace }}/coverage
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, os, xml.etree.ElementTree as ET
+          covered = valid = 0
+          files = glob.glob("coverage/**/coverage.cobertura.xml", recursive=True)
+          for f in files:
+              root = ET.parse(f).getroot()
+              covered += int(root.get("lines-covered", 0))
+              valid += int(root.get("lines-valid", 0))
+          pct = (covered / valid * 100) if valid else 0.0
+          line = f"Line coverage: {pct:.1f}% ({covered}/{valid} lines) across {len(files)} test run(s)."
+          print(line)
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf-8") as fh:
+                  fh.write(f"## Backend coverage\n\n{line}\n")
+          PY
 
   frontend:
     name: Frontend
