@@ -26,6 +26,22 @@ start from `docs/00-Overview.md`.
 - Never hardcode secrets, disable security mechanisms, or trust unvalidated
   input.
 
+## Recurring rules (from past code reviews)
+
+- English for all engineering artefacts — code, exception messages, logs,
+  comments. Only the React frontend (end-user text) is Portuguese-first.
+  Never put a Portuguese string in a domain/application exception.
+- Distinguish failure kinds with typed exceptions; the controller maps them to
+  HTTP status by type. Never branch on message text (`ex.Message.Contains`).
+- Reuse `ERP.SharedKernel` (`Entity<TId>`, `ValueObject`, `IDomainEvent`) for
+  every new domain type; `ERP.Domain` references only `ERP.SharedKernel`.
+- Every new module must work end to end on a fresh database — seed the
+  reference data/permissions it needs.
+- Business entities are soft-deleted (deactivated), not physically deleted;
+  `DELETE` endpoints return `204`.
+- New frontend UI needs Vitest + React Testing Library tests; `npm test` runs
+  the suite, not only `tsc`.
+
 ## Decision hierarchy
 
 When documents conflict, resolve in this order (see
