@@ -129,12 +129,16 @@ See the [Naming Conventions](database/Naming-Conventions.md) document for the co
 
 ## Branches
 
-- `main`
-- `develop`
-- `feature/`
-- `bugfix/`
-- `hotfix/`
-- `release/`
+The project follows GitHub Flow: `main` is the single long-lived branch; all work happens on short-lived branches merged through Pull Requests.
+
+- `main` — protected and always deployable; direct pushes are blocked.
+- `feature/` — new features.
+- `bugfix/` — fixes.
+- `hotfix/` — urgent fixes.
+- `docs/` — documentation-only changes.
+- `chore/` — tooling, CI and housekeeping.
+
+Each branch is opened per change and squash-merged into `main` via a Pull Request. There is no long-lived `develop` or `release/` branch; releases are tags cut from `main`.
 
 ## Commits
 

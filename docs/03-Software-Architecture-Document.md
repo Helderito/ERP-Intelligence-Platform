@@ -293,11 +293,12 @@ Example:
 
 ## Branches
 
-- `main`
-- `develop`
-- `feature/`
-- `release/`
-- `hotfix/`
+The project follows GitHub Flow: a single long-lived branch (`main`) plus short-lived branches merged through Pull Requests.
+
+- `main` — protected and always deployable; no direct pushes.
+- `feature/`, `bugfix/`, `hotfix/`, `docs/`, `chore/` — short-lived branches, opened per change and squash-merged into `main` via a Pull Request.
+
+There is no long-lived `develop` or `release/` branch; releases are cut as tags from `main`.
 
 ---
 
