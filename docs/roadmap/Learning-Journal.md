@@ -170,11 +170,17 @@ The implementation passed all of its own acceptance criteria, but the review fou
 - The React app now has a Product Catalog page with search, list, detail, create, edit and deactivate flows, with navigation filtered by the authenticated user's permissions.
 - Unit and integration tests cover Product/ProductCode rules, Application validation and the full create→get→search→update→deactivate flow against PostgreSQL via Testcontainers.
 
+## Review Finding — Backend Message Language and Control Flow
+
+The review found the new Master Data module threw its domain and application exception messages in Portuguese, while the entire Identity module used English. This started as a genuine misunderstanding — the owner had asked for Portuguese thinking these were user-facing frontend strings, then confirmed on review that they are backend messages and must follow the project's language policy (source code in English; user-facing localization belongs at the presentation layer, not hardcoded in the domain). More seriously, the `ProductsController` had begun deciding HTTP status codes by matching Portuguese substrings of those messages (`ex.Message.Contains("Já existe")` → 409), which is fragile control-flow-by-message-text and was directly coupled to the language — fixing the wording would have silently broken the status mapping. Both were fixed on the PR branch: backend messages switched to English, and the Application layer now throws typed exceptions (`ProductCodeAlreadyExistsException` → 409, `ProductNotFoundException` → 404, `MasterDataReferenceNotFoundException` → 422) that the controller maps by type, not by text. The Portuguese-first frontend strings were left untouched — that is where user-facing localization correctly lives.
+
 ## What Was Learned
 
 - Sprint 04 was the first real test of the Modular Monolith outside Identity. The same Clean Architecture shape held: Domain stayed independent, Application owned use cases and repository interfaces, Infrastructure owned EF/PostgreSQL, and API/UI stayed thin.
 - Master Data needs a usable bootstrap path just like RBAC did: seeded Category and UnitOfMeasure records make it possible to create the first Product in a fresh database without implementing future reference-data management screens early.
 - A Product Catalog is not Inventory. Keeping stock, price and warehouse concepts out of `Product` makes the aggregate reusable by future Inventory, Purchasing, Sales and BI modules without coupling Sprint 04 to future responsibilities.
+- Control flow should never depend on human-readable message text. Branching HTTP status codes on a substring of an error message couples two things that should stay independent — the wording shown to a human and the machine decision about what kind of failure occurred. Typed exceptions keep them separate; message text can then change freely (including being translated) without breaking behaviour.
+- "Portuguese-first" applies to what the end user sees, not to the engineering artefacts behind it. The line runs at the presentation layer: backend code, exceptions and logs stay English; the frontend localizes for the user. Putting a Portuguese string in a domain exception quietly defeats the internationalization the architecture is meant to support.
 
 ## Learning Roadmap Mapping
 

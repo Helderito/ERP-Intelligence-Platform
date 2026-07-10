@@ -1,6 +1,7 @@
 using ERP.Application.Common.Models;
 using ERP.Application.MasterData.Abstractions;
 using ERP.Application.MasterData.Commands;
+using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Models;
 using ERP.Application.MasterData.Queries;
 using ERP.Domain.MasterData;
@@ -36,7 +37,7 @@ public sealed class ProductCatalogService
 
         if (existingProduct is not null)
         {
-            throw new InvalidOperationException("Já existe um produto com este código.");
+            throw new ProductCodeAlreadyExistsException(code.Value);
         }
 
         var product = Product.Create(
@@ -129,7 +130,7 @@ public sealed class ProductCatalogService
 
         if (product is null)
         {
-            throw new InvalidOperationException("Produto não encontrado.");
+            throw new ProductNotFoundException();
         }
 
         return product;
@@ -142,12 +143,12 @@ public sealed class ProductCatalogService
     {
         if (!await _categoryRepository.ExistsAsync(categoryId, cancellationToken))
         {
-            throw new InvalidOperationException("Categoria não encontrada.");
+            throw new MasterDataReferenceNotFoundException("Category was not found.");
         }
 
         if (!await _unitOfMeasureRepository.ExistsAsync(unitOfMeasureId, cancellationToken))
         {
-            throw new InvalidOperationException("Unidade de medida não encontrada.");
+            throw new MasterDataReferenceNotFoundException("Unit of measure was not found.");
         }
     }
 

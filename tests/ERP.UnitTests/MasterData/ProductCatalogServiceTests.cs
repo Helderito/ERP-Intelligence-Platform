@@ -1,5 +1,6 @@
 using ERP.Application.MasterData.Abstractions;
 using ERP.Application.MasterData.Commands;
+using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Queries;
 using ERP.Application.MasterData.Services;
 using ERP.Domain.MasterData;
@@ -39,7 +40,7 @@ public sealed class ProductCatalogServiceTests
 
         await service.CreateProductAsync(new CreateProductCommand("sku-001", "Sample Product", categoryId, unitOfMeasureId));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<ProductCodeAlreadyExistsException>(
             () => service.CreateProductAsync(new CreateProductCommand("SKU-001", "Duplicate", categoryId, unitOfMeasureId)));
     }
 
@@ -52,7 +53,7 @@ public sealed class ProductCatalogServiceTests
             new FakeCategoryRepository(),
             new FakeUnitOfMeasureRepository(unitOfMeasureId));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<MasterDataReferenceNotFoundException>(
             () => service.CreateProductAsync(
                 new CreateProductCommand("sku-001", "Sample Product", Guid.NewGuid(), unitOfMeasureId)));
     }

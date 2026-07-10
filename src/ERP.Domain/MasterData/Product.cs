@@ -83,7 +83,7 @@ public sealed class Product : Entity<Guid>
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("O nome do produto é obrigatório.", nameof(name));
+            throw new ArgumentException("Product name is required.", nameof(name));
         }
 
         return name.Trim();
@@ -93,7 +93,7 @@ public sealed class Product : Entity<Guid>
     {
         if (id == Guid.Empty)
         {
-            throw new ArgumentException("O identificador é obrigatório.", parameterName);
+            throw new ArgumentException("Identifier is required.", parameterName);
         }
 
         return id;

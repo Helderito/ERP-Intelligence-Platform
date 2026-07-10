@@ -260,6 +260,34 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 ---
 
+## Idioma no Backend vs Frontend (fronteira de i18n)
+
+**O que é?** i18n (internacionalização) é preparar a aplicação para funcionar em vários idiomas. A questão prática: em que idioma se escreve cada texto? A resposta depende de *quem* lê o texto.
+
+**Para que serve a fronteira?** Há duas categorias de texto que muitas vezes se confundem: (1) mensagens de engenharia — exceções, logs, nomes de código — lidas por quem desenvolve; e (2) texto de interface — botões, etiquetas, mensagens de erro apresentadas ao utilizador final. Se se misturarem, perde-se a capacidade de traduzir a aplicação sem reescrever o código.
+
+**Como foi aplicado no projeto?** A regra do projeto: **backend em inglês, frontend Portuguese-first**. As exceções do domínio e da aplicação (`"Product name is required."`) são inglesas; a interface React (que o utilizador vê) está em português. A tradução para o utilizador acontece na camada de apresentação, não no domínio. No Sprint 04, uma primeira versão trouxe mensagens de exceção do backend em português — foi corrigido em revisão, porque uma mensagem em português fixada no Domain não pode depois ser re-localizada para inglês, espanhol ou francês.
+
+**Erros comuns a evitar:** escrever mensagens de erro do backend no idioma do utilizador. Parece útil ("já está em português!"), mas fixa o idioma no sítio errado e quebra a internacionalização que a arquitetura devia suportar.
+
+**Relação com outros conceitos:** liga-se ao desenho de erros por *código* (ver OpenAPI, com um campo `code` como `PRODUCT_NOT_FOUND`) — o backend devolve um código estável e o frontend decide que texto mostrar, em que idioma.
+
+---
+
+## Exceções Tipadas vs Mapeamento por Texto
+
+**O que é?** Quando uma operação falha, a aplicação lança uma exceção. A camada de API tem de traduzir essa falha num código HTTP (409 conflito, 404 não encontrado, 422 regra de negócio violada, etc.). A questão: como decide a API qual o código certo?
+
+**Para que serve fazê-lo por tipo?** Há duas formas. A frágil: olhar para o *texto* da mensagem de erro (`if (mensagem.contém("já existe")) devolve 409`). A robusta: cada tipo de falha é uma *classe de exceção diferente*, e a API decide pelo tipo. A primeira quebra assim que alguém muda o texto (por exemplo, ao traduzi-lo); a segunda é imune a isso.
+
+**Como foi aplicado no projeto?** No Sprint 04, uma primeira versão decidia o código HTTP por substring da mensagem em português — frágil e acoplado ao idioma. Foi corrigido em revisão: o `ProductCatalogService` passou a lançar exceções tipadas (`ProductCodeAlreadyExistsException` → 409, `ProductNotFoundException` → 404, `MasterDataReferenceNotFoundException` → 422) e o controller mapeia por tipo, não por texto.
+
+**Erros comuns a evitar:** fazer o programa tomar decisões com base em texto pensado para humanos. O texto é para ler; o tipo é para decidir. Misturá-los cria acoplamentos invisíveis que partem em silêncio.
+
+**Relação com outros conceitos:** é a razão de a fronteira de idioma (acima) e o mapeamento de erros funcionarem — separar "o que aconteceu" (tipo) de "como o descrevemos a um humano" (mensagem, traduzível).
+
+---
+
 ## Health Checks
 
 **O que é?** Um endpoint (`/health`) que responde se a aplicação está operacional.

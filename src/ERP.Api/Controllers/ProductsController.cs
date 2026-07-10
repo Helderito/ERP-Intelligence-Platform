@@ -2,6 +2,7 @@ using ERP.Api.Contracts.Authentication;
 using ERP.Api.Contracts.MasterData;
 using ERP.Application.MasterData.Authorization;
 using ERP.Application.MasterData.Commands;
+using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Queries;
 using ERP.Application.MasterData.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +47,7 @@ public sealed class ProductsController : ControllerBase
 
         if (product is null)
         {
-            return NotFound(new ErrorResponse("Produto não encontrado."));
+            return NotFound(new ErrorResponse("Product was not found."));
         }
 
         return Ok(ProductResponse.FromDto(product));
@@ -69,15 +70,15 @@ public sealed class ProductsController : ControllerBase
 
             return Created($"/products/{product.Id}", ProductResponse.FromDto(product));
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new ErrorResponse(ex.Message));
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("Já existe", StringComparison.Ordinal))
+        catch (ProductCodeAlreadyExistsException ex)
         {
             return Conflict(new ErrorResponse(ex.Message));
         }
-        catch (InvalidOperationException ex)
+        catch (MasterDataReferenceNotFoundException ex)
+        {
+            return UnprocessableEntity(new ErrorResponse(ex.Message));
+        }
+        catch (ArgumentException ex)
         {
             return BadRequest(new ErrorResponse(ex.Message));
         }
@@ -101,15 +102,15 @@ public sealed class ProductsController : ControllerBase
 
             return Ok(ProductResponse.FromDto(product));
         }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new ErrorResponse(ex.Message));
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("Produto", StringComparison.Ordinal))
+        catch (ProductNotFoundException ex)
         {
             return NotFound(new ErrorResponse(ex.Message));
         }
-        catch (InvalidOperationException ex)
+        catch (MasterDataReferenceNotFoundException ex)
+        {
+            return UnprocessableEntity(new ErrorResponse(ex.Message));
+        }
+        catch (ArgumentException ex)
         {
             return BadRequest(new ErrorResponse(ex.Message));
         }
@@ -126,7 +127,7 @@ public sealed class ProductsController : ControllerBase
 
             return NoContent();
         }
-        catch (InvalidOperationException ex)
+        catch (ProductNotFoundException ex)
         {
             return NotFound(new ErrorResponse(ex.Message));
         }
