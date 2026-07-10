@@ -271,7 +271,23 @@ Production-ready ERP platform.
 
 ---
 
-# 5. Future Roadmap
+# 5. Azure Deployment Milestone
+
+Alongside the feature releases above, the platform has a cross-cutting deployment milestone that takes it from "runs locally on Docker Compose" to "running on Azure with a live URL". It is scheduled as an independent milestone rather than tied to a single feature release, because its value (cloud engineering experience and a demonstrable deployment) is orthogonal to any one module.
+
+The full technical plan — target Azure architecture, phases and indicative cost — lives in the [DevOps Strategy](../devops/DevOps-Strategy.md), Section 9. In roadmap terms it is three steps with a decision gate:
+
+| Step | Outcome | Cost |
+| --- | --- | --- |
+| **D0 — Infrastructure as Code** | Bicep templates authored and validated; nothing deployed. Captures the cloud-engineering learning without spending. | ~0 |
+| **D1 — First deploy on free credit** | Live environment stood up on a new account's free credit; live URL and screenshots captured; may be torn down afterwards. | ~0 |
+| **D2 — Sustained hosting** | Environment kept running with custom domain, monitoring and (later) Redis. | ~12–15 USD/month, or ~0 with a free external Postgres |
+
+**Suggested timing:** author D0 as a small standalone effort once the Master Data epic (Sprint 08) closes, so there is a meaningful application to deploy. D1/D2 are then gated on an explicit owner decision about available resources. Until that decision, the platform remains fully functional locally with no cloud dependency.
+
+---
+
+# 6. Future Roadmap
 
 Future releases may include:
 
@@ -288,7 +304,7 @@ Future releases may include:
 
 ---
 
-# 6. Success Metrics
+# 7. Success Metrics
 
 The roadmap will be considered successful when:
 
@@ -300,7 +316,7 @@ The roadmap will be considered successful when:
 
 ---
 
-# 7. Relationship with Other Documents
+# 8. Relationship with Other Documents
 
 This roadmap should be read together with:
 
@@ -319,7 +335,7 @@ Sprint documents define **when each feature is implemented**.
 
 ---
 
-# 8. Roadmap Governance
+# 9. Roadmap Governance
 
 The roadmap is a living document.
 
