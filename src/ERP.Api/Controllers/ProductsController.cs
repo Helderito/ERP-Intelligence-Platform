@@ -46,7 +46,7 @@ public sealed class ProductsController : ControllerBase
 
         if (product is null)
         {
-            return NotFound(new ErrorResponse("Product does not exist."));
+            return NotFound(new ErrorResponse("Produto não encontrado."));
         }
 
         return Ok(ProductResponse.FromDto(product));
@@ -73,7 +73,7 @@ public sealed class ProductsController : ControllerBase
         {
             return BadRequest(new ErrorResponse(ex.Message));
         }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("already exists", StringComparison.Ordinal))
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Já existe", StringComparison.Ordinal))
         {
             return Conflict(new ErrorResponse(ex.Message));
         }
@@ -105,7 +105,7 @@ public sealed class ProductsController : ControllerBase
         {
             return BadRequest(new ErrorResponse(ex.Message));
         }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("Product", StringComparison.Ordinal))
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Produto", StringComparison.Ordinal))
         {
             return NotFound(new ErrorResponse(ex.Message));
         }

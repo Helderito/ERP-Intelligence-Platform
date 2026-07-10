@@ -36,7 +36,7 @@ public sealed class ProductCatalogService
 
         if (existingProduct is not null)
         {
-            throw new InvalidOperationException("A product with this code already exists.");
+            throw new InvalidOperationException("Já existe um produto com este código.");
         }
 
         var product = Product.Create(
@@ -129,7 +129,7 @@ public sealed class ProductCatalogService
 
         if (product is null)
         {
-            throw new InvalidOperationException("Product does not exist.");
+            throw new InvalidOperationException("Produto não encontrado.");
         }
 
         return product;
@@ -142,12 +142,12 @@ public sealed class ProductCatalogService
     {
         if (!await _categoryRepository.ExistsAsync(categoryId, cancellationToken))
         {
-            throw new InvalidOperationException("Category does not exist.");
+            throw new InvalidOperationException("Categoria não encontrada.");
         }
 
         if (!await _unitOfMeasureRepository.ExistsAsync(unitOfMeasureId, cancellationToken))
         {
-            throw new InvalidOperationException("Unit of measure does not exist.");
+            throw new InvalidOperationException("Unidade de medida não encontrada.");
         }
     }
 

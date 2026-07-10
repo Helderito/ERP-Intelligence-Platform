@@ -26,7 +26,7 @@ public sealed class Category : Entity<Guid>
     {
         if (string.IsNullOrWhiteSpace(code))
         {
-            throw new ArgumentException("Category code is required.", nameof(code));
+            throw new ArgumentException("O código da categoria é obrigatório.", nameof(code));
         }
 
         return code.Trim().ToUpperInvariant();
@@ -36,7 +36,7 @@ public sealed class Category : Entity<Guid>
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("Category name is required.", nameof(name));
+            throw new ArgumentException("O nome da categoria é obrigatório.", nameof(name));
         }
 
         return name.Trim();

@@ -83,7 +83,7 @@ erDiagram
 
 # 4. Master Data Bounded Context
 
-Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog entities below reflect the Sprint 04 implementation; Customer, Supplier, Warehouse and additional shared reference data remain target/planned model.
+Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer, Supplier, Warehouse and additional shared reference data remain target/planned model.
 
 ```mermaid
 erDiagram
@@ -95,6 +95,7 @@ erDiagram
 
     PRODUCT }o--|| CATEGORY : "classified as"
     PRODUCT }o--|| UNIT_OF_MEASURE : "measured in"
+    PRODUCT }o--|| TAX_CODE : "taxed as (planned Sprint 08)"
     WAREHOUSE }o--|| WAREHOUSE_TYPE : "typed as"
 
     CUSTOMER {
@@ -113,6 +114,7 @@ erDiagram
         string Name "max 200 chars"
         guid CategoryId FK
         guid UnitOfMeasureId FK
+        guid TaxCodeId FK "planned Sprint 08"
         bool IsActive
         datetime CreatedAtUtc
         datetime UpdatedAtUtc "nullable"
@@ -127,6 +129,12 @@ erDiagram
         guid Id PK
         string Code "unique, max 50 chars"
         string Name "max 100 chars"
+    }
+    TAX_CODE {
+        guid Id PK
+        string Code "planned Sprint 08"
+        string Name "planned Sprint 08"
+        decimal Rate "planned Sprint 08"
     }
     WAREHOUSE {
         guid Id PK
@@ -144,7 +152,7 @@ erDiagram
 
 # 5. Shared Reference Data
 
-`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned reference data for Sprint 08 and are omitted from the implemented diagram until they exist in the model.
+`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned reference data for Sprint 08. `TaxCodeId` is intentionally not present in the Sprint 04 `Product` table or EF model; it is shown here only as the planned Product Catalog tax extension.
 
 ---
 

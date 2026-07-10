@@ -26,7 +26,7 @@ public sealed class UnitOfMeasure : Entity<Guid>
     {
         if (string.IsNullOrWhiteSpace(code))
         {
-            throw new ArgumentException("Unit of measure code is required.", nameof(code));
+            throw new ArgumentException("O código da unidade de medida é obrigatório.", nameof(code));
         }
 
         return code.Trim().ToUpperInvariant();
@@ -36,7 +36,7 @@ public sealed class UnitOfMeasure : Entity<Guid>
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new ArgumentException("Unit of measure name is required.", nameof(name));
+            throw new ArgumentException("O nome da unidade de medida é obrigatório.", nameof(name));
         }
 
         return name.Trim();

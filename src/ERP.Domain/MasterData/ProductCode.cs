@@ -15,7 +15,7 @@ public sealed class ProductCode : ValueObject
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("Product code is required.", nameof(value));
+            throw new ArgumentException("O código do produto é obrigatório.", nameof(value));
         }
 
         return new ProductCode(value.Trim().ToUpperInvariant());
