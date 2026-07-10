@@ -12,7 +12,7 @@
 
 This document provides the conceptual Entity Relationship Diagram (ERD) for the entities currently defined in the [Data Model](Data-Model.md) and the [Domain Model](Domain-Model.md).
 
-It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03. The columns below match the actual `AppDbContext` mapping.
+It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03; `Product`, `Category` and `UnitOfMeasure` were implemented in Sprint 04. The implemented columns below match the actual `AppDbContext` mapping.
 
 Inventory, Sales, Purchasing, Finance, Business Intelligence and AI entities will be added here as their corresponding Epics are planned in detail.
 
@@ -83,7 +83,7 @@ erDiagram
 
 # 4. Master Data Bounded Context
 
-Not yet implemented — planned for [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Shown here as the target model.
+Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer, Supplier, Warehouse and additional shared reference data remain target/planned model.
 
 ```mermaid
 erDiagram
@@ -95,8 +95,7 @@ erDiagram
 
     PRODUCT }o--|| CATEGORY : "classified as"
     PRODUCT }o--|| UNIT_OF_MEASURE : "measured in"
-    PRODUCT }o--|| TAX_CODE : "taxed as"
-
+    PRODUCT }o--|| TAX_CODE : "taxed as (planned Sprint 08)"
     WAREHOUSE }o--|| WAREHOUSE_TYPE : "typed as"
 
     CUSTOMER {
@@ -111,24 +110,31 @@ erDiagram
     }
     PRODUCT {
         guid Id PK
-        string Name
+        string Code "unique, max 50 chars"
+        string Name "max 200 chars"
         guid CategoryId FK
         guid UnitOfMeasureId FK
-        guid TaxCodeId FK
-        string Status
+        guid TaxCodeId FK "planned Sprint 08"
+        bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
     }
     CATEGORY {
         guid Id PK
-        string Name
+        string Code "unique, max 50 chars"
+        string Name "max 100 chars"
     }
     UNIT_OF_MEASURE {
         guid Id PK
-        string Name
+        string Code "unique, max 50 chars"
+        string Name "max 100 chars"
     }
     TAX_CODE {
         guid Id PK
-        string Name
-        decimal Rate
+        string Code "planned Sprint 08"
+        string Name "planned Sprint 08"
+        decimal Rate "planned Sprint 08"
     }
     WAREHOUSE {
         guid Id PK
@@ -146,7 +152,7 @@ erDiagram
 
 # 5. Shared Reference Data
 
-`Country`, `Currency` and `PaymentTerm` are standalone reference tables (no foreign keys into Identity or Master Data) consumed by future Sales, Purchasing and Finance entities. They are omitted from the diagrams above for clarity and will be connected once those Bounded Contexts are modelled.
+`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned reference data for Sprint 08. `TaxCodeId` is intentionally not present in the Sprint 04 `Product` table or EF model; it is shown here only as the planned Product Catalog tax extension.
 
 ---
 

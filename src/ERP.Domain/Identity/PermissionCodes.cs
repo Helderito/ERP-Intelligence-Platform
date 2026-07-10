@@ -5,4 +5,6 @@ public static class PermissionCodes
     public const string RolesManage = "roles.manage";
 
     public const string UsersManage = "users.manage";
+
+    public const string CatalogManage = "catalog.manage";
 }

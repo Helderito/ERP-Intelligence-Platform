@@ -51,7 +51,7 @@ Domain Events represent significant business occurrences and are raised by Aggre
 
 - Aggregate Root: `Role` (inherits `Entity<Guid>`)
 - Entities: `Permission`, `RolePermission`, `UserRole` (inherit `Entity<Guid>`)
-- Domain Events: `RoleCreated`, `PermissionAssigned`, `RoleAssignedToUser`
+- Domain Events: `RoleCreated`, `PermissionAssigned`, `PermissionRevoked`, `RoleAssignedToUser`
 
 Implemented in [Sprint 03](../backlog/Sprint-03.md).
 
@@ -59,7 +59,7 @@ Implemented in [Sprint 03](../backlog/Sprint-03.md).
 
 # 4. Master Data Bounded Context
 
-Not yet implemented — planned for [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md).
+Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md).
 
 ## Customer Aggregate — *Planned, Sprint 05*
 
@@ -73,12 +73,14 @@ Not yet implemented — planned for [Sprint 04](../backlog/Sprint-04.md) through
 - Entities: `SupplierContact`, `SupplierAddress`
 - Domain Events: `SupplierCreated`, `SupplierDeactivated`
 
-## Product Aggregate — *Planned, Sprint 04*
+## Product Aggregate — *Implemented, Sprint 04*
 
-- Aggregate Root: `Product`
-- Value Objects: `UnitPrice`
-- Related Reference Entities: `Category`, `UnitOfMeasure`, `TaxCode`
+- Aggregate Root: `Product` (inherits `Entity<Guid>`)
+- Value Objects: `ProductCode` (inherits `ValueObject`; immutable after creation)
+- Related Reference Entities: `Category`, `UnitOfMeasure` (inherit `Entity<Guid>`)
 - Domain Events: `ProductCreated`, `ProductDeactivated`
+
+Implemented in [Sprint 04](../backlog/Sprint-04.md). `Product` intentionally contains no stock, inventory, price, barcode, image or variant data. `TaxCode` and price modelling remain planned for future Master Data/Pricing work.
 
 ## Warehouse Aggregate — *Planned, Sprint 07*
 
@@ -88,7 +90,7 @@ Not yet implemented — planned for [Sprint 04](../backlog/Sprint-04.md) through
 
 ## Shared Reference Data
 
-Reference-only entities with no independent business behaviour: `Category`, `UnitOfMeasure`, `TaxCode`, `Country`, `Currency`, `PaymentTerm`.
+Reference-only entities with no independent business behaviour: `Category` and `UnitOfMeasure` are implemented for the Product Catalog in Sprint 04. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned for Sprint 08.
 
 These entities are shared across Bounded Contexts through the Shared Kernel and shall never contain transactional business logic.
 

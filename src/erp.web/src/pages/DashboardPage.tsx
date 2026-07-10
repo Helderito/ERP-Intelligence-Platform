@@ -3,6 +3,8 @@ const foundationItems = [
   "Autenticacao JWT",
   "Refresh Tokens",
   "Rotas protegidas",
+  "Autorizacao por permissions",
+  "Catalogo de produtos",
   "Logout seguro",
   "Sessao persistente"
 ];
@@ -13,7 +15,7 @@ export function DashboardPage() {
       <div className="border-b border-slate-200 pb-5">
         <h2 className="text-2xl font-semibold">Painel inicial</h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Area protegida da Sprint 02, focada apenas em autenticacao.
+          Area protegida da plataforma, com autenticacao, autorizacao e catalogo de produtos.
         </p>
       </div>
 

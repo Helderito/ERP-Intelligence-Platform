@@ -301,6 +301,20 @@ POST /users/{id}/roles
 Role and permission management endpoints require `roles.manage`. User role assignment requires `users.manage`.
 Authenticated users without the required permission receive `403 Forbidden`.
 
+Sprint 04 introduces Product Catalog endpoints:
+
+```
+GET /products?page=1&pageSize=20&search=...
+GET /products/{id}
+POST /products
+PUT /products/{id}
+DELETE /products/{id}
+GET /categories
+GET /units-of-measure
+```
+
+Product Catalog endpoints require `catalog.manage`. `GET /products` returns the standard paged response shape documented in Section 9. `DELETE /products/{id}` performs a soft delete and returns `204 No Content`.
+
 ---
 
 # 15. Error Handling

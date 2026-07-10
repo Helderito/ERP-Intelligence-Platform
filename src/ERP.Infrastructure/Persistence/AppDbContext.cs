@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ERP.Domain.Identity;
+using ERP.Domain.MasterData;
 
 namespace ERP.Infrastructure.Persistence;
 
@@ -16,6 +17,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<UserRole> UserRoles => Set<UserRole>();
 
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+
+    public DbSet<Product> Products => Set<Product>();
+
+    public DbSet<Category> Categories => Set<Category>();
+
+    public DbSet<UnitOfMeasure> UnitsOfMeasure => Set<UnitOfMeasure>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

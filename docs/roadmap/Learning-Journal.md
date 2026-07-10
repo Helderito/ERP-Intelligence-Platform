@@ -156,15 +156,51 @@ The implementation passed all of its own acceptance criteria, but the review fou
 
 ---
 
-# 7. Cumulative Progress Against the Learning Roadmap
+# 7. Sprint 04 — Product Catalog Foundation
+
+**Closed:** 2026-07-09 · **Release:** 0.2.0
+
+## What Was Delivered
+
+- Codex implemented the first Master Data Bounded Context slice: `Product`, `ProductCode`, `Category` and `UnitOfMeasure`, all built on the Shared Kernel (`Entity<Guid>`, `ValueObject`, `IDomainEvent`) and kept independent from Identity, Inventory, Sales and future modules.
+- The Product Aggregate supports create, update details, search and soft deactivate. `ProductCode` is normalized and immutable after creation; Product intentionally contains no stock, inventory, pricing, barcode, image or variant data.
+- The Application layer uses simple Application Services, per ADR-0002: `ProductCatalogService` validates unique product codes and verifies that referenced Category and UnitOfMeasure records exist.
+- Infrastructure added EF Core mappings, repositories, the `AddProductCatalog` migration, seed data for `General`, `Unit` and `Kilogram`, and the new `catalog.manage` permission assigned to the seeded `Administrator` role so a fresh database can create a product end to end.
+- The API now exposes `GET /products`, `GET /products/{id}`, `POST /products`, `PUT /products/{id}`, `DELETE /products/{id}`, `GET /categories` and `GET /units-of-measure`, all protected by `catalog.manage`.
+- The React app now has a Product Catalog page with search, list, detail, create, edit and deactivate flows, with navigation filtered by the authenticated user's permissions.
+- Unit and integration tests cover Product/ProductCode rules, Application validation and the full create→get→search→update→deactivate flow against PostgreSQL via Testcontainers.
+
+## Review Finding — Backend Message Language and Control Flow
+
+The review found the new Master Data module threw its domain and application exception messages in Portuguese, while the entire Identity module used English. This started as a genuine misunderstanding — the owner had asked for Portuguese thinking these were user-facing frontend strings, then confirmed on review that they are backend messages and must follow the project's language policy (source code in English; user-facing localization belongs at the presentation layer, not hardcoded in the domain). More seriously, the `ProductsController` had begun deciding HTTP status codes by matching Portuguese substrings of those messages (`ex.Message.Contains("Já existe")` → 409), which is fragile control-flow-by-message-text and was directly coupled to the language — fixing the wording would have silently broken the status mapping. Both were fixed on the PR branch: backend messages switched to English, and the Application layer now throws typed exceptions (`ProductCodeAlreadyExistsException` → 409, `ProductNotFoundException` → 404, `MasterDataReferenceNotFoundException` → 422) that the controller maps by type, not by text. The Portuguese-first frontend strings were left untouched — that is where user-facing localization correctly lives.
+
+## What Was Learned
+
+- Sprint 04 was the first real test of the Modular Monolith outside Identity. The same Clean Architecture shape held: Domain stayed independent, Application owned use cases and repository interfaces, Infrastructure owned EF/PostgreSQL, and API/UI stayed thin.
+- Master Data needs a usable bootstrap path just like RBAC did: seeded Category and UnitOfMeasure records make it possible to create the first Product in a fresh database without implementing future reference-data management screens early.
+- A Product Catalog is not Inventory. Keeping stock, price and warehouse concepts out of `Product` makes the aggregate reusable by future Inventory, Purchasing, Sales and BI modules without coupling Sprint 04 to future responsibilities.
+- Control flow should never depend on human-readable message text. Branching HTTP status codes on a substring of an error message couples two things that should stay independent — the wording shown to a human and the machine decision about what kind of failure occurred. Typed exceptions keep them separate; message text can then change freely (including being translated) without breaking behaviour.
+- "Portuguese-first" applies to what the end user sees, not to the engineering artefacts behind it. The line runs at the presentation layer: backend code, exceptions and logs stay English; the frontend localizes for the user. Putting a Portuguese string in a domain exception quietly defeats the internationalization the architecture is meant to support.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: first business CRUD module, pagination/search, EF Core reference data and permission-protected APIs are implemented. |
+| Stage 4 — Frontend Development | Advanced: first CRUD-style business UI with search, detail, create, edit and soft delete. |
+| Stage 1 — Software Architecture | Reinforced: first non-Identity Bounded Context validates the Modular Monolith and DDD module boundaries. |
+
+---
+
+# 8. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03 |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03 (Authentication and Authorization done; business CRUD pending: Sprint 04+) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04 |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04 (Authentication, Authorization and Product Catalog done; remaining business CRUD pending: Sprint 05+) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03 (login flow and authorization UI done; remaining business UI pending) |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04 (login, authorization UI and Product Catalog UI done; remaining business UI pending) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01 (cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -173,7 +209,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 8. Relationship with Other Documents
+# 9. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -185,6 +221,6 @@ This document should be read together with:
 
 ---
 
-# 9. Success Criteria
+# 10. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

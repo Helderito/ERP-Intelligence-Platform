@@ -185,6 +185,7 @@ The system shall support:
 - Secure authentication.
 - User management.
 - Product management.
+- Product catalog foundation with searchable products, categories and units of measure.
 - Customer management.
 - Supplier management.
 - Inventory management.
@@ -233,6 +234,7 @@ The MVP shall include only:
 - Customers
 - Suppliers
 - Products
+- Categories and units of measure
 - Inventory
 - Purchasing
 - Sales
