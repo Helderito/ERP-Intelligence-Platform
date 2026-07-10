@@ -12,7 +12,7 @@
 
 This document provides the conceptual Entity Relationship Diagram (ERD) for the entities currently defined in the [Data Model](Data-Model.md) and the [Domain Model](Domain-Model.md).
 
-It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03; `Product`, `Category` and `UnitOfMeasure` were implemented in Sprint 04. The implemented columns below match the actual `AppDbContext` mapping.
+It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03; `Product`, `Category` and `UnitOfMeasure` were implemented in Sprint 04; `Customer`, `CustomerContact` and `CustomerAddress` were implemented in Sprint 05. The implemented columns below match the actual `AppDbContext` mapping.
 
 Inventory, Sales, Purchasing, Finance, Business Intelligence and AI entities will be added here as their corresponding Epics are planned in detail.
 
@@ -83,7 +83,7 @@ erDiagram
 
 # 4. Master Data Bounded Context
 
-Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer, Supplier, Warehouse and additional shared reference data remain target/planned model.
+Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer fields reflect the Sprint 05 implementation; Supplier, Warehouse and additional shared reference data remain target/planned model.
 
 ```mermaid
 erDiagram
@@ -100,8 +100,28 @@ erDiagram
 
     CUSTOMER {
         guid Id PK
-        string Name
-        string Status
+        string Code "unique, max 50 chars"
+        string Name "max 200 chars"
+        bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
+    }
+    CUSTOMER_CONTACT {
+        guid Id PK
+        guid CustomerId FK
+        string Name "max 100 chars"
+        string Email "nullable, max 254 chars"
+        string Phone "nullable, max 50 chars"
+    }
+    CUSTOMER_ADDRESS {
+        guid Id PK
+        guid CustomerId FK
+        string Line1 "max 200 chars"
+        string Line2 "nullable, max 200 chars"
+        string City "max 100 chars"
+        string PostalCode "max 20 chars"
+        string Country "max 100 chars"
     }
     SUPPLIER {
         guid Id PK
@@ -153,6 +173,8 @@ erDiagram
 # 5. Shared Reference Data
 
 `Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned reference data for Sprint 08. `TaxCodeId` is intentionally not present in the Sprint 04 `Product` table or EF model; it is shown here only as the planned Product Catalog tax extension.
+
+`Customer`, `CustomerContact` and `CustomerAddress` were implemented in [Sprint 05](../backlog/Sprint-05.md). Contacts and addresses are entities inside the `Customer` Aggregate and are managed exclusively through the `Customer` root, not through independent API resources.
 
 ---
 

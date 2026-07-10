@@ -10,10 +10,13 @@ public static class PermissionSeed
 
     public static readonly Guid CatalogManageId = Guid.Parse("3452a5d4-6d3b-42b7-93f4-559d7de03941");
 
+    public static readonly Guid CustomersManageId = Guid.Parse("8f15d2d6-23bf-4884-85bb-7d3d3ed7c2d2");
+
     public static readonly Permission[] Permissions =
     [
         new Permission(RolesManageId, PermissionCodes.RolesManage, "Manage roles and permissions"),
         new Permission(UsersManageId, PermissionCodes.UsersManage, "Manage user role assignments"),
-        new Permission(CatalogManageId, PermissionCodes.CatalogManage, "Manage product catalog")
+        new Permission(CatalogManageId, PermissionCodes.CatalogManage, "Manage product catalog"),
+        new Permission(CustomersManageId, PermissionCodes.CustomersManage, "Manage customers")
     ];
 }

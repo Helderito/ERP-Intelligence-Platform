@@ -192,15 +192,46 @@ The review found the new Master Data module threw its domain and application exc
 
 ---
 
-# 8. Cumulative Progress Against the Learning Roadmap
+# 8. Sprint 05 — Customer Management
+
+**Closed:** 2026-07-10 · **Release:** 0.2.0
+
+## What Was Delivered
+
+- Codex implemented the Customer Management slice of Master Data: `Customer`, `CustomerCode`, `CustomerContact` and `CustomerAddress`, all built on the Shared Kernel and kept independent from Sales, Finance, CRM and future pricing/credit features.
+- `CustomerContact` and `CustomerAddress` are entities inside the `Customer` Aggregate, not standalone Aggregates or resources. They are created, replaced and removed through the `Customer` root and travel inside the Customer API payload.
+- The Application layer follows ADR-0002 with a simple `CustomerManagementService`, typed exceptions (`CustomerCodeAlreadyExistsException`, `CustomerNotFoundException`) and repository interfaces. Controllers map HTTP status by exception type, not message text.
+- Infrastructure added EF Core mappings, repositories, the `AddCustomerManagement` migration, `customers.manage` permission seed and Administrator role bootstrap assignment for that permission.
+- The API now exposes `GET /customers`, `GET /customers/{id}`, `POST /customers`, `PUT /customers/{id}` and `DELETE /customers/{id}`, all protected by `customers.manage`.
+- The React app now has a Customers page with search, list, detail, create, edit, soft deactivate and dynamic contact/address form sections. Sprint 05 also introduced Vitest + React Testing Library, making `npm test` run real component tests instead of only TypeScript checking.
+- Unit tests cover Customer/CustomerCode rules and the Application Service; integration tests cover create→get→search→update→deactivate plus 403 authorization behaviour against PostgreSQL via Testcontainers; frontend tests cover Customer UI rendering and nested create payloads.
+
+## What Was Learned
+
+- Aggregate boundaries become more important as Master Data grows. Keeping contacts and addresses inside Customer prevents premature endpoint proliferation and ensures future Sales/Finance modules consume one coherent customer master record.
+- The Sprint 04 review findings became a preventive checklist rather than a reactive fix: backend messages stayed English, failure kinds used typed exceptions, and controller flow did not depend on message text.
+- Frontend testing moved from type-checking to behaviour verification. Vitest + React Testing Library now validates user-visible flows, which becomes increasingly important as CRUD screens grow beyond static navigation.
+- A fresh-database bootstrap path is now a standing requirement: `customers.manage` is seeded and granted to Administrator so Customer Management is operable immediately after deployment.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: second Master Data CRUD module, nested aggregate entities, typed errors and permission-protected endpoints are implemented. |
+| Stage 4 — Frontend Development | Advanced: Customer CRUD UI and the first real frontend component tests are implemented. |
+| Stage 1 — Software Architecture | Reinforced: Aggregate boundary rules and selective CQRS were applied to a more complex Master Data aggregate. |
+
+---
+
+# 9. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04 |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04 (Authentication, Authorization and Product Catalog done; remaining business CRUD pending: Sprint 05+) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05 |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05 (Authentication, Authorization, Product Catalog and Customer Management done; remaining business CRUD pending: Sprint 06+) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04 (login, authorization UI and Product Catalog UI done; remaining business UI pending) |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05 (login, authorization UI, Product Catalog UI, Customer UI and frontend component tests done; remaining business UI pending) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01 (cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -209,7 +240,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 9. Relationship with Other Documents
+# 10. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -221,6 +252,6 @@ This document should be read together with:
 
 ---
 
-# 10. Success Criteria
+# 11. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

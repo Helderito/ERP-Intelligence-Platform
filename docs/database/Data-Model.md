@@ -111,12 +111,12 @@ Examples include:
 
 Aggregate Root
 
-- Customer
+- Customer (implemented in Sprint 05)
 
 Related Entities
 
-- Customer Address
-- Customer Contact
+- Customer Address (managed through Customer)
+- Customer Contact (managed through Customer)
 
 ---
 

@@ -315,6 +315,18 @@ GET /units-of-measure
 
 Product Catalog endpoints require `catalog.manage`. `GET /products` returns the standard paged response shape documented in Section 9. `DELETE /products/{id}` performs a soft delete and returns `204 No Content`.
 
+Sprint 05 introduces Customer Management endpoints:
+
+```
+GET /customers?page=1&pageSize=20&search=...
+GET /customers/{id}
+POST /customers
+PUT /customers/{id}
+DELETE /customers/{id}
+```
+
+Customer Management endpoints require `customers.manage`. `GET /customers` returns the standard paged response shape documented in Section 9. `POST /customers` and `PUT /customers/{id}` carry contacts and addresses inside the Customer payload; there are no independent `/contacts` or `/addresses` resources. `DELETE /customers/{id}` performs a soft delete and returns `204 No Content`.
+
 ---
 
 # 15. Error Handling

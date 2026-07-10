@@ -62,6 +62,12 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             Id = new Guid("3452a5d4-6d3b-42b7-93f4-559d7de03941"),
                             Code = "catalog.manage",
                             Description = "Manage product catalog"
+                        },
+                        new
+                        {
+                            Id = new Guid("8f15d2d6-23bf-4884-85bb-7d3d3ed7c2d2"),
+                            Code = "customers.manage",
+                            Description = "Manage customers"
                         });
                 });
 
@@ -180,6 +186,13 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             PermissionId = new Guid("3452a5d4-6d3b-42b7-93f4-559d7de03941"),
                             RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("b1a7c0de-0000-4000-a000-000000000104"),
+                            AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            PermissionId = new Guid("8f15d2d6-23bf-4884-85bb-7d3d3ed7c2d2"),
+                            RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
                         });
                 });
 
@@ -255,6 +268,100 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             Code = "GENERAL",
                             Name = "General"
                         });
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.Customer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeactivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customer", (string)null);
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.CustomerAddress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Line1")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Line2")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("CustomerAddress", (string)null);
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.CustomerContact", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("CustomerContact", (string)null);
                 });
 
             modelBuilder.Entity("ERP.Domain.MasterData.Product", b =>
@@ -420,6 +527,52 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ERP.Domain.MasterData.Customer", b =>
+                {
+                    b.OwnsOne("ERP.Domain.MasterData.CustomerCode", "Code", b1 =>
+                        {
+                            b1.Property<Guid>("CustomerId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("Code");
+
+                            b1.HasKey("CustomerId");
+
+                            b1.HasIndex("Value")
+                                .IsUnique();
+
+                            b1.ToTable("Customer");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomerId");
+                        });
+
+                    b.Navigation("Code")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.CustomerAddress", b =>
+                {
+                    b.HasOne("ERP.Domain.MasterData.Customer", null)
+                        .WithMany("Addresses")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.CustomerContact", b =>
+                {
+                    b.HasOne("ERP.Domain.MasterData.Customer", null)
+                        .WithMany("Contacts")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERP.Domain.MasterData.Product", b =>
                 {
                     b.HasOne("ERP.Domain.MasterData.Category", null)
@@ -468,6 +621,13 @@ namespace ERP.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ERP.Domain.Identity.User", b =>
                 {
                     b.Navigation("_userRoles");
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.Customer", b =>
+                {
+                    b.Navigation("Addresses");
+
+                    b.Navigation("Contacts");
                 });
 #pragma warning restore 612, 618
         }

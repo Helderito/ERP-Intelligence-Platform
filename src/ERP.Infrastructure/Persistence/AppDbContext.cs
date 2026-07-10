@@ -24,6 +24,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<UnitOfMeasure> UnitsOfMeasure => Set<UnitOfMeasure>();
 
+    public DbSet<Customer> Customers => Set<Customer>();
+
+    public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
+
+    public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
