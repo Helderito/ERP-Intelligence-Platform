@@ -3,6 +3,7 @@ import { useAuth } from "../auth/useAuth";
 
 const navigationItems = [
   { label: "Painel", to: "/" },
+  { label: "Produtos", to: "/products", permission: "catalog.manage" },
   { label: "Roles", to: "/roles", permission: "roles.manage" },
   { label: "Permissions", to: "/permissions", permission: "roles.manage" },
   { label: "Utilizadores", to: "/users/roles", permission: "users.manage" },

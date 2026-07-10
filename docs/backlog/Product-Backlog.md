@@ -119,9 +119,10 @@ P0
 * Customers
 * Suppliers
 * Products
+* Product Catalog Foundation
 * Categories
 * Warehouses
-* Units
+* Units of Measure
 * Taxes
 
 ---

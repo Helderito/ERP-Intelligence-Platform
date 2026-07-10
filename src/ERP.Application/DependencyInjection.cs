@@ -1,4 +1,5 @@
 using ERP.Application.Identity.Services;
+using ERP.Application.MasterData.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ERP.Application;
@@ -9,6 +10,7 @@ public static class DependencyInjection
     {
         services.AddScoped<AuthenticationService>();
         services.AddScoped<AuthorizationService>();
+        services.AddScoped<ProductCatalogService>();
 
         return services;
     }

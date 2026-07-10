@@ -174,9 +174,13 @@ The following Bounded Contexts will initially exist.
 
 Users, Profiles, Permissions.
 
+## Master Data
+
+Products, Categories, Units of Measure, Customers, Suppliers, Warehouses and shared reference data.
+
 ## Inventory
 
-Products, Stock, Movements, Physical Inventories.
+Stock, Movements, Physical Inventories.
 
 ## Sales
 
@@ -228,7 +232,7 @@ Future:
 Authorization:
 
 - Role-Based Access Control
-- Permission-based policies implemented for Identity administration endpoints
+- Permission-based policies implemented for Identity administration and Product Catalog endpoints
 
 Bootstrap: an `Administrator` role holding every administrative permission is seeded via migration, and the first user to register is automatically granted that role. Without this, no user could ever manage roles, because every management endpoint requires a permission only reachable through an existing administrator. Subsequent users receive no role by default.
 

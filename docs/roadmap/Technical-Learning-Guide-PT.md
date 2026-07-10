@@ -34,7 +34,7 @@ Os conceitos estão agrupados por área (Engenharia de Software, Backend, Fronte
 - **Erros comuns a evitar**
 - **Relação com outros conceitos**
 
-Este é um documento vivo: cresce a cada Sprint fechado. A versão atual cobre os conceitos aplicados nos Sprints 00, 01, 02 e 03.
+Este é um documento vivo: cresce a cada Sprint fechado. A versão atual cobre os conceitos aplicados nos Sprints 00, 01, 02, 03 e 04.
 
 ---
 
@@ -90,7 +90,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** Um ERP tem, por natureza, muitos conceitos de negócio interligados (Clientes, Fornecedores, Stock, Vendas). DDD dá vocabulário e estrutura para organizar isso sem que tudo dependa de tudo.
 
-**Como foi aplicado no projeto?** O [Domain Model](../database/Domain-Model.md) define os Bounded Contexts (Identity, Master Data, Inventory, Sales, …). No Sprint 02, o Bounded Context de Identity ganhou os seus primeiros Aggregates reais: `User` e `RefreshToken`, cada um com o seu Aggregate Root, e *Value Objects* (`EmailAddress`, `PasswordHash`) — objetos sem identidade própria, comparados pelo seu valor, não por um Id. No Sprint 03, o mesmo contexto foi expandido com `Role`, `Permission`, `UserRole` e `RolePermission` para suportar autorização baseada em permissões.
+**Como foi aplicado no projeto?** O [Domain Model](../database/Domain-Model.md) define os Bounded Contexts (Identity, Master Data, Inventory, Sales, …). No Sprint 02, o Bounded Context de Identity ganhou os seus primeiros Aggregates reais: `User` e `RefreshToken`, cada um com o seu Aggregate Root, e *Value Objects* (`EmailAddress`, `PasswordHash`) — objetos sem identidade própria, comparados pelo seu valor, não por um Id. No Sprint 03, o mesmo contexto foi expandido com `Role`, `Permission`, `UserRole` e `RolePermission` para suportar autorização baseada em permissões. No Sprint 04, nasceu o primeiro Bounded Context fora de Identity: Master Data, com o Aggregate `Product`, o Value Object `ProductCode` e as entidades de referência `Category` e `UnitOfMeasure`.
 
 **Exemplo prático:** `EmailAddress.Create("User@Example.com")` valida o formato do email e normaliza-o para minúsculas antes de o `User` sequer existir — a regra de negócio "um email tem de ser válido" vive dentro do próprio Value Object, não espalhada pela aplicação.
 
@@ -108,7 +108,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** O [ADR-0001](../decisions/ADR-0001.md) documenta a decisão: para um ERP em fase inicial, a consistência de negócio (por exemplo, garantir que um stock nunca fica negativo) é normalmente mais importante do que a capacidade de implantar cada módulo de forma independente — algo que os microserviços otimizam, mas que o projeto ainda não precisa.
 
-**Como foi aplicado no projeto?** Toda a aplicação corre como um único processo (`ERP.Api`), mas os Bounded Contexts (Identity, Master Data, …) mantêm-se como áreas de código separadas dentro do Domain, preparadas para, no futuro, serem extraídas para serviços independentes se for mesmo necessário.
+**Como foi aplicado no projeto?** Toda a aplicação corre como um único processo (`ERP.Api`), mas os Bounded Contexts (Identity, Master Data, …) mantêm-se como áreas de código separadas dentro do Domain. No Sprint 04, isto deixou de ser apenas uma promessa arquitetural: `ERP.Domain.MasterData` e `ERP.Application.MasterData` passaram a existir ao lado de Identity, partilhando o mesmo deployable e a mesma base de dados, mas sem acoplar Product a Identity, Inventory ou Sales.
 
 **Relação com outros conceitos:** é uma decisão de nível mais alto do que Clean Architecture — Clean Architecture organiza as *camadas* dentro de cada módulo; Modular Monolith organiza os *módulos* dentro da aplicação.
 
@@ -122,7 +122,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** Porque `User`, `RefreshToken` (Identity) e, no futuro, `Customer`, `Product` (Master Data) partilham conceitos DDD idênticos: têm uma identidade própria (`Entity`), podem ter Value Objects com igualdade por valor (`ValueObject`), e podem levantar eventos de domínio (`IDomainEvent`).
 
-**Como foi aplicado no projeto?** O projeto `ERP.SharedKernel` foi criado no Sprint 02 com três blocos de construção: `Entity<TId>`, `ValueObject` e `IDomainEvent`. Inicialmente, o Domain não tinha sequer referência ao Shared Kernel, e o teste de arquitetura existente proibia *qualquer* referência a partir do Domain — o que impedia fisicamente o seu uso. Isto foi corrigido: o `ERP.Domain` passou a referenciar apenas o `ERP.SharedKernel`, e `User`, `RefreshToken`, `EmailAddress` e `PasswordHash` foram refeitos para herdar destes tipos em vez de reimplementar a mesma lógica. No Sprint 03, `Role`, `Permission`, `UserRole` e `RolePermission` já nasceram a usar o mesmo padrão.
+**Como foi aplicado no projeto?** O projeto `ERP.SharedKernel` foi criado no Sprint 02 com três blocos de construção: `Entity<TId>`, `ValueObject` e `IDomainEvent`. Inicialmente, o Domain não tinha sequer referência ao Shared Kernel, e o teste de arquitetura existente proibia *qualquer* referência a partir do Domain — o que impedia fisicamente o seu uso. Isto foi corrigido: o `ERP.Domain` passou a referenciar apenas o `ERP.SharedKernel`, e `User`, `RefreshToken`, `EmailAddress` e `PasswordHash` foram refeitos para herdar destes tipos em vez de reimplementar a mesma lógica. No Sprint 03, `Role`, `Permission`, `UserRole` e `RolePermission` já nasceram a usar o mesmo padrão. No Sprint 04, o padrão repetiu-se fora de Identity: `Product`, `Category` e `UnitOfMeasure` herdam de `Entity<Guid>`, e `ProductCode` herda de `ValueObject`.
 
 **Erros comuns a evitar:** construir um Shared Kernel e não o usar de facto (foi exatamente o que aconteceu inicialmente neste projeto, e foi corrigido em revisão) — se o primeiro Bounded Context não o usa, é pouco provável que os seguintes o venham a usar.
 
@@ -232,9 +232,31 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Para que serve?** Evita escrever SQL manualmente para a maior parte das operações, e mantém o esquema da base de dados sincronizado com o código através de histórico versionado (as migrations ficam no Git, tal como o resto do código).
 
-**Como foi aplicado no projeto?** O `AppDbContext` mapeia `User` e `RefreshToken`. Como estas entidades usam Value Objects (`EmailAddress`, `PasswordHash`), a configuração usa `OwnsOne` — uma forma de dizer ao EF Core "este Value Object faz parte da mesma tabela do seu dono, não é uma tabela à parte". A migration `AddIdentityAuthentication` foi gerada no Sprint 02 para criar as tabelas `User` e `RefreshToken`; no Sprint 03, a migration `AddRolesAndPermissions` adicionou `Role`, `Permission`, `UserRole` e `RolePermission`, com seed inicial do catálogo mínimo de permissões.
+**Como foi aplicado no projeto?** O `AppDbContext` mapeia `User` e `RefreshToken`. Como estas entidades usam Value Objects (`EmailAddress`, `PasswordHash`), a configuração usa `OwnsOne` — uma forma de dizer ao EF Core "este Value Object faz parte da mesma tabela do seu dono, não é uma tabela à parte". A migration `AddIdentityAuthentication` foi gerada no Sprint 02 para criar as tabelas `User` e `RefreshToken`; no Sprint 03, a migration `AddRolesAndPermissions` adicionou `Role`, `Permission`, `UserRole` e `RolePermission`, com seed inicial do catálogo mínimo de permissões. No Sprint 04, a migration `AddProductCatalog` adicionou `Product`, `Category` e `UnitOfMeasure`, semeando `General`, `Unit` e `Kilogram`, e também a permission `catalog.manage`.
 
 **Erros comuns a evitar:** editar manualmente ficheiros de migration já aplicados, ou esquecer de rever o SQL gerado antes de o aplicar em produção (ver [Migration Strategy](../database/Migration-Strategy.md)).
+
+---
+
+## Master Data
+
+**O que é?** Dados mestres são entidades relativamente estáveis que servem de base a muitos processos operacionais: produtos, clientes, fornecedores, armazéns, categorias, unidades de medida, moedas, condições de pagamento.
+
+**Para que serve?** Num ERP, módulos transacionais como Vendas, Compras e Inventário dependem destes dados. Uma venda não deve inventar o produto; deve referenciar um produto já existente no catálogo.
+
+**Como foi aplicado no projeto?** O Sprint 04 implementou a fundação do Product Catalog dentro de Master Data: `Product` como Aggregate Root, `ProductCode` como Value Object imutável, e `Category`/`UnitOfMeasure` como entidades de referência semeadas por migration. Stock, preço, imagens, variantes e códigos de barras ficaram explicitamente fora do Aggregate para não misturar Product Catalog com Inventory ou Pricing.
+
+**Relação com outros conceitos:** Master Data usa DDD para proteger regras de domínio, EF Core para persistência, API REST para exposição e RBAC para garantir que apenas utilizadores com `catalog.manage` alteram o catálogo.
+
+---
+
+## CRUD com Paginação e Pesquisa
+
+**O que é?** CRUD significa Create, Read, Update, Delete — criar, consultar, atualizar e remover/desativar dados. Em APIs reais, listagens devem suportar paginação (`page`, `pageSize`) e, quando útil, pesquisa (`search`) para não devolver milhares de registos de uma vez.
+
+**Como foi aplicado no projeto?** O Sprint 04 adicionou `GET /products?page=1&pageSize=20&search=...`, `GET /products/{id}`, `POST /products`, `PUT /products/{id}` e `DELETE /products/{id}`. O delete é uma desativação lógica: `Product.IsActive` passa a `false`, mas o registo continua na base de dados para histórico e referências futuras.
+
+**Erros comuns a evitar:** apagar fisicamente dados mestres que podem já estar referenciados por documentos futuros, ou criar endpoints de listagem sem paginação.
 
 ---
 
@@ -358,7 +380,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **O que é?** Testes unitários verificam uma unidade de código isolada (por exemplo, uma regra de validação de um Value Object), normalmente sem tocar em base de dados ou rede. Testes de integração verificam que várias partes do sistema funcionam corretamente em conjunto — incluindo, muitas vezes, uma base de dados real.
 
-**Como foi aplicado no projeto?** `tests/ERP.UnitTests` cobre regras de domínio (por exemplo, `EmailAddress` rejeita formatos inválidos, `Role` rejeita nomes vazios e `User.AssignRole` regista o evento esperado). `tests/ERP.IntegrationTests` cobre o fluxo completo de autenticação — registo, login com password errada rejeitado, login válido, acesso a `/auth/me` sem token rejeitado, acesso autenticado aceite, renovação do token, logout, e reutilização do token revogado rejeitada — e, desde o Sprint 03, cobre também autorização: criar role, atribuir permission, atribuir role a utilizador, fazer login e validar acesso permitido/proibido. Tudo isto corre contra uma instância real de PostgreSQL, criada e destruída automaticamente através de *Testcontainers*.
+**Como foi aplicado no projeto?** `tests/ERP.UnitTests` cobre regras de domínio (por exemplo, `EmailAddress` rejeita formatos inválidos, `Role` rejeita nomes vazios, `User.AssignRole` regista o evento esperado, `ProductCode` normaliza SKUs e `Product` mantém o código imutável após criação). `tests/ERP.IntegrationTests` cobre o fluxo completo de autenticação — registo, login com password errada rejeitado, login válido, acesso a `/auth/me` sem token rejeitado, acesso autenticado aceite, renovação do token, logout, e reutilização do token revogado rejeitada — e, desde o Sprint 03, cobre também autorização: criar role, atribuir permission, atribuir role a utilizador, fazer login e validar acesso permitido/proibido. No Sprint 04, passou ainda a cobrir Product Catalog: criar, obter, pesquisar, atualizar e desativar Product contra PostgreSQL real. Tudo isto corre contra uma instância real de PostgreSQL, criada e destruída automaticamente através de *Testcontainers*.
 
 **Relação com outros conceitos:** dá confiança real de que o sistema funciona, complementando a Integração Contínua, que garante que estes testes correm em cada alteração.
 
@@ -464,7 +486,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Por que foi usado neste projeto?** Ferramentas diferentes têm pontos fortes diferentes. Definir papéis claros evita confusão sobre "quem faz o quê" e mantém consistência entre Sprints.
 
-**Como foi aplicado no projeto?** Documentado em [Claude-Guidelines.md](../ai/Claude-Guidelines.md), [Codex-Guidelines.md](../ai/Codex-Guidelines.md), [Cursor-Rules.md](../ai/Cursor-Rules.md) e [AI-Agents.md](../ai/AI-Agents.md). Na prática, a partir do Sprint 01: o Claude Code prepara o plano (estrutura da solução, decomposição em tarefas, prompt de handoff) e revê o Pull Request depois de implementado; o Codex implementa o código. Esta divisão foi usada de forma consistente nos Sprints 01, 02 e 03, e as revisões de código são feitas sempre no Claude Code — os resultados são partilhados com o Codex apenas como contexto, não como pedido de nova ação.
+**Como foi aplicado no projeto?** Documentado em [Claude-Guidelines.md](../ai/Claude-Guidelines.md), [Codex-Guidelines.md](../ai/Codex-Guidelines.md), [Cursor-Rules.md](../ai/Cursor-Rules.md) e [AI-Agents.md](../ai/AI-Agents.md). Na prática, a partir do Sprint 01: o Claude Code prepara o plano (estrutura da solução, decomposição em tarefas, prompt de handoff) e revê o Pull Request depois de implementado; o Codex implementa o código. Esta divisão foi usada de forma consistente nos Sprints 01, 02, 03 e 04, e as revisões de código são feitas sempre no Claude Code — os resultados são partilhados com o Codex apenas como contexto, não como pedido de nova ação.
 
 **Erros comuns a evitar:** usar a ferramenta errada para a tarefa errada (por exemplo, pedir a uma ferramenta de implementação para tomar uma decisão de arquitetura não documentada) — daí a importância da hierarquia de decisão definida em [Cursor-Rules.md](../ai/Cursor-Rules.md).
 
@@ -476,7 +498,7 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 **Para que serve?** Reduz ambiguidade e aumenta a probabilidade de o resultado estar alinhado com o que é realmente necessário, sem suposições erradas por parte da IA.
 
-**Como foi aplicado no projeto?** A estrutura está definida em [Prompt-Templates.md](../ai/Prompt-Templates.md), e os prompts reais de handoff para o Codex (Sprints 01, 02 e 03) seguem-na explicitamente, incluindo sempre uma secção clara de "fora de âmbito" para evitar scope creep.
+**Como foi aplicado no projeto?** A estrutura está definida em [Prompt-Templates.md](../ai/Prompt-Templates.md), e os prompts reais de handoff para o Codex (Sprints 01, 02, 03 e 04) seguem-na explicitamente, incluindo sempre uma secção clara de "fora de âmbito" para evitar scope creep.
 
 **Relação com outros conceitos:** os [Onboarding Prompts](../ai/Onboarding-Prompts.md) são um exemplo guardado e reutilizável desta prática.
 

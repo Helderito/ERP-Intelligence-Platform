@@ -56,6 +56,12 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             Id = new Guid("97388676-8f9c-4f9c-a2f1-9c972dd4c19d"),
                             Code = "users.manage",
                             Description = "Manage user role assignments"
+                        },
+                        new
+                        {
+                            Id = new Guid("3452a5d4-6d3b-42b7-93f4-559d7de03941"),
+                            Code = "catalog.manage",
+                            Description = "Manage product catalog"
                         });
                 });
 
@@ -167,6 +173,13 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             PermissionId = new Guid("97388676-8f9c-4f9c-a2f1-9c972dd4c19d"),
                             RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("b1a7c0de-0000-4000-a000-000000000103"),
+                            AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            PermissionId = new Guid("3452a5d4-6d3b-42b7-93f4-559d7de03941"),
+                            RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
                         });
                 });
 
@@ -211,6 +224,111 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("UserRole", (string)null);
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Category", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b01"),
+                            Code = "GENERAL",
+                            Name = "General"
+                        });
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.Product", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeactivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("UnitOfMeasureId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("UnitOfMeasureId");
+
+                    b.ToTable("Product", (string)null);
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.UnitOfMeasure", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("UnitOfMeasure", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b02"),
+                            Code = "UNIT",
+                            Name = "Unit"
+                        },
+                        new
+                        {
+                            Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b03"),
+                            Code = "KG",
+                            Name = "Kilogram"
+                        });
                 });
 
             modelBuilder.Entity("ERP.Domain.Identity.RefreshToken", b =>
@@ -299,6 +417,46 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .WithMany("_userRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.Product", b =>
+                {
+                    b.HasOne("ERP.Domain.MasterData.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Domain.MasterData.UnitOfMeasure", null)
+                        .WithMany()
+                        .HasForeignKey("UnitOfMeasureId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("ERP.Domain.MasterData.ProductCode", "Code", b1 =>
+                        {
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("Code");
+
+                            b1.HasKey("ProductId");
+
+                            b1.HasIndex("Value")
+                                .IsUnique();
+
+                            b1.ToTable("Product");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ProductId");
+                        });
+
+                    b.Navigation("Code")
                         .IsRequired();
                 });
 
