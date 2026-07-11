@@ -61,11 +61,14 @@ Implemented in [Sprint 03](../backlog/Sprint-03.md).
 
 Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md).
 
-## Customer Aggregate — *Planned, Sprint 05*
+## Customer Aggregate — *Implemented, Sprint 05*
 
-- Aggregate Root: `Customer`
-- Entities: `CustomerContact`, `CustomerAddress`
+- Aggregate Root: `Customer` (inherits `Entity<Guid>`)
+- Value Objects: `CustomerCode` (inherits `ValueObject`; immutable after creation)
+- Entities: `CustomerContact`, `CustomerAddress` (inherit `Entity<Guid>` and are modified only through the `Customer` root)
 - Domain Events: `CustomerCreated`, `CustomerDeactivated`
+
+Implemented in [Sprint 05](../backlog/Sprint-05.md). `Customer` intentionally contains no pricing, credit-limit, order, statement or CRM data.
 
 ## Supplier Aggregate — *Planned, Sprint 06*
 

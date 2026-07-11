@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { AppLayout } from "./shared/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
+import { CustomersPage } from "./pages/CustomersPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PermissionsPage } from "./pages/PermissionsPage";
 import { ProductsPage } from "./pages/ProductsPage";
@@ -29,6 +30,14 @@ export const router = createBrowserRouter([
       {
         path: "settings",
         element: <SettingsPage />
+      },
+      {
+        path: "customers",
+        element: (
+          <ProtectedRoute requiredPermission="customers.manage">
+            <CustomersPage />
+          </ProtectedRoute>
+        )
       },
       {
         path: "products",

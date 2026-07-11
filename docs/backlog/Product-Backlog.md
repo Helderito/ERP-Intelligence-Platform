@@ -116,7 +116,7 @@ P0
 
 ### Features
 
-* Customers
+* Customer Management (implemented in Sprint 05)
 * Suppliers
 * Products
 * Product Catalog Foundation
