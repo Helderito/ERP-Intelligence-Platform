@@ -68,6 +68,13 @@ the start so they don't come back as review findings:
 
 ## Your role here
 
+Codex is the **implementer**. The collaboration workflow (Engineering Handbook
+Section 16) is: **Claude plans → Codex implements (PR) → Claude reviews →
+merge.** You implement whole Sprints from Claude's handoff prompt and open a
+Pull Request; Claude reviews it. Cursor works in a separate lane (refactoring
+and tech-debt PRs, driven by the owner) — it does not work on your feature
+branch, and you do not depend on it.
+
 Codex's responsibilities and working style for this project are defined in
 [`docs/ai/Codex-Guidelines.md`](docs/ai/Codex-Guidelines.md) and
 [`docs/ai/AI-Agents.md`](docs/ai/AI-Agents.md). Prompts should follow the

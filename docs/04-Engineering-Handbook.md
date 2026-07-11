@@ -273,34 +273,40 @@ All AI-generated code shall be reviewed.
 
 # 16. Roles of the AI Agents
 
-## Cursor
+The project is built with three AI engineering assistants, each with a distinct role. The roles below describe how they are actually used.
 
-Responsible for:
+## Claude Code — Architect and Reviewer
 
-- Day-to-day development
-- Small and large features
-- Refactoring
-- Autocomplete
+- Plans each Sprint: solution design, task breakdown, and the handoff prompt for the implementer.
+- Owns architecture decisions and Architecture Decision Records.
+- Reviews every Pull Request before merge — independently re-running build and tests, checking architectural compliance, and either fixing well-scoped findings on the PR branch or surfacing them as decisions.
 
-## Codex
+## Codex — Implementer
 
-Responsible for:
+- Implements whole Sprints from Claude's handoff prompt and opens a Pull Request.
+- Follows the standing engineering checklist in `AGENTS.md` and the documentation set.
 
-- Architecture
-- Complex features
-- Documentation
-- Technical review
-- Testing
+## Cursor — Day-to-Day Programmer
 
-## Claude Code
+- The interactive pair-programmer, driven by the owner in the editor, following the rules in `.cursor/rules/`.
+- Owns refactoring, technical-debt reduction and cross-cutting code improvements, delivered on its own separate Pull Requests.
+- Provides an occasional developer-perspective review of the codebase at milestones (not every Sprint).
 
-Used for:
+## 16.1 Collaboration Workflow
 
-- Complex architecture
-- Brainstorming
-- Solution comparison
+Feature work follows a fixed loop:
 
-See [Claude Guidelines](ai/Claude-Guidelines.md), [Codex Guidelines](ai/Codex-Guidelines.md) and [Cursor Rules](ai/Cursor-Rules.md) for the detailed role of each assistant.
+**Claude plans → Codex implements (PR) → Claude reviews → merge.**
+
+Cursor is **not** a mandatory stage in this loop. Cursor works in its own lane — refactoring and technical-debt Pull Requests, and interactive development driven by the owner — rather than piling onto Codex's feature branch. This keeps the feature cadence fast, keeps implementation ownership clear, and uses each tool for its strength.
+
+Regardless of which assistant produces a change, it is delivered on a `feature/`, `chore/`, `docs/` or similar branch and merged into the protected `main` only through a Pull Request reviewed by Claude Code.
+
+## 16.2 Including Cursor in a Review
+
+Code review is owned by Claude Code. When Claude judges that a review would benefit from Cursor's developer perspective, Claude **asks the owner first** and includes Cursor in that review only with the owner's approval. Cursor is never added to a review unilaterally.
+
+See [Claude Guidelines](ai/Claude-Guidelines.md), [Codex Guidelines](ai/Codex-Guidelines.md), [Cursor Rules](ai/Cursor-Rules.md) and [AI Agent Specifications](ai/AI-Agents.md) for the detailed role of each assistant.
 
 ---
 
