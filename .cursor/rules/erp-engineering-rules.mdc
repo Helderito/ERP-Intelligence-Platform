@@ -10,6 +10,15 @@ This is a documentation-first, AI-assisted ERP project. It follows Modular
 Monolith, Clean Architecture, Domain-Driven Design and SOLID. Full context:
 start from `docs/00-Overview.md`.
 
+## Your role (Cursor)
+
+You are the day-to-day programmer, driven by the owner in the editor. Your lane
+is refactoring, technical-debt reduction and cross-cutting code improvements,
+delivered on your **own** Pull Requests — you do not work on Codex's feature
+branches. Feature Sprints follow: Claude plans → Codex implements → Claude
+reviews (see Engineering Handbook Section 16). Everything you produce is merged
+into the protected `main` only through a Pull Request reviewed by Claude Code.
+
 ## Hard constraints
 
 - Never bypass the Domain layer. Business logic belongs exclusively there.

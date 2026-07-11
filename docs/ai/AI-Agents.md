@@ -94,20 +94,33 @@ Not an agent by itself, but the shared content repository (documentation, FAQs, 
 
 ---
 
-# 5. Relationship with Other Documents
+# 5. Tooling and Collaboration Workflow
+
+The Engineering Agents above are functional roles. In practice they are realised
+by three AI tools — Claude Code (architect and reviewer), Codex (implementer)
+and Cursor (day-to-day programmer). The collaboration workflow between them —
+the feature loop (Claude plans → Codex implements → Claude reviews → merge),
+Cursor's separate refactoring lane, and the rule that Cursor is only added to a
+review with the owner's approval — is defined authoritatively in the
+[Engineering Handbook](../04-Engineering-Handbook.md), Section 16.
+
+---
+
+# 6. Relationship with Other Documents
 
 This document should be read together with:
 
 - AI Strategy
 - Prompt Templates
 - Claude Guidelines / Codex Guidelines / Cursor Rules
+- Engineering Handbook (Section 16 — tooling and collaboration workflow)
 - Software Architecture Document
 - Product Requirements Document
 - Product Backlog
 
 ---
 
-# 6. Success Criteria
+# 7. Success Criteria
 
 The AI Agent specification shall be considered successful when:
 
