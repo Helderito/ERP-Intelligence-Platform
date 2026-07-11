@@ -23,7 +23,7 @@ public sealed class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<PagedResultResponse<ProductResponse>>> SearchProducts(
+    public async Task<ActionResult<PagedResultResponse<ProductListItemResponse>>> SearchProducts(
         [FromQuery] string? search,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
@@ -33,7 +33,7 @@ public sealed class ProductsController : ControllerBase
             new SearchProductsQuery(search, page, pageSize),
             cancellationToken);
 
-        return Ok(PagedResultResponse<ProductResponse>.FromDto(result, ProductResponse.FromDto));
+        return Ok(PagedResultResponse<ProductListItemResponse>.FromDto(result, ProductListItemResponse.FromDto));
     }
 
     [HttpGet("{id:guid}")]

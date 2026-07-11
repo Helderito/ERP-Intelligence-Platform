@@ -7,6 +7,13 @@ import {
   SaveCustomerContactRequest,
   SaveCustomerRequest
 } from "../masterData/customerManagementService";
+import { ErrorBanner } from "../shared/masterData/ErrorBanner";
+import { EntityDetailPanel } from "../shared/masterData/EntityDetailPanel";
+import { EntityFormPanel } from "../shared/masterData/EntityFormPanel";
+import { EntityList } from "../shared/masterData/EntityList";
+import { PageHeader } from "../shared/masterData/PageHeader";
+import { SearchBar } from "../shared/masterData/SearchBar";
+import { MasterDataListItem } from "../shared/masterData/types";
 
 type CustomerFormState = {
   code: string;
@@ -38,7 +45,7 @@ const emptyForm: CustomerFormState = {
 
 export function CustomersPage() {
   const { session } = useAuth();
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<MasterDataListItem[]>([]);
   const [search, setSearch] = useState("");
   const [totalRecords, setTotalRecords] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -68,6 +75,20 @@ export function CustomersPage() {
       setError(null);
     } catch {
       setError("Nao foi possivel pesquisar clientes.");
+    }
+  }
+
+  async function handleSelectCustomer(item: MasterDataListItem) {
+    if (!session) {
+      return;
+    }
+
+    try {
+      const customer = await customerManagementService.getCustomer(session, item.id);
+      setSelectedCustomer(customer);
+      setError(null);
+    } catch {
+      setError("Nao foi possivel carregar o detalhe do cliente.");
     }
   }
 
@@ -160,66 +181,39 @@ export function CustomersPage() {
 
   return (
     <section className="space-y-6">
-      <div className="border-b border-slate-200 pb-5">
-        <h2 className="text-2xl font-semibold">Clientes</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Gestao de clientes, contactos e moradas para suportar vendas e operacoes futuras.
-        </p>
-      </div>
+      <PageHeader
+        title="Clientes"
+        description="Gestao de clientes, contactos e moradas para suportar vendas e operacoes futuras."
+      />
 
-      {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
+      <ErrorBanner message={error} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.9fr)]">
         <div className="space-y-4">
-          <form className="flex gap-3" onSubmit={handleSearch}>
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Pesquisar por codigo ou nome"
-              className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
-            />
-            <button className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white" type="submit">
-              Pesquisar
-            </button>
-          </form>
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            onSubmit={handleSearch}
+            placeholder="Pesquisar por codigo ou nome"
+          />
 
-          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 px-4 py-3 text-sm text-slate-600">
-              {totalRecords} clientes encontrados
-            </div>
-            <div className="divide-y divide-slate-200">
-              {customers.map((customer) => (
-                <button
-                  key={customer.id}
-                  type="button"
-                  onClick={() => setSelectedCustomer(customer)}
-                  className="grid w-full grid-cols-[120px_minmax(0,1fr)_100px] gap-4 px-4 py-3 text-left text-sm transition hover:bg-slate-50"
-                >
-                  <span className="font-mono font-semibold text-slate-900">{customer.code}</span>
-                  <span className="truncate font-medium text-slate-800">{customer.name}</span>
-                  <span className={customer.isActive ? "text-emerald-700" : "text-slate-500"}>
-                    {customer.isActive ? "Ativo" : "Inativo"}
-                  </span>
-                </button>
-              ))}
-              {customers.length === 0 ? (
-                <p className="px-4 py-6 text-sm text-slate-500">Nenhum cliente encontrado.</p>
-              ) : null}
-            </div>
-          </div>
+          <EntityList
+            items={customers}
+            totalRecords={totalRecords}
+            entityLabel="clientes"
+            emptyMessage="Nenhum cliente encontrado."
+            onSelect={handleSelectCustomer}
+          />
 
           {selectedCustomer ? (
-            <article className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-sm font-semibold text-brand-700">{selectedCustomer.code}</p>
-                  <h3 className="mt-1 text-xl font-semibold">{selectedCustomer.name}</h3>
-                </div>
-                <span className="rounded-md bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-                  {selectedCustomer.isActive ? "Ativo" : "Inativo"}
-                </span>
-              </div>
-              <div className="mt-4 grid gap-4 text-sm md:grid-cols-2">
+            <EntityDetailPanel
+              code={selectedCustomer.code}
+              name={selectedCustomer.name}
+              isActive={selectedCustomer.isActive}
+              onEdit={() => beginEdit(selectedCustomer)}
+              onDeactivate={() => handleDeactivateCustomer(selectedCustomer.id)}
+            >
+              <div className="grid gap-4 text-sm md:grid-cols-2">
                 <div>
                   <h4 className="font-semibold text-slate-700">Contactos</h4>
                   <div className="mt-2 space-y-2">
@@ -230,7 +224,9 @@ export function CustomersPage() {
                         {contact.phone ? ` - ${contact.phone}` : ""}
                       </p>
                     ))}
-                    {selectedCustomer.contacts.length === 0 ? <p className="text-slate-500">Sem contactos.</p> : null}
+                    {selectedCustomer.contacts.length === 0 ? (
+                      <p className="text-slate-500">Sem contactos.</p>
+                    ) : null}
                   </div>
                 </div>
                 <div>
@@ -243,32 +239,29 @@ export function CustomersPage() {
                         {address.country}
                       </p>
                     ))}
-                    {selectedCustomer.addresses.length === 0 ? <p className="text-slate-500">Sem moradas.</p> : null}
+                    {selectedCustomer.addresses.length === 0 ? (
+                      <p className="text-slate-500">Sem moradas.</p>
+                    ) : null}
                   </div>
                 </div>
               </div>
-              <div className="mt-4 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => beginEdit(selectedCustomer)}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeactivateCustomer(selectedCustomer.id)}
-                  className="rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700"
-                >
-                  Desativar
-                </button>
-              </div>
-            </article>
+            </EntityDetailPanel>
           ) : null}
         </div>
 
-        <form className="space-y-5 rounded-md border border-slate-200 bg-white p-4 shadow-sm" onSubmit={handleSaveCustomer}>
-          <h3 className="text-lg font-semibold">{editingCustomer ? "Editar cliente" : "Criar cliente"}</h3>
+        <EntityFormPanel
+          title={editingCustomer ? "Editar cliente" : "Criar cliente"}
+          onSubmit={handleSaveCustomer}
+          onCancel={
+            editingCustomer
+              ? () => {
+                  setEditingCustomer(null);
+                  setForm(createEmptyForm());
+                }
+              : undefined
+          }
+          className="space-y-5"
+        >
           <label className="block text-sm font-medium text-slate-700">
             Codigo
             <input
@@ -335,7 +328,9 @@ export function CustomersPage() {
             ))}
             <button
               type="button"
-              onClick={() => setForm((current) => ({ ...current, contacts: [...current.contacts, { ...emptyContact }] }))}
+              onClick={() =>
+                setForm((current) => ({ ...current, contacts: [...current.contacts, { ...emptyContact }] }))
+              }
               className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
             >
               Adicionar contacto
@@ -405,31 +400,15 @@ export function CustomersPage() {
             ))}
             <button
               type="button"
-              onClick={() => setForm((current) => ({ ...current, addresses: [...current.addresses, { ...emptyAddress }] }))}
+              onClick={() =>
+                setForm((current) => ({ ...current, addresses: [...current.addresses, { ...emptyAddress }] }))
+              }
               className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
             >
               Adicionar morada
             </button>
           </fieldset>
-
-          <div className="flex gap-3">
-            <button className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white" type="submit">
-              Guardar
-            </button>
-            {editingCustomer ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingCustomer(null);
-                  setForm(createEmptyForm());
-                }}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
-              >
-                Cancelar
-              </button>
-            ) : null}
-          </div>
-        </form>
+        </EntityFormPanel>
       </div>
     </section>
   );

@@ -7,6 +7,13 @@ import {
   SaveProductRequest,
   UnitOfMeasure
 } from "../masterData/productCatalogService";
+import { ErrorBanner } from "../shared/masterData/ErrorBanner";
+import { EntityDetailPanel } from "../shared/masterData/EntityDetailPanel";
+import { EntityFormPanel } from "../shared/masterData/EntityFormPanel";
+import { EntityList } from "../shared/masterData/EntityList";
+import { PageHeader } from "../shared/masterData/PageHeader";
+import { SearchBar } from "../shared/masterData/SearchBar";
+import { MasterDataListItem } from "../shared/masterData/types";
 
 type ProductFormState = {
   code: string;
@@ -24,7 +31,7 @@ const emptyForm: ProductFormState = {
 
 export function ProductsPage() {
   const { session } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<MasterDataListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [unitsOfMeasure, setUnitsOfMeasure] = useState<UnitOfMeasure[]>([]);
   const [search, setSearch] = useState("");
@@ -83,6 +90,20 @@ export function ProductsPage() {
       setError(null);
     } catch {
       setError("Nao foi possivel pesquisar produtos.");
+    }
+  }
+
+  async function handleSelectProduct(item: MasterDataListItem) {
+    if (!session) {
+      return;
+    }
+
+    try {
+      const product = await productCatalogService.getProduct(session, item.id);
+      setSelectedProduct(product);
+      setError(null);
+    } catch {
+      setError("Nao foi possivel carregar o detalhe do produto.");
     }
   }
 
@@ -147,66 +168,39 @@ export function ProductsPage() {
 
   return (
     <section className="space-y-6">
-      <div className="border-b border-slate-200 pb-5">
-        <h2 className="text-2xl font-semibold">Catalogo de produtos</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Produtos, categorias e unidades de medida de referencia para os proximos modulos.
-        </p>
-      </div>
+      <PageHeader
+        title="Catalogo de produtos"
+        description="Produtos, categorias e unidades de medida de referencia para os proximos modulos."
+      />
 
-      {error ? <p className="text-sm font-medium text-red-700">{error}</p> : null}
+      <ErrorBanner message={error} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
         <div className="space-y-4">
-          <form className="flex gap-3" onSubmit={handleSearch}>
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Pesquisar por codigo ou nome"
-              className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
-            />
-            <button className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white" type="submit">
-              Pesquisar
-            </button>
-          </form>
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            onSubmit={handleSearch}
+            placeholder="Pesquisar por codigo ou nome"
+          />
 
-          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 px-4 py-3 text-sm text-slate-600">
-              {totalRecords} produtos encontrados
-            </div>
-            <div className="divide-y divide-slate-200">
-              {products.map((product) => (
-                <button
-                  key={product.id}
-                  type="button"
-                  onClick={() => setSelectedProduct(product)}
-                  className="grid w-full grid-cols-[120px_minmax(0,1fr)_100px] gap-4 px-4 py-3 text-left text-sm transition hover:bg-slate-50"
-                >
-                  <span className="font-mono font-semibold text-slate-900">{product.code}</span>
-                  <span className="truncate font-medium text-slate-800">{product.name}</span>
-                  <span className={product.isActive ? "text-emerald-700" : "text-slate-500"}>
-                    {product.isActive ? "Ativo" : "Inativo"}
-                  </span>
-                </button>
-              ))}
-              {products.length === 0 ? (
-                <p className="px-4 py-6 text-sm text-slate-500">Nenhum produto encontrado.</p>
-              ) : null}
-            </div>
-          </div>
+          <EntityList
+            items={products}
+            totalRecords={totalRecords}
+            entityLabel="produtos"
+            emptyMessage="Nenhum produto encontrado."
+            onSelect={handleSelectProduct}
+          />
 
           {selectedProduct ? (
-            <article className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-sm font-semibold text-brand-700">{selectedProduct.code}</p>
-                  <h3 className="mt-1 text-xl font-semibold">{selectedProduct.name}</h3>
-                </div>
-                <span className="rounded-md bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-                  {selectedProduct.isActive ? "Ativo" : "Inativo"}
-                </span>
-              </div>
-              <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+            <EntityDetailPanel
+              code={selectedProduct.code}
+              name={selectedProduct.name}
+              isActive={selectedProduct.isActive}
+              onEdit={() => beginEdit(selectedProduct)}
+              onDeactivate={() => handleDeactivateProduct(selectedProduct.id)}
+            >
+              <dl className="grid gap-3 text-sm sm:grid-cols-2">
                 <div>
                   <dt className="font-medium text-slate-500">Categoria</dt>
                   <dd className="mt-1 text-slate-900">
@@ -220,30 +214,22 @@ export function ProductsPage() {
                   </dd>
                 </div>
               </dl>
-              <div className="mt-4 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => beginEdit(selectedProduct)}
-                  className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
-                >
-                  Editar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeactivateProduct(selectedProduct.id)}
-                  className="rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700"
-                >
-                  Desativar
-                </button>
-              </div>
-            </article>
+            </EntityDetailPanel>
           ) : null}
         </div>
 
-        <form className="space-y-4 rounded-md border border-slate-200 bg-white p-4 shadow-sm" onSubmit={handleSaveProduct}>
-          <div>
-            <h3 className="text-lg font-semibold">{editingProduct ? "Editar produto" : "Criar produto"}</h3>
-          </div>
+        <EntityFormPanel
+          title={editingProduct ? "Editar produto" : "Criar produto"}
+          onSubmit={handleSaveProduct}
+          onCancel={
+            editingProduct
+              ? () => {
+                  setEditingProduct(null);
+                  setForm(emptyForm);
+                }
+              : undefined
+          }
+        >
           <label className="block text-sm font-medium text-slate-700">
             Codigo
             <input
@@ -295,24 +281,7 @@ export function ProductsPage() {
               ))}
             </select>
           </label>
-          <div className="flex gap-3">
-            <button className="rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white" type="submit">
-              Guardar
-            </button>
-            {editingProduct ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingProduct(null);
-                  setForm(emptyForm);
-                }}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
-              >
-                Cancelar
-              </button>
-            ) : null}
-          </div>
-        </form>
+        </EntityFormPanel>
       </div>
     </section>
   );

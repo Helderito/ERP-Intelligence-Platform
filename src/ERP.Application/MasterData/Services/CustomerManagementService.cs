@@ -74,7 +74,7 @@ public sealed class CustomerManagementService
         return customer is null ? null : ToCustomerDto(customer);
     }
 
-    public async Task<PagedResultDto<CustomerDto>> SearchCustomersAsync(
+    public async Task<PagedResultDto<CustomerListItemDto>> SearchCustomersAsync(
         SearchCustomersQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -85,11 +85,11 @@ public sealed class CustomerManagementService
         var totalRecords = await _customerRepository.CountAsync(search, cancellationToken);
         var customers = await _customerRepository.SearchAsync(search, page, pageSize, cancellationToken);
 
-        return new PagedResultDto<CustomerDto>(
+        return new PagedResultDto<CustomerListItemDto>(
             page,
             pageSize,
             totalRecords,
-            customers.Select(ToCustomerDto).ToArray());
+            customers.Select(ToCustomerListItemDto).ToArray());
     }
 
     private async Task<Customer> GetCustomerOrThrowAsync(Guid customerId, CancellationToken cancellationToken)
@@ -138,6 +138,15 @@ public sealed class CustomerManagementService
         {
             customer.AddAddress(address.Line1, address.Line2, address.City, address.PostalCode, address.Country);
         }
+    }
+
+    private static CustomerListItemDto ToCustomerListItemDto(Customer customer)
+    {
+        return new CustomerListItemDto(
+            customer.Id,
+            customer.Code.Value,
+            customer.Name,
+            customer.IsActive);
     }
 
     private static CustomerDto ToCustomerDto(Customer customer)
