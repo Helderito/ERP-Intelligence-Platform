@@ -223,15 +223,46 @@ The review found the new Master Data module threw its domain and application exc
 
 ---
 
-# 9. Cumulative Progress Against the Learning Roadmap
+# 9. Sprint 06 — Supplier Management
+
+**Closed:** 2026-07-12 · **Release:** 0.2.0
+
+## What Was Delivered
+
+- Codex implemented the Supplier Management slice of Master Data: `Supplier`, `SupplierCode`, `SupplierContact` and `SupplierAddress`, all built on the Shared Kernel and kept independent from Purchasing, Inventory replenishment, Finance and future supplier-contract features.
+- `SupplierContact` and `SupplierAddress` are entities inside the `Supplier` Aggregate, not standalone Aggregates or API resources. They are created, replaced and removed through the `Supplier` root and travel inside the Supplier payload.
+- The Application layer follows ADR-0002 with a simple `SupplierManagementService`, typed exceptions (`SupplierCodeAlreadyExistsException`, `SupplierNotFoundException`) and a lightweight list DTO (`SupplierListItemDto`) for search results.
+- Infrastructure added EF Core mappings, repositories, the `AddSupplierManagement` migration, `suppliers.manage` permission seed and Administrator role bootstrap assignment for that permission.
+- The API now exposes `GET /suppliers`, `GET /suppliers/{id}`, `POST /suppliers`, `PUT /suppliers/{id}` and `DELETE /suppliers/{id}`, all protected by `suppliers.manage`. The list endpoint returns only lightweight list items; full contacts and addresses are loaded by the detail endpoint.
+- The React app now has a Suppliers page built on the shared Master Data UI components introduced after Sprint 05 (`EntityList`, `SearchBar`, `EntityFormPanel`, `EntityDetailPanel`, `PageHeader`, `ErrorBanner`) and on the shared `apiRequest` helper.
+- Unit tests cover Supplier/SupplierCode rules and the Application Service; integration tests cover create→get→search→update→deactivate plus 403 authorization behaviour against PostgreSQL via Testcontainers; frontend tests cover Supplier UI rendering, detail loading, create, edit and error handling.
+
+## What Was Learned
+
+- Sprint 06 confirmed that the Customer aggregate pattern can be reused cleanly without copy-pasting the old monolithic frontend shape. The new shared UI components kept Supplier Management consistent with Customer and Product screens.
+- Lightweight list projections are now the Master Data listing pattern. List endpoints stay small and fast; detail endpoints load aggregate children only when needed.
+- Supplier is master data for future Purchasing and Finance, not Purchasing itself. Keeping contracts, price lists, purchase orders, goods receipts and statements out of the aggregate preserves the module boundary.
+- The standing checklist continued to prevent old review findings: backend messages stayed English, exceptions were typed, authorization was bootstrapped, and contacts/addresses stayed inside the aggregate root.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: third Master Data CRUD module, lightweight list projections, aggregate child entities and permission-protected endpoints are implemented. |
+| Stage 4 — Frontend Development | Advanced: Supplier CRUD UI reused shared Master Data components and expanded frontend component test coverage. |
+| Stage 1 — Software Architecture | Reinforced: module boundaries between Master Data and future Purchasing/Finance were preserved. |
+
+---
+
+# 10. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05 |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05 (Authentication, Authorization, Product Catalog and Customer Management done; remaining business CRUD pending: Sprint 06+) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 (Authentication, Authorization, Product Catalog, Customer Management and Supplier Management done; remaining business CRUD pending: Sprint 07+) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05 (login, authorization UI, Product Catalog UI, Customer UI and frontend component tests done; remaining business UI pending) |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 (login, authorization UI, Product Catalog UI, Customer/Supplier UI and frontend component tests done; remaining business UI pending) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01 (cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -240,7 +271,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 10. Relationship with Other Documents
+# 11. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -252,6 +283,6 @@ This document should be read together with:
 
 ---
 
-# 11. Success Criteria
+# 12. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

@@ -327,6 +327,18 @@ DELETE /customers/{id}
 
 Customer Management endpoints require `customers.manage`. `GET /customers` returns the standard paged response shape documented in Section 9. `POST /customers` and `PUT /customers/{id}` carry contacts and addresses inside the Customer payload; there are no independent `/contacts` or `/addresses` resources. `DELETE /customers/{id}` performs a soft delete and returns `204 No Content`.
 
+Sprint 06 introduces Supplier Management endpoints:
+
+```
+GET /suppliers?page=1&pageSize=20&search=...
+GET /suppliers/{id}
+POST /suppliers
+PUT /suppliers/{id}
+DELETE /suppliers/{id}
+```
+
+Supplier Management endpoints require `suppliers.manage`. `GET /suppliers` returns the standard paged response shape documented in Section 9 with lightweight list items (`id`, `code`, `name`, `isActive`). `GET /suppliers/{id}` returns the full Supplier payload with contacts and addresses. `POST /suppliers` and `PUT /suppliers/{id}` carry contacts and addresses inside the Supplier payload; there are no independent `/supplier-contacts` or `/supplier-addresses` resources. `DELETE /suppliers/{id}` performs a soft delete and returns `204 No Content`.
+
 ---
 
 # 15. Error Handling

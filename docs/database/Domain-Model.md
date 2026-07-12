@@ -70,11 +70,14 @@ Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Spr
 
 Implemented in [Sprint 05](../backlog/Sprint-05.md). `Customer` intentionally contains no pricing, credit-limit, order, statement or CRM data.
 
-## Supplier Aggregate — *Planned, Sprint 06*
+## Supplier Aggregate — *Implemented, Sprint 06*
 
-- Aggregate Root: `Supplier`
-- Entities: `SupplierContact`, `SupplierAddress`
+- Aggregate Root: `Supplier` (inherits `Entity<Guid>`)
+- Value Objects: `SupplierCode` (inherits `ValueObject`; immutable after creation)
+- Entities: `SupplierContact`, `SupplierAddress` (inherit `Entity<Guid>` and are modified only through the `Supplier` root)
 - Domain Events: `SupplierCreated`, `SupplierDeactivated`
+
+Implemented in [Sprint 06](../backlog/Sprint-06.md). `Supplier` intentionally contains no contracts, price lists, performance evaluation, purchase orders, goods receipts or supplier statement data.
 
 ## Product Aggregate — *Implemented, Sprint 04*
 

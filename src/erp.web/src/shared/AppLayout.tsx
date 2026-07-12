@@ -4,6 +4,7 @@ import { useAuth } from "../auth/useAuth";
 const navigationItems = [
   { label: "Painel", to: "/" },
   { label: "Clientes", to: "/customers", permission: "customers.manage" },
+  { label: "Fornecedores", to: "/suppliers", permission: "suppliers.manage" },
   { label: "Produtos", to: "/products", permission: "catalog.manage" },
   { label: "Roles", to: "/roles", permission: "roles.manage" },
   { label: "Permissions", to: "/permissions", permission: "roles.manage" },

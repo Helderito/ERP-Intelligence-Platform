@@ -62,6 +62,13 @@ public sealed class RolePermissionConfiguration : IEntityTypeConfiguration<RoleP
                 RoleId = IdentitySeed.AdministratorRoleId,
                 PermissionId = PermissionSeed.CustomersManageId,
                 AssignedAtUtc = RoleSeed.SeededAtUtc
+            },
+            new
+            {
+                Id = RoleSeed.AdministratorSuppliersManageLinkId,
+                RoleId = IdentitySeed.AdministratorRoleId,
+                PermissionId = PermissionSeed.SuppliersManageId,
+                AssignedAtUtc = RoleSeed.SeededAtUtc
             });
     }
 }
