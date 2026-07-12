@@ -98,7 +98,7 @@ These capabilities are planned for future releases.
 * [ ] GET /suppliers/{id}
 * [ ] POST /suppliers
 * [ ] PUT /suppliers/{id}
-* [ ] PATCH /suppliers/{id}/status
+* [ ] DELETE /suppliers/{id}
 
 ---
 
