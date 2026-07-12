@@ -43,8 +43,6 @@ public sealed class CustomerRepository : ICustomerRepository
         CancellationToken cancellationToken = default)
     {
         return await ApplySearch(_dbContext.Customers.AsNoTracking(), search)
-            .Include(customer => customer.Contacts)
-            .Include(customer => customer.Addresses)
             .OrderBy(customer => customer.Code.Value)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

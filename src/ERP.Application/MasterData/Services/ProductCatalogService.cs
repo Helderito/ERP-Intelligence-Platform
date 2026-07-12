@@ -86,7 +86,7 @@ public sealed class ProductCatalogService
         return product is null ? null : ToProductDto(product);
     }
 
-    public async Task<PagedResultDto<ProductDto>> SearchProductsAsync(
+    public async Task<PagedResultDto<ProductListItemDto>> SearchProductsAsync(
         SearchProductsQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -97,11 +97,11 @@ public sealed class ProductCatalogService
         var totalRecords = await _productRepository.CountAsync(search, cancellationToken);
         var products = await _productRepository.SearchAsync(search, page, pageSize, cancellationToken);
 
-        return new PagedResultDto<ProductDto>(
+        return new PagedResultDto<ProductListItemDto>(
             page,
             pageSize,
             totalRecords,
-            products.Select(ToProductDto).ToArray());
+            products.Select(ToProductListItemDto).ToArray());
     }
 
     public async Task<IReadOnlyCollection<CategoryDto>> GetCategoriesAsync(
@@ -164,5 +164,14 @@ public sealed class ProductCatalogService
             product.CreatedAtUtc,
             product.UpdatedAtUtc,
             product.DeactivatedAtUtc);
+    }
+
+    private static ProductListItemDto ToProductListItemDto(Product product)
+    {
+        return new ProductListItemDto(
+            product.Id,
+            product.Code.Value,
+            product.Name,
+            product.IsActive);
     }
 }

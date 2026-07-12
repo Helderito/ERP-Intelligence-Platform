@@ -5,6 +5,7 @@ import { CustomersPage } from "./CustomersPage";
 
 const serviceMocks = vi.hoisted(() => ({
   searchCustomers: vi.fn(),
+  getCustomer: vi.fn(),
   createCustomer: vi.fn(),
   updateCustomer: vi.fn(),
   deactivateCustomer: vi.fn()
@@ -28,11 +29,15 @@ vi.mock("../masterData/customerManagementService", () => ({
   customerManagementService: serviceMocks
 }));
 
-const sampleCustomer = {
+const sampleListItem = {
   id: "customer-1",
   code: "CUS-001",
   name: "Cliente Exemplo",
-  isActive: true,
+  isActive: true
+};
+
+const sampleCustomer = {
+  ...sampleListItem,
   createdAtUtc: "2026-01-01T00:00:00Z",
   updatedAtUtc: null,
   deactivatedAtUtc: null,
@@ -63,14 +68,20 @@ describe("CustomersPage", () => {
       page: 1,
       pageSize: 20,
       totalRecords: 1,
-      items: [sampleCustomer]
+      items: [sampleListItem]
     });
+    serviceMocks.getCustomer.mockResolvedValue(sampleCustomer);
     serviceMocks.createCustomer.mockResolvedValue({
       ...sampleCustomer,
       id: "customer-2",
       code: "CUS-002",
       name: "Novo Cliente"
     });
+    serviceMocks.updateCustomer.mockResolvedValue({
+      ...sampleCustomer,
+      name: "Cliente Atualizado"
+    });
+    serviceMocks.deactivateCustomer.mockResolvedValue(undefined);
   });
 
   it("renders customers returned by the service", async () => {
@@ -78,6 +89,24 @@ describe("CustomersPage", () => {
 
     expect(await screen.findByText("Cliente Exemplo")).toBeInTheDocument();
     expect(screen.getByText("1 clientes encontrados")).toBeInTheDocument();
+  });
+
+  it("loads customer detail when selecting a list item", async () => {
+    const user = userEvent.setup();
+    render(<CustomersPage />);
+
+    await screen.findByText("Cliente Exemplo");
+    await user.click(screen.getByRole("button", { name: /CUS-001/i }));
+
+    await waitFor(() => {
+      expect(serviceMocks.getCustomer).toHaveBeenCalledWith(
+        expect.objectContaining({ accessToken: "access-token" }),
+        "customer-1"
+      );
+    });
+
+    expect(await screen.findByText("Ana Silva")).toBeInTheDocument();
+    expect(screen.getByText(/Rua Principal/)).toBeInTheDocument();
   });
 
   it("creates a customer with contacts and addresses", async () => {
@@ -122,5 +151,57 @@ describe("CustomersPage", () => {
         }
       );
     });
+  });
+
+  it("edits a customer after loading detail", async () => {
+    const user = userEvent.setup();
+    render(<CustomersPage />);
+
+    await screen.findByText("Cliente Exemplo");
+    await user.click(screen.getByRole("button", { name: /CUS-001/i }));
+    await screen.findByText("Ana Silva");
+
+    await user.click(screen.getByRole("button", { name: "Editar" }));
+
+    const nameInput = screen.getByLabelText("Nome");
+    await user.clear(nameInput);
+    await user.type(nameInput, "Cliente Atualizado");
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    await waitFor(() => {
+      expect(serviceMocks.updateCustomer).toHaveBeenCalledWith(
+        expect.objectContaining({ accessToken: "access-token" }),
+        "customer-1",
+        expect.objectContaining({
+          name: "Cliente Atualizado"
+        })
+      );
+    });
+  });
+
+  it("deactivates a customer after loading detail", async () => {
+    const user = userEvent.setup();
+    render(<CustomersPage />);
+
+    await screen.findByText("Cliente Exemplo");
+    await user.click(screen.getByRole("button", { name: /CUS-001/i }));
+    await screen.findByText("Ana Silva");
+
+    await user.click(screen.getByRole("button", { name: "Desativar" }));
+
+    await waitFor(() => {
+      expect(serviceMocks.deactivateCustomer).toHaveBeenCalledWith(
+        expect.objectContaining({ accessToken: "access-token" }),
+        "customer-1"
+      );
+    });
+  });
+
+  it("shows an error when loading customers fails", async () => {
+    serviceMocks.searchCustomers.mockRejectedValue(new Error("network"));
+
+    render(<CustomersPage />);
+
+    expect(await screen.findByText("Nao foi possivel carregar os clientes.")).toBeInTheDocument();
   });
 });

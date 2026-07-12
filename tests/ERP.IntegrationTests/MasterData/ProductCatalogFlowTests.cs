@@ -64,10 +64,14 @@ public sealed class ProductCatalogFlowTests
 
         var searchResponse = await client.GetAsync($"/products?search={expectedProductCode}&page=1&pageSize=20");
         searchResponse.EnsureSuccessStatusCode();
-        var searchResult = await searchResponse.Content.ReadFromJsonAsync<PagedResultResponse<ProductResponse>>();
+        var searchResult = await searchResponse.Content.ReadFromJsonAsync<PagedResultResponse<ProductListItemResponse>>();
 
         Assert.Equal(1, searchResult?.TotalRecords);
         Assert.Contains(searchResult?.Items ?? [], product => product.Id == createdProduct.Id);
+        var listedProduct = Assert.Single(searchResult?.Items ?? []);
+        Assert.Equal(expectedProductCode, listedProduct.Code);
+        Assert.Equal("Sample Product", listedProduct.Name);
+        Assert.True(listedProduct.IsActive);
 
         var updateResponse = await client.PutAsJsonAsync(
             $"/products/{createdProduct.Id}",

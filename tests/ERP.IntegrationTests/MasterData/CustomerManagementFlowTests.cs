@@ -59,10 +59,14 @@ public sealed class CustomerManagementFlowTests
 
         var searchResponse = await client.GetAsync($"/customers?search={expectedCustomerCode}&page=1&pageSize=20");
         searchResponse.EnsureSuccessStatusCode();
-        var searchResult = await searchResponse.Content.ReadFromJsonAsync<PagedResultResponse<CustomerResponse>>();
+        var searchResult = await searchResponse.Content.ReadFromJsonAsync<PagedResultResponse<CustomerListItemResponse>>();
 
         Assert.Equal(1, searchResult?.TotalRecords);
         Assert.Contains(searchResult?.Items ?? [], customer => customer.Id == createdCustomer.Id);
+        var listedCustomer = Assert.Single(searchResult?.Items ?? []);
+        Assert.Equal(expectedCustomerCode, listedCustomer.Code);
+        Assert.Equal("Sample Customer", listedCustomer.Name);
+        Assert.True(listedCustomer.IsActive);
 
         var updateResponse = await client.PutAsJsonAsync(
             $"/customers/{createdCustomer.Id}",

@@ -1,5 +1,6 @@
 import { AuthenticationSession } from "../auth/authenticationService";
-import { PagedResult } from "./productCatalogService";
+import { apiRequest } from "../shared/apiClient";
+import { MasterDataListItem, PagedResult } from "../shared/masterData/types";
 
 export type CustomerContact = {
   id: string;
@@ -17,11 +18,7 @@ export type CustomerAddress = {
   country: string;
 };
 
-export type Customer = {
-  id: string;
-  code: string;
-  name: string;
-  isActive: boolean;
+export type Customer = MasterDataListItem & {
   createdAtUtc: string;
   updatedAtUtc: string | null;
   deactivatedAtUtc: string | null;
@@ -50,33 +47,6 @@ export type SaveCustomerRequest = {
   addresses: SaveCustomerAddressRequest[];
 };
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000";
-
-async function request<TResponse>(
-  session: AuthenticationSession,
-  path: string,
-  options: RequestInit = {}
-): Promise<TResponse> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${session.accessToken}`,
-      ...options.headers
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error("Nao foi possivel concluir o pedido de clientes.");
-  }
-
-  if (response.status === 204) {
-    return undefined as TResponse;
-  }
-
-  return response.json() as Promise<TResponse>;
-}
-
 export const customerManagementService = {
   searchCustomers(session: AuthenticationSession, search: string, page = 1, pageSize = 20) {
     const parameters = new URLSearchParams({
@@ -88,34 +58,59 @@ export const customerManagementService = {
       parameters.set("search", search.trim());
     }
 
-    return request<PagedResult<Customer>>(session, `/customers?${parameters.toString()}`);
+    return apiRequest<PagedResult<MasterDataListItem>>(
+      session,
+      `/customers?${parameters.toString()}`,
+      {},
+      "Nao foi possivel concluir o pedido de clientes."
+    );
   },
 
   getCustomer(session: AuthenticationSession, customerId: string) {
-    return request<Customer>(session, `/customers/${customerId}`);
+    return apiRequest<Customer>(
+      session,
+      `/customers/${customerId}`,
+      {},
+      "Nao foi possivel concluir o pedido de clientes."
+    );
   },
 
   createCustomer(session: AuthenticationSession, customer: SaveCustomerRequest) {
-    return request<Customer>(session, "/customers", {
-      method: "POST",
-      body: JSON.stringify(customer)
-    });
+    return apiRequest<Customer>(
+      session,
+      "/customers",
+      {
+        method: "POST",
+        body: JSON.stringify(customer)
+      },
+      "Nao foi possivel concluir o pedido de clientes."
+    );
   },
 
   updateCustomer(session: AuthenticationSession, customerId: string, customer: SaveCustomerRequest) {
-    return request<Customer>(session, `/customers/${customerId}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        name: customer.name,
-        contacts: customer.contacts,
-        addresses: customer.addresses
-      })
-    });
+    return apiRequest<Customer>(
+      session,
+      `/customers/${customerId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          name: customer.name,
+          contacts: customer.contacts,
+          addresses: customer.addresses
+        })
+      },
+      "Nao foi possivel concluir o pedido de clientes."
+    );
   },
 
   deactivateCustomer(session: AuthenticationSession, customerId: string) {
-    return request<void>(session, `/customers/${customerId}`, {
-      method: "DELETE"
-    });
+    return apiRequest<void>(
+      session,
+      `/customers/${customerId}`,
+      {
+        method: "DELETE"
+      },
+      "Nao foi possivel concluir o pedido de clientes."
+    );
   }
 };
