@@ -244,6 +244,13 @@ The review found the new Master Data module threw its domain and application exc
 - Supplier is master data for future Purchasing and Finance, not Purchasing itself. Keeping contracts, price lists, purchase orders, goods receipts and statements out of the aggregate preserves the module boundary.
 - The standing checklist continued to prevent old review findings: backend messages stayed English, exceptions were typed, authorization was bootstrapped, and contacts/addresses stayed inside the aggregate root.
 
+## Post-Sprint Operational Fix — Making Merges Testable
+
+- **Symptom.** After the Supplier merge, the newly delivered feature was not visible in the running app — and the same had happened with Customer Management after Sprint 05.
+- **Two root causes, one theme.** (a) `docker compose up -d` reuses the previously built image, so merged code never reached the running container until a `--build`; (b) `nginx.conf` set no cache headers, so the browser kept serving the old SPA shell and its old asset hashes.
+- **Fix (PR #18).** `Cache-Control: no-cache` on the SPA shell and `immutable` on content-hashed `/assets`; a `scripts/dev-up.(ps1|sh)` one-command rebuild-and-health-check; and a process rule (Engineering Handbook §16.3) making "leave the app ready to test" part of the Definition of Done for a merge.
+- **What Was Learned.** The delivery pipeline — image rebuilds and browser caching — is as much a part of "it works" as the code itself. A green CI run proves the code is correct; it does not prove the owner's running environment is up to date. Making that refresh an explicit, owned step (not a thing to remember) is what prevents the failure from recurring.
+
 ## Learning Roadmap Mapping
 
 | Stage | Contribution |
@@ -251,6 +258,7 @@ The review found the new Master Data module threw its domain and application exc
 | Stage 2 — Backend Development | Advanced: third Master Data CRUD module, lightweight list projections, aggregate child entities and permission-protected endpoints are implemented. |
 | Stage 4 — Frontend Development | Advanced: Supplier CRUD UI reused shared Master Data components and expanded frontend component test coverage. |
 | Stage 1 — Software Architecture | Reinforced: module boundaries between Master Data and future Purchasing/Finance were preserved. |
+| Stage 5 — DevOps & Cloud | Reinforced: local delivery discipline — image rebuild after merge and SPA cache-busting — was formalised so merged features are testable immediately. |
 
 ---
 
@@ -263,7 +271,7 @@ The review found the new Master Data module threw its domain and application exc
 | Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 (Authentication, Authorization, Product Catalog, Customer Management and Supplier Management done; remaining business CRUD pending: Sprint 07+) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
 | Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 (login, authorization UI, Product Catalog UI, Customer/Supplier UI and frontend component tests done; remaining business UI pending) |
-| Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01 (cloud deployment pending) |
+| Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01, Sprint 06 (local delivery discipline formalised; cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
 

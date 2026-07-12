@@ -402,6 +402,30 @@ O projeto tem um duplo objetivo: ser um produto de engenharia real e servir como
 
 ---
 
+## Imagem vs. Código-Fonte (disciplina de rebuild)
+
+**O que é?** Uma imagem Docker é uma *fotografia* do código já compilado num dado momento. Alterar o código-fonte não altera a imagem já construída — é preciso reconstruí-la (`--build`) para a fotografia refletir o código novo.
+
+**Para que serve?** Perceber esta distinção evita a confusão mais comum em ambientes com Docker: "eu fiz merge da funcionalidade, porque é que ela não aparece?". Fazer *merge* de um Pull Request atualiza o código no repositório; **não** atualiza a imagem que está a correr na máquina. Merge não é deploy.
+
+**Como foi aplicado no projeto?** Após o Sprint 06, funcionalidades já mergeadas (a gestão de Fornecedores e, antes, a de Clientes) não apareciam na aplicação em execução, porque `docker compose up -d` reutiliza a imagem antiga. A correção foi dupla: um script (`scripts/dev-up.ps1` / `.sh`) que faz `git pull` + `docker compose up -d --build` + espera a API responder, e uma regra de processo (Engineering Handbook §16.3) que torna "deixar a aplicação pronta a testar" parte da definição de *concluído* de um merge.
+
+**Erros comuns a evitar:** correr `docker compose up -d` (sem `--build`) e concluir que o código novo "não funciona", quando na verdade nunca chegou a ser compilado para dentro da imagem em execução.
+
+---
+
+## Cache HTTP e Cache Busting em SPAs
+
+**O que é?** O *cache* HTTP permite ao browser guardar ficheiros para não os voltar a pedir ao servidor. O cabeçalho `Cache-Control` decide o comportamento: `immutable` diz "isto nunca muda, guarda para sempre"; `no-cache` diz "guarda, mas confirma comigo antes de reutilizar". *Cache busting* é a técnica de garantir que um deploy novo é sempre apanhado, apesar do cache.
+
+**Para que serve?** Numa Single-Page Application (SPA), o browser carrega um `index.html` (a "casca") que aponta para ficheiros JavaScript/CSS. Se o browser guardar em cache a casca antiga, continua a apontar para o código antigo — e o utilizador não vê o deploy novo, mesmo que o servidor já o tenha.
+
+**Como foi aplicado no projeto?** O Vite gera ficheiros com um *hash de conteúdo* no nome (por exemplo, `index-iBljPJXE.js`): se o conteúdo mudar, o nome muda. Por isso, no `nginx.conf`, os ficheiros em `/assets/` recebem `Cache-Control: public, max-age=31536000, immutable` (nunca mudam sob o mesmo nome, cacheiam para sempre), enquanto o `index.html` — que referencia esses nomes — recebe `no-cache`, forçando o browser a revalidá-lo a cada carregamento. Assim, um frontend reconstruído é apanhado no próximo carregamento, sem `Ctrl+Shift+R` manual.
+
+**Erros comuns a evitar:** cachear o `index.html` como se fosse imutável — o browser fica "preso" a uma casca antiga que aponta para *bundles* que já nem existem, dando erros ou UI desatualizada até a um refresh forçado.
+
+---
+
 # 10. Testes
 
 ## Testes Unitários e de Integração
