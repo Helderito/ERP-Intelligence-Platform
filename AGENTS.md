@@ -65,6 +65,12 @@ the start so they don't come back as review findings:
   the test suite, not only type-checking.
 - **Living docs.** Closing a Sprint updates `docs/roadmap/Learning-Journal.md`
   and `docs/roadmap/Technical-Learning-Guide-PT.md` (part of Definition of Done).
+- **App ready after merge.** A merge does not refresh the running environment;
+  `docker compose` serves the old image until rebuilt. After every merge, the
+  reviewer leaves the local stack ready to test — `./scripts/dev-up.ps1` /
+  `./scripts/dev-up.sh` (`git pull` + `docker compose up -d --build` + API
+  health wait) — and confirms the new feature's route responds (Engineering
+  Handbook Section 16.3).
 
 ## Your role here
 
