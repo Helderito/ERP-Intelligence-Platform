@@ -4,7 +4,7 @@
 
 **Sprint Number:** 06
 
-**Status:** Planned
+**Status:** Done
 
 **Sprint Type:** Goal-Based Sprint
 
@@ -67,73 +67,74 @@ These capabilities are planned for future releases.
 
 ## Domain
 
-* [ ] Create Supplier Aggregate
-* [ ] Create SupplierContact Entity
-* [ ] Create SupplierAddress Entity
-* [ ] Define Supplier business rules
+* [x] Create Supplier Aggregate
+* [x] Create SupplierContact Entity
+* [x] Create SupplierAddress Entity
+* [x] Define Supplier business rules
 
 ---
 
 ## Application
 
-* [ ] Create Supplier
-* [ ] Update Supplier
-* [ ] Deactivate Supplier
-* [ ] Search Suppliers
-* [ ] Validate Supplier
+* [x] Create Supplier
+* [x] Update Supplier
+* [x] Deactivate Supplier
+* [x] Search Suppliers
+* [x] Validate Supplier
 
 ---
 
 ## Infrastructure
 
-* [ ] Configure Supplier Repository
-* [ ] Configure Entity Framework Mapping
-* [ ] Configure Database Migrations
+* [x] Configure Supplier Repository
+* [x] Configure Entity Framework Mapping
+* [x] Configure Database Migrations
 
 ---
 
 ## API
 
-* [ ] GET /suppliers
-* [ ] GET /suppliers/{id}
-* [ ] POST /suppliers
-* [ ] PUT /suppliers/{id}
-* [ ] DELETE /suppliers/{id}
+* [x] GET /suppliers
+* [x] GET /suppliers/{id}
+* [x] POST /suppliers
+* [x] PUT /suppliers/{id}
+* [x] DELETE /suppliers/{id}
 
 ---
 
 ## Frontend
 
-* [ ] Supplier List
-* [ ] Supplier Details
-* [ ] Supplier Create Form
-* [ ] Supplier Edit Form
-* [ ] Supplier Search
+* [x] Supplier List
+* [x] Supplier Details
+* [x] Supplier Create Form
+* [x] Supplier Edit Form
+* [x] Supplier Search
 
 ---
 
 ## Database
 
-* [ ] Suppliers table
-* [ ] SupplierContacts table
-* [ ] SupplierAddresses table
+* [x] Supplier table
+* [x] SupplierContact table
+* [x] SupplierAddress table
 
 ---
 
 ## Testing
 
-* [ ] Unit Tests
-* [ ] Integration Tests
-* [ ] Supplier Validation Tests
+* [x] Unit Tests
+* [x] Integration Tests
+* [x] Supplier Validation Tests
+* [x] Frontend Component Tests
 
 ---
 
 ## Documentation
 
-* [ ] Update PRD
-* [ ] Update API Documentation
-* [ ] Update Product Backlog
-* [ ] Update Domain Documentation
+* [x] Update PRD
+* [x] Update API Documentation
+* [x] Update Product Backlog
+* [x] Update Domain Documentation
 
 ---
 

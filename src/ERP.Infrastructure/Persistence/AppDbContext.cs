@@ -30,6 +30,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
 
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+
+    public DbSet<SupplierContact> SupplierContacts => Set<SupplierContact>();
+
+    public DbSet<SupplierAddress> SupplierAddresses => Set<SupplierAddress>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

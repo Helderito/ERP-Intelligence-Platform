@@ -187,7 +187,7 @@ The system shall support:
 - Product management.
 - Product catalog foundation with searchable products, categories and units of measure.
 - Customer management with customer contacts, addresses, search and soft deactivation.
-- Supplier management.
+- Supplier management with supplier contacts, addresses, search and soft deactivation.
 - Inventory management.
 - Commercial management.
 - Analytical dashboards.

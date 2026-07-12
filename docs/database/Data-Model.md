@@ -124,12 +124,12 @@ Related Entities
 
 Aggregate Root
 
-- Supplier
+- Supplier (implemented in Sprint 06)
 
 Related Entities
 
-- Supplier Address
-- Supplier Contact
+- Supplier Address (managed through Supplier)
+- Supplier Contact (managed through Supplier)
 
 ---
 

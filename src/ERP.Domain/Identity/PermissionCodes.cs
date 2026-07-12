@@ -9,4 +9,6 @@ public static class PermissionCodes
     public const string CatalogManage = "catalog.manage";
 
     public const string CustomersManage = "customers.manage";
+
+    public const string SuppliersManage = "suppliers.manage";
 }
