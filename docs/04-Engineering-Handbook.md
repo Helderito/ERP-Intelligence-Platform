@@ -306,6 +306,16 @@ Regardless of which assistant produces a change, it is delivered on a `feature/`
 
 Code review is owned by Claude Code. When Claude judges that a review would benefit from Cursor's developer perspective, Claude **asks the owner first** and includes Cursor in that review only with the owner's approval. Cursor is never added to a review unilaterally.
 
+## 16.3 Leaving the App Ready to Test After a Merge
+
+Merging a Pull Request does **not** refresh the owner's running environment: `docker compose` keeps serving the previously built image until it is rebuilt. Every merge therefore ends with Claude Code leaving the local stack ready to test, so the owner can validate the new features immediately:
+
+1. Rebuild and restart the stack from the merged `main` — `./scripts/dev-up.ps1` (Windows) or `./scripts/dev-up.sh`, which run `git pull` + `docker compose up -d --build` and wait for the API to answer.
+2. Confirm the API started cleanly (no crash / dependency-injection error) and that the relevant endpoints respond.
+3. Tell the owner the app is ready and which route exercises the new feature (routes are `/customers`, `/suppliers`, `/products`, … — `/` is the dashboard, not a feature list).
+
+The web image sets `Cache-Control: no-cache` on the SPA shell (`src/erp.web/nginx.conf`), so a rebuilt frontend is picked up on the next load without a manual hard-refresh. This step is part of "done" for a merge, alongside updating the living documentation.
+
 See [Claude Guidelines](ai/Claude-Guidelines.md), [Codex Guidelines](ai/Codex-Guidelines.md), [Cursor Rules](ai/Cursor-Rules.md) and [AI Agent Specifications](ai/AI-Agents.md) for the detailed role of each assistant.
 
 ---
