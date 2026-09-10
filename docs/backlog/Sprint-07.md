@@ -99,7 +99,8 @@ These capabilities belong to the Inventory domain.
 - [ ] GET /warehouses/{id}
 - [ ] POST /warehouses
 - [ ] PUT /warehouses/{id}
-- [ ] PATCH /warehouses/{id}/status
+- [ ] DELETE /warehouses/{id}
+- [ ] GET /warehouse-types
 
 ---
 
