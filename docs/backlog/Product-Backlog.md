@@ -108,7 +108,25 @@ P0
 * Permission-Based Authorization
 * Dynamic Navigation
 * MFA
-* Password Management
+* Password Management (planned — self-service change + reset; not yet scheduled)
+
+### Note — Password Management gap
+
+As of 2026-09-10 the platform has **no way to change or reset a password**: the auth
+surface is only `register` / `login` / `logout` / `refresh`. A forgotten password can
+currently be recovered only by an operator editing the `User.PasswordHash` column directly
+in the database (BCrypt hashes are one-way and cannot be recovered). This item covers closing
+that gap, in two increments:
+
+* **Change password (authenticated):** `PUT /auth/password` — verify the current password,
+  then set a new BCrypt hash; revoke existing refresh tokens on success. Frontend form under
+  the user's account/settings area (Portuguese UI). Backend messages English; typed exceptions.
+* **Forgot / reset password (unauthenticated):** a token-based reset flow
+  (`POST /auth/password/forgot` → time-limited single-use token; `POST /auth/password/reset`)
+  — deferred to a later increment as it needs an email/delivery channel.
+
+To be scheduled into its own Sprint under EP-002; it is not part of the current Master Data
+sprints (05–08).
 
 ---
 
