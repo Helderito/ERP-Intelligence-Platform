@@ -77,6 +77,68 @@ public sealed class ProductCatalogServiceTests
         Assert.Single(result.Items);
     }
 
+    [Fact]
+    public async Task GetCategoriesAsync_ShouldExcludeInactiveCategories()
+    {
+        var active = Category.Create("ACTIVE", "Active", DateTime.UtcNow);
+        var inactive = Category.Create("OLD", "Retired", DateTime.UtcNow);
+        inactive.Deactivate(DateTime.UtcNow);
+
+        var service = new ProductCatalogService(
+            new FakeProductRepository(),
+            new StatefulCategoryRepository(active, inactive),
+            new FakeUnitOfMeasureRepository());
+
+        var categories = await service.GetCategoriesAsync();
+
+        Assert.Single(categories);
+        Assert.Equal("ACTIVE", categories.Single().Code);
+    }
+
+    [Fact]
+    public async Task GetUnitsOfMeasureAsync_ShouldExcludeInactiveUnits()
+    {
+        var active = UnitOfMeasure.Create("EA", "Each", DateTime.UtcNow);
+        var inactive = UnitOfMeasure.Create("OLD", "Retired", DateTime.UtcNow);
+        inactive.Deactivate(DateTime.UtcNow);
+
+        var service = new ProductCatalogService(
+            new FakeProductRepository(),
+            new FakeCategoryRepository(),
+            new StatefulUnitOfMeasureRepository(active, inactive));
+
+        var units = await service.GetUnitsOfMeasureAsync();
+
+        Assert.Single(units);
+        Assert.Equal("EA", units.Single().Code);
+    }
+
+    private sealed class StatefulCategoryRepository : ICategoryRepository
+    {
+        private readonly List<Category> _categories;
+
+        public StatefulCategoryRepository(params Category[] categories) => _categories = categories.ToList();
+
+        public Task<bool> ExistsAsync(Guid categoryId, CancellationToken cancellationToken = default)
+            => Task.FromResult(_categories.Any(category => category.Id == categoryId));
+
+        public Task<IReadOnlyCollection<Category>> ListAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyCollection<Category>>(_categories.ToArray());
+    }
+
+    private sealed class StatefulUnitOfMeasureRepository : IUnitOfMeasureRepository
+    {
+        private readonly List<UnitOfMeasure> _units;
+
+        public StatefulUnitOfMeasureRepository(params UnitOfMeasure[] units) => _units = units.ToList();
+
+        public Task<bool> ExistsAsync(Guid unitOfMeasureId, CancellationToken cancellationToken = default)
+            => Task.FromResult(_units.Any(unit => unit.Id == unitOfMeasureId));
+
+        public Task<IReadOnlyCollection<UnitOfMeasure>> ListAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyCollection<UnitOfMeasure>>(_units.ToArray());
+    }
+
     private sealed class FakeProductRepository : IProductRepository
     {
         public List<Product> Products { get; } = [];
