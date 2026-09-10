@@ -14,6 +14,38 @@
 
 ---
 
+# 0. Delivery Plan (architect decisions, 2026-09-10)
+
+To keep the Pull Requests reviewable and honest about the nature of each data set, this sprint
+is delivered in **two increments**, each on its own branch, PR and review:
+
+- **Sprint 08a — Managed reference data:** `Category`, `UnitOfMeasure`, `TaxCode`. Full CRUD
+  (GET list + POST + PUT + soft-delete `DELETE`→204), protected by a `reference.manage`
+  permission. `Category` and `UnitOfMeasure` already exist as **seeded, read-only** reference
+  data from Sprint 04 (used by Product Catalog); 08a **evolves** them into user-manageable
+  reference data without breaking existing `Product` references. `TaxCode` is new
+  (`Code`, `Name`, `Rate`).
+- **Sprint 08b — Seeded read-only reference data:** `Country`, `Currency`, `PaymentTerm`.
+  These are standardised global lists (ISO 3166 countries, ISO 4217 currencies, common payment
+  terms), so they are **seeded and exposed read-only via GET** for selection in dropdowns —
+  no user CRUD. Administrative CRUD for these may be added later if a real need appears.
+
+Scope corrections applied to the sections below:
+
+- **Route naming** follows the existing kebab-case convention: `/categories`,
+  `/units-of-measure` (not `/units`), `/tax-codes` (not `/taxes`), `/countries`,
+  `/currencies`, `/payment-terms`.
+- **Countries / Currencies / Payment Terms** are read-only (GET only); the "Create …" items
+  in the Application section and the "Management" items in the Frontend section are reduced to
+  seeded data + read-only listing.
+- **Language Configuration** is **deferred** — it has no concrete domain/API/database scope in
+  this document and will be specified later as the foundation for internationalisation. It is
+  out of scope for both 08a and 08b.
+
+Completing 08a **and** 08b together closes **EP-003 – Master Data**.
+
+---
+
 # 1. Sprint Goal
 
 Implement the Shared Reference Data module of the ERP Intelligence Platform.
