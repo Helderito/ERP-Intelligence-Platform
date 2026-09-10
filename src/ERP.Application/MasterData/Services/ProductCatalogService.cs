@@ -109,8 +109,11 @@ public sealed class ProductCatalogService
     {
         var categories = await _categoryRepository.ListAsync(cancellationToken);
 
+        // Product classification must offer only active reference data, so a deactivated
+        // category can never be assigned to a new or edited product.
         return categories
-            .Select(category => new CategoryDto(category.Id, category.Code, category.Name))
+            .Where(category => category.IsActive)
+            .Select(category => new CategoryDto(category.Id, category.Code, category.Name, category.IsActive))
             .ToArray();
     }
 
@@ -119,8 +122,11 @@ public sealed class ProductCatalogService
     {
         var units = await _unitOfMeasureRepository.ListAsync(cancellationToken);
 
+        // Product classification must offer only active reference data, so a deactivated
+        // unit of measure can never be assigned to a new or edited product.
         return units
-            .Select(unit => new UnitOfMeasureDto(unit.Id, unit.Code, unit.Name))
+            .Where(unit => unit.IsActive)
+            .Select(unit => new UnitOfMeasureDto(unit.Id, unit.Code, unit.Name, unit.IsActive))
             .ToArray();
     }
 

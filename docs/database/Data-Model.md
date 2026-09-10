@@ -143,7 +143,15 @@ Related Entities
 
 - Category
 - Unit of Measure
-- Tax Code
+
+`Category` and `UnitOfMeasure` were introduced as seeded Product Catalog references in Sprint 04
+and evolved into managed reference data in Sprint 08a. Their codes remain immutable; both support
+audit timestamps and soft deactivation. Product creation and editing can select active records only,
+while existing Products retain their foreign-key references if a referenced item is deactivated.
+
+`TaxCode` was implemented in Sprint 08a as independent managed reference data with an immutable
+code, name, percentage rate (`0` to `100`), audit timestamps and soft deactivation. Assigning a
+TaxCode to Product and calculating tax remain future work.
 
 ---
 
@@ -205,6 +213,7 @@ Reusable configuration data shared across multiple domains.
 
 Examples:
 
+- Categories
 - Countries
 - Currencies
 - Units of Measure

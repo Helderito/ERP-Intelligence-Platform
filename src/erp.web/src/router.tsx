@@ -11,6 +11,9 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { SuppliersPage } from "./pages/SuppliersPage";
 import { UserRolesPage } from "./pages/UserRolesPage";
 import { WarehousesPage } from "./pages/WarehousesPage";
+import { CategoriesPage } from "./pages/CategoriesPage";
+import { TaxCodesPage } from "./pages/TaxCodesPage";
+import { UnitsOfMeasurePage } from "./pages/UnitsOfMeasurePage";
 
 export const router = createBrowserRouter([
   {
@@ -62,6 +65,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredPermission="warehouses.manage">
             <WarehousesPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "categories",
+        element: (
+          <ProtectedRoute requiredPermission="reference.manage">
+            <CategoriesPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "units-of-measure",
+        element: (
+          <ProtectedRoute requiredPermission="reference.manage">
+            <UnitsOfMeasurePage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "tax-codes",
+        element: (
+          <ProtectedRoute requiredPermission="reference.manage">
+            <TaxCodesPage />
           </ProtectedRoute>
         )
       },

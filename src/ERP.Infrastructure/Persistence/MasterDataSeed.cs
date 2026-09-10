@@ -4,6 +4,8 @@ namespace ERP.Infrastructure.Persistence;
 
 public static class MasterDataSeed
 {
+    public static readonly DateTime SeededAtUtc = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
     public static readonly Guid GeneralCategoryId = Guid.Parse("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b01");
 
     public static readonly Guid UnitOfMeasureUnitId = Guid.Parse("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b02");
@@ -18,13 +20,13 @@ public static class MasterDataSeed
 
     public static readonly Category[] Categories =
     [
-        new Category(GeneralCategoryId, "GENERAL", "General")
+        new Category(GeneralCategoryId, "GENERAL", "General", SeededAtUtc)
     ];
 
     public static readonly UnitOfMeasure[] UnitsOfMeasure =
     [
-        new UnitOfMeasure(UnitOfMeasureUnitId, "UNIT", "Unit"),
-        new UnitOfMeasure(UnitOfMeasureKilogramId, "KG", "Kilogram")
+        new UnitOfMeasure(UnitOfMeasureUnitId, "UNIT", "Unit", SeededAtUtc),
+        new UnitOfMeasure(UnitOfMeasureKilogramId, "KG", "Kilogram", SeededAtUtc)
     ];
 
     public static readonly WarehouseType[] WarehouseTypes =

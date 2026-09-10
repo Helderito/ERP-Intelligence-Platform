@@ -16,6 +16,8 @@ public static class PermissionSeed
 
     public static readonly Guid WarehousesManageId = Guid.Parse("74e9f7f1-63d6-4c29-b253-5d02ac4dd878");
 
+    public static readonly Guid ReferenceManageId = Guid.Parse("cd69240d-0864-4a4c-a6a3-a159b831812e");
+
     public static readonly Permission[] Permissions =
     [
         new Permission(RolesManageId, PermissionCodes.RolesManage, "Manage roles and permissions"),
@@ -23,6 +25,7 @@ public static class PermissionSeed
         new Permission(CatalogManageId, PermissionCodes.CatalogManage, "Manage product catalog"),
         new Permission(CustomersManageId, PermissionCodes.CustomersManage, "Manage customers"),
         new Permission(SuppliersManageId, PermissionCodes.SuppliersManage, "Manage suppliers"),
-        new Permission(WarehousesManageId, PermissionCodes.WarehousesManage, "Manage warehouses")
+        new Permission(WarehousesManageId, PermissionCodes.WarehousesManage, "Manage warehouses"),
+        new Permission(ReferenceManageId, PermissionCodes.ReferenceManage, "Manage shared reference data")
     ];
 }

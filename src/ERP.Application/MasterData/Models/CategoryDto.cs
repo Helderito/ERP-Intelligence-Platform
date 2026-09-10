@@ -1,3 +1,3 @@
 namespace ERP.Application.MasterData.Models;
 
-public sealed record CategoryDto(Guid Id, string Code, string Name);
+public sealed record CategoryDto(Guid Id, string Code, string Name, bool IsActive);

@@ -4,7 +4,7 @@
 
 **Sprint Number:** 08
 
-**Status:** Planned
+**Status:** In Progress (Sprint 08a implemented; Sprint 08b planned)
 
 **Sprint Type:** Goal-Based Sprint
 
@@ -100,27 +100,29 @@ These capabilities will be implemented in future releases.
 
 ## Domain
 
-- [ ] Create Category Aggregate
-- [ ] Create UnitOfMeasure Entity
-- [ ] Create TaxCode Entity
+- [x] Evolve Category into managed reference data (Sprint 08a)
+- [x] Evolve UnitOfMeasure into managed reference data (Sprint 08a)
+- [x] Create TaxCode Entity (Sprint 08a)
 - [ ] Create Country Entity
 - [ ] Create Currency Entity
 - [ ] Create PaymentTerm Entity
-- [ ] Define business validation rules
+- [x] Define business validation rules for Sprint 08a
 
 ---
 
 ## Application
 
-- [ ] Create Category
-- [ ] Update Category
-- [ ] Deactivate Category
+- [x] Create Category
+- [x] Update Category
+- [x] Deactivate Category
 
-- [ ] Create Unit of Measure
-- [ ] Update Unit of Measure
+- [x] Create Unit of Measure
+- [x] Update Unit of Measure
+- [x] Deactivate Unit of Measure
 
-- [ ] Create Tax Code
-- [ ] Update Tax Code
+- [x] Create Tax Code
+- [x] Update Tax Code
+- [x] Deactivate Tax Code
 
 - [ ] Create Country
 - [ ] Create Currency
@@ -130,22 +132,29 @@ These capabilities will be implemented in future releases.
 
 ## Infrastructure
 
-- [ ] Configure repositories
-- [ ] Configure Entity Framework mappings
-- [ ] Configure migrations
+- [x] Configure Sprint 08a repositories
+- [x] Configure Sprint 08a Entity Framework mappings
+- [x] Add the additive `AddManagedReferenceData` migration
 
 ---
 
 ## API
 
-- [ ] GET /categories
-- [ ] POST /categories
+- [x] GET /categories
+- [x] POST /categories
+- [x] PUT /categories/{id}
+- [x] DELETE /categories/{id}
 
-- [ ] GET /units
-- [ ] POST /units
+- [x] GET /units-of-measure
+- [x] POST /units-of-measure
+- [x] PUT /units-of-measure/{id}
+- [x] DELETE /units-of-measure/{id}
 
-- [ ] GET /taxes
-- [ ] POST /taxes
+- [x] GET /tax-codes
+- [x] GET /tax-codes/{id}
+- [x] POST /tax-codes
+- [x] PUT /tax-codes/{id}
+- [x] DELETE /tax-codes/{id}
 
 - [ ] GET /countries
 
@@ -157,20 +166,20 @@ These capabilities will be implemented in future releases.
 
 ## Frontend
 
-- [ ] Categories Management
-- [ ] Units Management
-- [ ] Tax Codes Management
-- [ ] Countries Management
-- [ ] Currencies Management
-- [ ] Payment Terms Management
+- [x] Categories Management
+- [x] Units of Measure Management
+- [x] Tax Codes Management
+- [ ] Countries read-only listing (Sprint 08b)
+- [ ] Currencies read-only listing (Sprint 08b)
+- [ ] Payment Terms read-only listing (Sprint 08b)
 
 ---
 
 ## Database
 
-- [ ] Categories table
-- [ ] UnitsOfMeasure table
-- [ ] TaxCodes table
+- [x] Evolve existing Category table additively
+- [x] Evolve existing UnitOfMeasure table additively
+- [x] TaxCode table
 - [ ] Countries table
 - [ ] Currencies table
 - [ ] PaymentTerms table
@@ -179,9 +188,9 @@ These capabilities will be implemented in future releases.
 
 ## Testing
 
-- [ ] Unit Tests
-- [ ] Integration Tests
-- [ ] Validation Tests
+- [x] Sprint 08a Unit Tests
+- [x] Sprint 08a Integration Tests
+- [x] Sprint 08a Validation Tests
 
 ---
 
@@ -189,9 +198,9 @@ These capabilities will be implemented in future releases.
 
 - [ ] Update PRD
 - [ ] Update SAD
-- [ ] Update API Documentation
-- [ ] Update Product Backlog
-- [ ] Update Master Data Documentation
+- [x] Update API Documentation for Sprint 08a
+- [x] Update Product Backlog for Sprint 08a
+- [x] Update Master Data Documentation for Sprint 08a
 
 ---
 

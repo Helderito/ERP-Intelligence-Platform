@@ -28,6 +28,14 @@ public sealed class UnitOfMeasureConfiguration : IEntityTypeConfiguration<UnitOf
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(unitOfMeasure => unitOfMeasure.IsActive)
+            .HasDefaultValue(true)
+            .IsRequired();
+
+        builder.Property(unitOfMeasure => unitOfMeasure.CreatedAtUtc).IsRequired();
+        builder.Property(unitOfMeasure => unitOfMeasure.UpdatedAtUtc);
+        builder.Property(unitOfMeasure => unitOfMeasure.DeactivatedAtUtc);
+
         builder.HasData(MasterDataSeed.UnitsOfMeasure);
     }
 }
