@@ -83,7 +83,7 @@ erDiagram
 
 # 4. Master Data Bounded Context
 
-Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer fields reflect the Sprint 05 implementation; Supplier fields reflect the Sprint 06 implementation; Warehouse and additional shared reference data remain target/planned model.
+Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer fields reflect the Sprint 05 implementation; Supplier fields reflect the Sprint 06 implementation; Warehouse fields reflect the Sprint 07 implementation. Additional shared reference data remains planned.
 
 ```mermaid
 erDiagram
@@ -178,13 +178,18 @@ erDiagram
     }
     WAREHOUSE {
         guid Id PK
-        string Name
+        string Code "unique, max 50 chars"
+        string Name "max 200 chars"
         guid WarehouseTypeId FK
-        string Status
+        bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
     }
     WAREHOUSE_TYPE {
         guid Id PK
-        string Name
+        string Code "unique, max 50 chars, seeded"
+        string Name "max 100 chars, seeded"
     }
 ```
 
@@ -192,7 +197,7 @@ erDiagram
 
 # 5. Shared Reference Data
 
-`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned reference data for Sprint 08. `TaxCodeId` is intentionally not present in the Sprint 04 `Product` table or EF model; it is shown here only as the planned Product Catalog tax extension.
+`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog. `WarehouseType` was implemented in [Sprint 07](../backlog/Sprint-07.md) as seeded, read-only reference data (`MAIN`, `TRANSIT`, `VIRTUAL`). `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned reference data for Sprint 08. `TaxCodeId` is intentionally not present in the Sprint 04 `Product` table or EF model; it is shown here only as the planned Product Catalog tax extension.
 
 `Customer`, `CustomerContact` and `CustomerAddress` were implemented in [Sprint 05](../backlog/Sprint-05.md). Contacts and addresses are entities inside the `Customer` Aggregate and are managed exclusively through the `Customer` root, not through independent API resources.
 

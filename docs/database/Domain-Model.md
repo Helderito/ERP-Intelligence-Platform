@@ -88,15 +88,20 @@ Implemented in [Sprint 06](../backlog/Sprint-06.md). `Supplier` intentionally co
 
 Implemented in [Sprint 04](../backlog/Sprint-04.md). `Product` intentionally contains no stock, inventory, price, barcode, image or variant data. `TaxCode` and price modelling remain planned for future Master Data/Pricing work.
 
-## Warehouse Aggregate — *Planned, Sprint 07*
+## Warehouse Aggregate — *Implemented, Sprint 07*
 
-- Aggregate Root: `Warehouse`
-- Related Reference Entities: `WarehouseType`
+- Aggregate Root: `Warehouse` (inherits `Entity<Guid>`)
+- Value Objects: `WarehouseCode` (inherits `ValueObject`; immutable after creation)
+- Related Reference Entities: `WarehouseType` (inherits `Entity<Guid>`; seeded and read-only)
 - Domain Events: `WarehouseCreated`, `WarehouseDeactivated`
+
+Implemented in [Sprint 07](../backlog/Sprint-07.md). `Warehouse` intentionally contains no stock,
+movement, transfer, bin-location, picking or default-warehouse logic; those concerns remain planned
+for the Inventory domain or later product decisions.
 
 ## Shared Reference Data
 
-Reference-only entities with no independent business behaviour: `Category` and `UnitOfMeasure` are implemented for the Product Catalog in Sprint 04. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned for Sprint 08.
+Reference-only entities with no independent business behaviour: `Category` and `UnitOfMeasure` are implemented for the Product Catalog in Sprint 04, and `WarehouseType` is implemented for Warehouse Management in Sprint 07. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned for Sprint 08.
 
 These entities are shared across Bounded Contexts through the Shared Kernel and shall never contain transactional business logic.
 

@@ -121,7 +121,7 @@ P0
 * Products
 * Product Catalog Foundation
 * Categories
-* Warehouses
+* Warehouse Management (implemented in Sprint 07)
 * Units of Measure
 * Taxes
 

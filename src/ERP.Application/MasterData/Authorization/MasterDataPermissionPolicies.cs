@@ -9,4 +9,6 @@ public static class MasterDataPermissionPolicies
     public const string CustomersManage = PermissionCodes.CustomersManage;
 
     public const string SuppliersManage = PermissionCodes.SuppliersManage;
+
+    public const string WarehousesManage = PermissionCodes.WarehousesManage;
 }

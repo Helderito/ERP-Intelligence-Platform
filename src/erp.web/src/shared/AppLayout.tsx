@@ -6,6 +6,7 @@ const navigationItems = [
   { label: "Clientes", to: "/customers", permission: "customers.manage" },
   { label: "Fornecedores", to: "/suppliers", permission: "suppliers.manage" },
   { label: "Produtos", to: "/products", permission: "catalog.manage" },
+  { label: "Armazéns", to: "/warehouses", permission: "warehouses.manage" },
   { label: "Roles", to: "/roles", permission: "roles.manage" },
   { label: "Permissions", to: "/permissions", permission: "roles.manage" },
   { label: "Utilizadores", to: "/users/roles", permission: "users.manage" },

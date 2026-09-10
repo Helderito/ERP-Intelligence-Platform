@@ -10,6 +10,7 @@ import { RolesPage } from "./pages/RolesPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SuppliersPage } from "./pages/SuppliersPage";
 import { UserRolesPage } from "./pages/UserRolesPage";
+import { WarehousesPage } from "./pages/WarehousesPage";
 
 export const router = createBrowserRouter([
   {
@@ -53,6 +54,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredPermission="catalog.manage">
             <ProductsPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "warehouses",
+        element: (
+          <ProtectedRoute requiredPermission="warehouses.manage">
+            <WarehousesPage />
           </ProtectedRoute>
         )
       },
