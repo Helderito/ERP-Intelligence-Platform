@@ -80,6 +80,12 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             Id = new Guid("74e9f7f1-63d6-4c29-b253-5d02ac4dd878"),
                             Code = "warehouses.manage",
                             Description = "Manage warehouses"
+                        },
+                        new
+                        {
+                            Id = new Guid("cd69240d-0864-4a4c-a6a3-a159b831812e"),
+                            Code = "reference.manage",
+                            Description = "Manage shared reference data"
                         });
                 });
 
@@ -219,6 +225,13 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             PermissionId = new Guid("74e9f7f1-63d6-4c29-b253-5d02ac4dd878"),
                             RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("b1a7c0de-0000-4000-a000-000000000107"),
+                            AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            PermissionId = new Guid("cd69240d-0864-4a4c-a6a3-a159b831812e"),
+                            RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
                         });
                 });
 
@@ -275,10 +288,24 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeactivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -292,6 +319,8 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b01"),
                             Code = "GENERAL",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
                             Name = "General"
                         });
                 });
@@ -521,6 +550,47 @@ namespace ERP.Infrastructure.Persistence.Migrations
                     b.ToTable("SupplierContact", (string)null);
                 });
 
+            modelBuilder.Entity("ERP.Domain.MasterData.TaxCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeactivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("TaxCode", (string)null);
+                });
+
             modelBuilder.Entity("ERP.Domain.MasterData.UnitOfMeasure", b =>
                 {
                     b.Property<Guid>("Id")
@@ -531,10 +601,24 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeactivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -548,12 +632,16 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b02"),
                             Code = "UNIT",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
                             Name = "Unit"
                         },
                         new
                         {
                             Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b03"),
                             Code = "KG",
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
                             Name = "Kilogram"
                         });
                 });

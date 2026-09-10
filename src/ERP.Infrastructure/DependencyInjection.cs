@@ -33,12 +33,17 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IProductRepository, ProductRepository>();
-        services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<IUnitOfMeasureRepository, UnitOfMeasureRepository>();
+        services.AddScoped<CategoryRepository>();
+        services.AddScoped<ICategoryRepository>(provider => provider.GetRequiredService<CategoryRepository>());
+        services.AddScoped<IManagedCategoryRepository>(provider => provider.GetRequiredService<CategoryRepository>());
+        services.AddScoped<UnitOfMeasureRepository>();
+        services.AddScoped<IUnitOfMeasureRepository>(provider => provider.GetRequiredService<UnitOfMeasureRepository>());
+        services.AddScoped<IManagedUnitOfMeasureRepository>(provider => provider.GetRequiredService<UnitOfMeasureRepository>());
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         services.AddScoped<IWarehouseTypeRepository, WarehouseTypeRepository>();
+        services.AddScoped<ITaxCodeRepository, TaxCodeRepository>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 

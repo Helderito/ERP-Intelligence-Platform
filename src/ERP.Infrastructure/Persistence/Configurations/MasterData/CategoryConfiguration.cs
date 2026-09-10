@@ -28,6 +28,14 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(category => category.IsActive)
+            .HasDefaultValue(true)
+            .IsRequired();
+
+        builder.Property(category => category.CreatedAtUtc).IsRequired();
+        builder.Property(category => category.UpdatedAtUtc);
+        builder.Property(category => category.DeactivatedAtUtc);
+
         builder.HasData(MasterDataSeed.Categories);
     }
 }

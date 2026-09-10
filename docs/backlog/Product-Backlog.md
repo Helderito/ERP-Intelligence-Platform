@@ -136,12 +136,12 @@ sprints (05–08).
 
 * Customer Management (implemented in Sprint 05)
 * Supplier Management (implemented in Sprint 06)
-* Products
-* Product Catalog Foundation
-* Categories
+* Products (implemented in Sprint 04)
+* Product Catalog Foundation (implemented in Sprint 04)
+* Categories (managed reference data implemented in Sprint 08a)
 * Warehouse Management (implemented in Sprint 07)
-* Units of Measure
-* Taxes
+* Units of Measure (managed reference data implemented in Sprint 08a)
+* Tax Codes (managed reference data implemented in Sprint 08a)
 
 ---
 

@@ -352,6 +352,26 @@ GET /warehouse-types
 
 Warehouse Management endpoints require `warehouses.manage`. `GET /warehouses` returns lightweight list items (`id`, `code`, `name`, `isActive`), while `GET /warehouses/{id}` returns the full record including `warehouseTypeId`, `warehouseTypeName` and audit timestamps. `GET /warehouse-types` exposes the seeded reference catalog for selection and has no write counterpart. `DELETE /warehouses/{id}` performs a soft delete and returns `204 No Content`; no default-warehouse or inventory behavior is exposed.
 
+Sprint 08a introduces managed reference-data endpoints:
+
+```
+GET /categories?search=...&includeInactive=false
+POST /categories
+PUT /categories/{id}
+DELETE /categories/{id}
+GET /units-of-measure?search=...&includeInactive=false
+POST /units-of-measure
+PUT /units-of-measure/{id}
+DELETE /units-of-measure/{id}
+GET /tax-codes?search=...&includeInactive=false
+GET /tax-codes/{id}
+POST /tax-codes
+PUT /tax-codes/{id}
+DELETE /tax-codes/{id}
+```
+
+All list and detail endpoints require authentication. Write endpoints require `reference.manage`; authenticated users without it receive `403 Forbidden`. Lists return lightweight items (`id`, `code`, `name`, `isActive`) and exclude inactive records by default. Management clients may request `includeInactive=true`. `TaxCode` detail and write responses also include `rate` and audit timestamps. Codes are immutable after creation, and every `DELETE` above performs an idempotent soft deactivation and returns `204 No Content`.
+
 ---
 
 # 15. Error Handling

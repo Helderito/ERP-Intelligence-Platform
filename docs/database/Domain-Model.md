@@ -86,7 +86,7 @@ Implemented in [Sprint 06](../backlog/Sprint-06.md). `Supplier` intentionally co
 - Related Reference Entities: `Category`, `UnitOfMeasure` (inherit `Entity<Guid>`)
 - Domain Events: `ProductCreated`, `ProductDeactivated`
 
-Implemented in [Sprint 04](../backlog/Sprint-04.md). `Product` intentionally contains no stock, inventory, price, barcode, image or variant data. `TaxCode` and price modelling remain planned for future Master Data/Pricing work.
+Implemented in [Sprint 04](../backlog/Sprint-04.md). `Product` intentionally contains no stock, inventory, price, barcode, image or variant data. `TaxCode` is managed independently from Sprint 08a; assigning it to Product and price modelling remain future Master Data/Pricing work.
 
 ## Warehouse Aggregate — *Implemented, Sprint 07*
 
@@ -101,7 +101,16 @@ for the Inventory domain or later product decisions.
 
 ## Shared Reference Data
 
-Reference-only entities with no independent business behaviour: `Category` and `UnitOfMeasure` are implemented for the Product Catalog in Sprint 04, and `WarehouseType` is implemented for Warehouse Management in Sprint 07. `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned for Sprint 08.
+### Managed Reference Data — *Implemented, Sprint 08a*
+
+- Entities: `Category`, `UnitOfMeasure`, `TaxCode` (inherit `Entity<Guid>`)
+- Common rules: normalized immutable `Code`, required `Name`, audit timestamps and idempotent soft deactivation
+- Tax-specific rule: `TaxCode.Rate` is a percentage from `0` through `100`
+- Domain Events: creation and deactivation events for each managed entity
+
+`Category` and `UnitOfMeasure` were first introduced as seeded Product Catalog references in Sprint 04 and evolved in place in Sprint 08a. `TaxCode` was added in Sprint 08a as an independent reference list; tax calculations and Product assignment are outside this increment.
+
+`WarehouseType` is implemented as seeded, read-only reference data for Warehouse Management in Sprint 07. `Country`, `Currency` and `PaymentTerm` remain planned as seeded, read-only data for Sprint 08b.
 
 These entities are shared across Bounded Contexts through the Shared Kernel and shall never contain transactional business logic.
 

@@ -292,15 +292,45 @@ The review found the new Master Data module threw its domain and application exc
 
 ---
 
-# 11. Cumulative Progress Against the Learning Roadmap
+# 11. Sprint 08a — Managed Reference Data
+
+**Implemented:** 2026-09-10 · **Release:** 0.2.0
+
+## What Was Delivered
+
+- `Category` and `UnitOfMeasure` evolved from seeded, read-only Product Catalog references into managed reference data with immutable normalized codes, audit timestamps and idempotent soft deactivation; `TaxCode` was added with the same lifecycle plus a percentage rate constrained to `0` through `100`.
+- The additive `AddManagedReferenceData` migration alters the existing Category and UnitOfMeasure tables, backfills their existing rows as active and preserves every Product foreign key. It also creates the TaxCode table and seeds `reference.manage` for the Administrator bootstrap path.
+- `ReferenceDataManagementService` follows ADR-0002 and uses typed duplicate-code and not-found exceptions. Infrastructure repositories use lightweight, no-tracking list queries with case-insensitive PostgreSQL search.
+- The API exposes authenticated lists and `reference.manage`-protected create, update and soft-delete operations for all three families. Active-only lists remain the default so Product dropdowns cannot select deactivated Category or UnitOfMeasure records.
+- The React administration area adds Portuguese-first pages for Categorias, Unidades de Medida and Códigos de Imposto, with permission-aware routing and navigation.
+- Unit tests cover domain rules and Application behavior; PostgreSQL integration tests cover authorization, CRUD, active filtering and preservation of Product references; React component tests cover rendering, creation, editing and errors for each page.
+
+## What Was Learned
+
+- Evolving seeded reference entities safely is a schema-evolution problem, not a replacement problem. Additive columns with a deterministic backfill preserve identity and all existing foreign keys, whereas dropping and recreating the tables would invalidate Product data.
+- A management list and a selection list have different needs. Administrators need visibility of inactive records, while operational forms should only offer active choices; an explicit `includeInactive` management option keeps the default safe for Product Catalog.
+- Creating TaxCode as an independent reference catalog does not imply tax calculation or Product assignment. Keeping those concerns deferred avoids turning a reference-data sprint into fiscal or pricing design by accident.
+- Interface segregation lets Product Catalog retain its narrow read-only repository contract while reference management gains write operations without forcing unrelated tests and consumers to implement them.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: three managed reference families, additive schema evolution, typed failures and permission-protected CRUD are implemented. |
+| Stage 4 — Frontend Development | Advanced: three Portuguese-first administration pages and their component tests are implemented. |
+| Stage 1 — Software Architecture | Reinforced: existing Product references were preserved and tax calculation/Product assignment stayed outside the reference-data boundary. |
+
+---
+
+# 12. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07 |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07 (Authentication, Authorization, Product Catalog, Customer, Supplier and Warehouse Management done; remaining Master Data work: Sprint 08) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a (managed reference data done; seeded read-only Sprint 08b remains) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07 (login, authorization UI, Product Catalog, Customer, Supplier and Warehouse UI with component tests done) |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a (managed reference-data UI with component tests done) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01, Sprint 06 (local delivery discipline formalised; cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -309,7 +339,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 12. Relationship with Other Documents
+# 13. Relationship with Other Documents
 
 This document should be read together with:
 

@@ -20,4 +20,6 @@ public static class RoleSeed
     public static readonly Guid AdministratorSuppliersManageLinkId = Guid.Parse("b1a7c0de-0000-4000-a000-000000000105");
 
     public static readonly Guid AdministratorWarehousesManageLinkId = Guid.Parse("b1a7c0de-0000-4000-a000-000000000106");
+
+    public static readonly Guid AdministratorReferenceManageLinkId = Guid.Parse("b1a7c0de-0000-4000-a000-000000000107");
 }

@@ -12,7 +12,7 @@
 
 This document provides the conceptual Entity Relationship Diagram (ERD) for the entities currently defined in the [Data Model](Data-Model.md) and the [Domain Model](Domain-Model.md).
 
-It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03; `Product`, `Category` and `UnitOfMeasure` were implemented in Sprint 04; `Customer`, `CustomerContact` and `CustomerAddress` were implemented in Sprint 05; `Supplier`, `SupplierContact` and `SupplierAddress` were implemented in Sprint 06. The implemented columns below match the actual `AppDbContext` mapping.
+It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03; `Product`, `Category` and `UnitOfMeasure` were implemented in Sprint 04; `Customer`, `CustomerContact` and `CustomerAddress` were implemented in Sprint 05; `Supplier`, `SupplierContact` and `SupplierAddress` were implemented in Sprint 06; `Warehouse` and `WarehouseType` were implemented in Sprint 07; and managed `Category`, `UnitOfMeasure` plus `TaxCode` were implemented in Sprint 08a. The implemented columns below match the actual `AppDbContext` mapping.
 
 Inventory, Sales, Purchasing, Finance, Business Intelligence and AI entities will be added here as their corresponding Epics are planned in detail.
 
@@ -83,7 +83,7 @@ erDiagram
 
 # 4. Master Data Bounded Context
 
-Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer fields reflect the Sprint 05 implementation; Supplier fields reflect the Sprint 06 implementation; Warehouse fields reflect the Sprint 07 implementation. Additional shared reference data remains planned.
+Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer fields reflect the Sprint 05 implementation; Supplier fields reflect the Sprint 06 implementation; Warehouse fields reflect the Sprint 07 implementation; managed Category, UnitOfMeasure and TaxCode fields reflect Sprint 08a. Country, Currency and PaymentTerm remain planned for Sprint 08b.
 
 ```mermaid
 erDiagram
@@ -95,7 +95,7 @@ erDiagram
 
     PRODUCT }o--|| CATEGORY : "classified as"
     PRODUCT }o--|| UNIT_OF_MEASURE : "measured in"
-    PRODUCT }o--|| TAX_CODE : "taxed as (planned Sprint 08)"
+    PRODUCT }o--|| TAX_CODE : "taxed as (planned future assignment)"
     WAREHOUSE }o--|| WAREHOUSE_TYPE : "typed as"
 
     CUSTOMER {
@@ -154,7 +154,7 @@ erDiagram
         string Name "max 200 chars"
         guid CategoryId FK
         guid UnitOfMeasureId FK
-        guid TaxCodeId FK "planned Sprint 08"
+        guid TaxCodeId FK "planned future assignment"
         bool IsActive
         datetime CreatedAtUtc
         datetime UpdatedAtUtc "nullable"
@@ -164,17 +164,29 @@ erDiagram
         guid Id PK
         string Code "unique, max 50 chars"
         string Name "max 100 chars"
+        bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
     }
     UNIT_OF_MEASURE {
         guid Id PK
         string Code "unique, max 50 chars"
         string Name "max 100 chars"
+        bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
     }
     TAX_CODE {
         guid Id PK
-        string Code "planned Sprint 08"
-        string Name "planned Sprint 08"
-        decimal Rate "planned Sprint 08"
+        string Code "unique, max 50 chars"
+        string Name "max 100 chars"
+        decimal Rate "numeric(5,2), 0 to 100"
+        bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
     }
     WAREHOUSE {
         guid Id PK
@@ -197,7 +209,9 @@ erDiagram
 
 # 5. Shared Reference Data
 
-`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog. `WarehouseType` was implemented in [Sprint 07](../backlog/Sprint-07.md) as seeded, read-only reference data (`MAIN`, `TRANSIT`, `VIRTUAL`). `TaxCode`, `Country`, `Currency` and `PaymentTerm` remain planned reference data for Sprint 08. `TaxCodeId` is intentionally not present in the Sprint 04 `Product` table or EF model; it is shown here only as the planned Product Catalog tax extension.
+`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog, then evolved additively into managed, auditable, soft-deletable data in Sprint 08a. Existing Product foreign keys remain intact, while Product selection endpoints return active records only. `TaxCode` was implemented in Sprint 08a as independent managed reference data. `TaxCodeId` is intentionally not present in the Product table or EF model; the dashed conceptual relationship above remains a future Product Catalog tax assignment, outside Sprint 08a. Tax calculations and fiscal rules are also out of scope.
+
+`WarehouseType` was implemented in [Sprint 07](../backlog/Sprint-07.md) as seeded, read-only reference data (`MAIN`, `TRANSIT`, `VIRTUAL`). `Country`, `Currency` and `PaymentTerm` remain planned as seeded, read-only reference data for Sprint 08b.
 
 `Customer`, `CustomerContact` and `CustomerAddress` were implemented in [Sprint 05](../backlog/Sprint-05.md). Contacts and addresses are entities inside the `Customer` Aggregate and are managed exclusively through the `Customer` root, not through independent API resources.
 

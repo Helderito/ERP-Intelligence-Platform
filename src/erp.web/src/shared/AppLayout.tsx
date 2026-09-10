@@ -7,6 +7,9 @@ const navigationItems = [
   { label: "Fornecedores", to: "/suppliers", permission: "suppliers.manage" },
   { label: "Produtos", to: "/products", permission: "catalog.manage" },
   { label: "Armazéns", to: "/warehouses", permission: "warehouses.manage" },
+  { label: "Categorias", to: "/categories", permission: "reference.manage" },
+  { label: "Unidades de Medida", to: "/units-of-measure", permission: "reference.manage" },
+  { label: "Códigos de Imposto", to: "/tax-codes", permission: "reference.manage" },
   { label: "Roles", to: "/roles", permission: "roles.manage" },
   { label: "Permissions", to: "/permissions", permission: "roles.manage" },
   { label: "Utilizadores", to: "/users/roles", permission: "users.manage" },
@@ -22,12 +25,12 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-sm font-medium text-brand-700">ERP Intelligence Platform</p>
             <h1 className="text-xl font-semibold">Fundacao da plataforma</h1>
           </div>
-          <nav aria-label="Navegacao principal" className="flex gap-2">
+          <nav aria-label="Navegacao principal" className="flex flex-wrap justify-end gap-2">
             {visibleNavigationItems.map((item) => (
               <NavLink
                 key={item.to}
