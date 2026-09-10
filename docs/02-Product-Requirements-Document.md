@@ -131,7 +131,7 @@ Goals:
 
 ## Inventory
 
-- Warehouses
+- Warehouse master data (code, name, seeded type, search and soft deactivation; implemented in Sprint 07)
 - Stock
 - Movements
 - Physical Inventories

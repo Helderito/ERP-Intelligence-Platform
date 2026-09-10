@@ -262,15 +262,45 @@ The review found the new Master Data module threw its domain and application exc
 
 ---
 
-# 10. Cumulative Progress Against the Learning Roadmap
+# 10. Sprint 07 — Warehouse Management
+
+**Closed:** 2026-09-10 · **Release:** 0.2.0
+
+## What Was Delivered
+
+- Codex implemented `Warehouse` as a Master Data Aggregate with immutable `WarehouseCode`, soft deactivation and `WarehouseCreated`/`WarehouseDeactivated` domain events, while keeping all stock and inventory behavior outside the Aggregate.
+- `WarehouseType` was implemented as seeded reference data (`MAIN`, `TRANSIT`, `VIRTUAL`) exposed through a read-only endpoint for UI selection.
+- The Application layer follows ADR-0002 with `WarehouseManagementService`, lightweight search DTOs, full detail DTOs and typed duplicate/not-found exceptions.
+- Infrastructure added EF Core mappings, repositories, the `AddWarehouseManagement` migration, `warehouses.manage` permission seed and Administrator bootstrap assignment.
+- The API and React app now support search, detail, create, edit and soft deactivate flows under permission-aware routing and navigation.
+- Unit, PostgreSQL integration and React component tests cover validation, code immutability, bootstrap references, CRUD, `401`/`403` authorization and user-visible flows.
+
+## What Was Learned
+
+- A Warehouse master record and Inventory are separate responsibilities. Modelling code, name and type now creates a stable reference for future stock processes without prematurely embedding quantities, movements, bins, transfers or picking rules.
+- Seeded reference entities are useful when a workflow needs controlled classifications but does not yet justify management screens or write endpoints. The read-only Warehouse Type catalog keeps the bootstrap path complete and the Sprint scope focused.
+- Lightweight list endpoints avoid loading related entities for every search result; the Warehouse Type relation is loaded only for full detail and code lookup paths where its name is required.
+- Idempotence matters in both domain behavior and UI state: repeated deactivation raises no duplicate event, and reference-data initialization avoids unnecessary render cycles.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: Warehouse master data, seeded reference types, relational mapping and permission-protected CRUD are implemented. |
+| Stage 4 — Frontend Development | Advanced: Warehouse CRUD UI with reference-data dropdown and component tests is implemented. |
+| Stage 1 — Software Architecture | Reinforced: the Master Data/Inventory boundary and selective CQRS rule were applied explicitly. |
+
+---
+
+# 11. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 (Authentication, Authorization, Product Catalog, Customer Management and Supplier Management done; remaining business CRUD pending: Sprint 07+) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07 |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07 (Authentication, Authorization, Product Catalog, Customer, Supplier and Warehouse Management done; remaining Master Data work: Sprint 08) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06 (login, authorization UI, Product Catalog UI, Customer/Supplier UI and frontend component tests done; remaining business UI pending) |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07 (login, authorization UI, Product Catalog, Customer, Supplier and Warehouse UI with component tests done) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01, Sprint 06 (local delivery discipline formalised; cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -279,7 +309,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 11. Relationship with Other Documents
+# 12. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -291,6 +321,6 @@ This document should be read together with:
 
 ---
 
-# 12. Success Criteria
+# 13. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

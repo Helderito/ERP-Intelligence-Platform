@@ -10,6 +10,12 @@ public static class MasterDataSeed
 
     public static readonly Guid UnitOfMeasureKilogramId = Guid.Parse("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b03");
 
+    public static readonly Guid MainWarehouseTypeId = Guid.Parse("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b04");
+
+    public static readonly Guid TransitWarehouseTypeId = Guid.Parse("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b05");
+
+    public static readonly Guid VirtualWarehouseTypeId = Guid.Parse("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b06");
+
     public static readonly Category[] Categories =
     [
         new Category(GeneralCategoryId, "GENERAL", "General")
@@ -19,5 +25,12 @@ public static class MasterDataSeed
     [
         new UnitOfMeasure(UnitOfMeasureUnitId, "UNIT", "Unit"),
         new UnitOfMeasure(UnitOfMeasureKilogramId, "KG", "Kilogram")
+    ];
+
+    public static readonly WarehouseType[] WarehouseTypes =
+    [
+        new WarehouseType(MainWarehouseTypeId, "MAIN", "Main Warehouse"),
+        new WarehouseType(TransitWarehouseTypeId, "TRANSIT", "Transit"),
+        new WarehouseType(VirtualWarehouseTypeId, "VIRTUAL", "Virtual")
     ];
 }

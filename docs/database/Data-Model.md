@@ -151,11 +151,14 @@ Related Entities
 
 Aggregate Root
 
-- Warehouse
+- Warehouse (implemented in Sprint 07; immutable code, soft deactivation)
 
 Related Entities
 
-- Warehouse Type
+- Warehouse Type (seeded reference data)
+
+The Warehouse aggregate owns organisational master data only. Stock quantities, movements,
+transfers, bin locations, picking and default-warehouse rules remain outside this aggregate.
 
 ---
 
