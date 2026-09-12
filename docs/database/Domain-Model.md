@@ -110,9 +110,18 @@ for the Inventory domain or later product decisions.
 
 `Category` and `UnitOfMeasure` were first introduced as seeded Product Catalog references in Sprint 04 and evolved in place in Sprint 08a. `TaxCode` was added in Sprint 08a as an independent reference list; tax calculations and Product assignment are outside this increment.
 
-`WarehouseType` is implemented as seeded, read-only reference data for Warehouse Management in Sprint 07. `Country`, `Currency` and `PaymentTerm` remain planned as seeded, read-only data for Sprint 08b.
+### Seeded Read-Only Reference Data — *Implemented, Sprint 08b*
+
+- Entities: `Country`, `Currency`, `PaymentTerm` (inherit `Entity<Guid>`)
+- Common rules: required normalized `Code`, required `Name`, deterministic seeded identity and no user-managed lifecycle
+- Standard-specific rules: Country uses ISO 3166-1 alpha-2 codes; Currency uses ISO 4217 codes; PaymentTerm requires `NetDays >= 0`
+- API behavior: authenticated GET-only lists ordered by code
+
+`WarehouseType` is implemented as seeded, read-only reference data for Warehouse Management in Sprint 07. Sprint 08b adds curated Country and Currency catalogs plus NET0/15/30/60/90 Payment Terms for reuse by future Purchasing, Sales and Finance modules. These entities have no timestamps, domain events, soft delete or write use cases.
 
 These entities are shared across Bounded Contexts through the Shared Kernel and shall never contain transactional business logic.
+
+Sprint 08b completes EP-003 - Master Data. Language Configuration remains deferred pending a concrete specification.
 
 ---
 

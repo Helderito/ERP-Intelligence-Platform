@@ -372,6 +372,16 @@ DELETE /tax-codes/{id}
 
 All list and detail endpoints require authentication. Write endpoints require `reference.manage`; authenticated users without it receive `403 Forbidden`. Lists return lightweight items (`id`, `code`, `name`, `isActive`) and exclude inactive records by default. Management clients may request `includeInactive=true`. `TaxCode` detail and write responses also include `rate` and audit timestamps. Codes are immutable after creation, and every `DELETE` above performs an idempotent soft deactivation and returns `204 No Content`.
 
+Sprint 08b introduces seeded, read-only shared reference-data endpoints:
+
+```
+GET /countries
+GET /currencies
+GET /payment-terms
+```
+
+These endpoints require authentication but no management permission. Results are ordered by code. Country responses use ISO 3166-1 alpha-2 codes, Currency responses use ISO 4217 codes, and Payment Term responses also include `netDays`. The three resources have no POST, PUT or DELETE operations.
+
 ---
 
 # 15. Error Handling

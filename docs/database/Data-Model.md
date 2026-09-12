@@ -211,6 +211,14 @@ Examples:
 
 Reusable configuration data shared across multiple domains.
 
+Sprint 08b completes the Master Data epic with three seeded, read-only reference entities:
+
+- `Country`: deterministic identifier, ISO 3166-1 alpha-2 code and name. The curated seed includes Portugal and Angola.
+- `Currency`: deterministic identifier, ISO 4217 code and name. The curated seed includes EUR, USD, AOA, BRL and GBP.
+- `PaymentTerm`: deterministic identifier, code, name and non-negative `NetDays`. The seed provides NET0, NET15, NET30, NET60 and NET90.
+
+These records have no user-managed lifecycle, timestamps or soft-delete state. They are selection data for future Purchasing, Sales and Finance modules; exchange rates and transactional rules remain outside this model. With their implementation, EP-003 - Master Data is complete.
+
 Examples:
 
 - Categories

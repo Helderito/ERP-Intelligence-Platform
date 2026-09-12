@@ -130,7 +130,7 @@ sprints (05–08).
 
 ---
 
-## EP-003 — Master Data
+## EP-003 — Master Data — Complete
 
 ### Features
 
@@ -142,6 +142,11 @@ sprints (05–08).
 * Warehouse Management (implemented in Sprint 07)
 * Units of Measure (managed reference data implemented in Sprint 08a)
 * Tax Codes (managed reference data implemented in Sprint 08a)
+* Countries (seeded read-only reference data implemented in Sprint 08b)
+* Currencies (seeded read-only reference data implemented in Sprint 08b)
+* Payment Terms (seeded read-only reference data implemented in Sprint 08b)
+
+EP-003 was completed by Sprint 08a and Sprint 08b. Language Configuration remains deferred until it has a concrete specification and is not part of the completed epic scope.
 
 ---
 

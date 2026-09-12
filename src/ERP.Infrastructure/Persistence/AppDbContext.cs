@@ -42,6 +42,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<TaxCode> TaxCodes => Set<TaxCode>();
 
+    public DbSet<Country> Countries => Set<Country>();
+
+    public DbSet<Currency> Currencies => Set<Currency>();
+
+    public DbSet<PaymentTerm> PaymentTerms => Set<PaymentTerm>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

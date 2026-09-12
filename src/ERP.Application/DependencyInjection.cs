@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<SupplierManagementService>();
         services.AddScoped<WarehouseManagementService>();
         services.AddScoped<ReferenceDataManagementService>();
+        services.AddScoped<SharedReferenceDataService>();
 
         return services;
     }
