@@ -123,21 +123,150 @@ These entities are shared across Bounded Contexts through the Shared Kernel and 
 
 Sprint 08b completes EP-003 - Master Data. Language Configuration remains deferred pending a concrete specification.
 
+## Fiscal Extensions to Master Data — *Planned, EP-015*
+
+The commercial pivot ([ADR-0004](../decisions/ADR-0004.md)) extends existing Master Data aggregates with fiscal fields, and moves `TaxCode` into the FiscalCompliance context. These are extensions to existing aggregates, not new ones:
+
+- `Customer` and `Supplier` gain a `CustomerFiscalIdentity` value object (NIF, `customerKind`, `taxIdStatus`), a structured fiscal address and a fiscal country; both become company-scoped (`CompanyId`, [ADR-0005](../decisions/ADR-0005.md)).
+- `Product` gains a fiscal classification (`ProductType`, SAF-T code, fiscal/tax category, customs details) and `CompanyId`.
+- `Currency` (global catalogue) gains a separate small `ExchangeRate` aggregate (rates by date/source) rather than being inflated.
+- `TaxCode` **moves from Master Data (Sprint 08a) into the FiscalCompliance tax engine** and is extended (see §6); the Sprint-08a shape is superseded.
+
+Global catalogues (`Country`, `Currency`, `PaymentTerm`, exemption codes) remain **tenant-agnostic** (no `CompanyId`).
+
 ---
 
-# 5. Inventory, Sales, Purchasing and Finance Bounded Contexts
+# 5. Tenancy Bounded Context
 
-The Aggregates for these Bounded Contexts (Stock, Sales Orders, Purchase Orders, Invoices, Payments, and related entities) will be detailed here as each corresponding Epic is planned in the Product Backlog, following the same modelling approach defined in Section 2.
+*Planned, EP-015 (Sprint 09).* Introduced by [ADR-0005](../decisions/ADR-0005.md); establishes the company/taxpayer identity that scopes all fiscal and transactional data.
+
+## Company Aggregate — *Planned, EP-015*
+
+- Aggregate Root: `Company` (the tenant; `CompanyId` scopes company-owned aggregates)
+- Entities (via root): `Establishment` (1..N)
+- Owned data: `CompanyFiscalProfile` (NIF, `vatRegime` {General | Simplified | CashVat | Exclusion}, fiscal address, SAF-T Header data, references to taxpayer AGT credentials)
+- Value Objects: `Nif`, `FiscalAddress`
+- References by id: `SoftwareCertification`, `FiscalKey` (separate lifecycles)
+- Domain Events: `CompanyRegistered`, `EstablishmentAdded`, `FiscalProfileUpdated`
+
+Company-scoped data is filtered by `CompanyId` (application-level global filter now, PostgreSQL row-level security later). Global reference catalogues are exempt.
 
 ---
 
-# 6. Business Intelligence and AI Bounded Contexts
+# 6. FiscalCompliance Bounded Context
+
+*Planned, EP-015 (Sprints 09–12).* The single authority for Angolan fiscal rules, documents, numbering, signatures, SAF-T and AGT integration, per [ADR-0004](../decisions/ADR-0004.md) (see its §4.1 for the validated model and the owner-validated [discovery](../compliance/Angola-Fiscal-Compliance-Discovery.md)). This context is a data-model-first foundation that **precedes** the transactional modules. All aggregates are company-scoped except the global catalogues noted below.
+
+## Fiscal Reference & Tax-Engine Catalogues — *Planned, EP-015*
+
+Each is a small aggregate, versioned by `validFrom`/`validTo` and referenced by documents by id/code (with a snapshot stored on the document):
+
+- `FiscalDocumentType` (global, law-driven: `family` {SalesInvoice | Payment | MovementOfGoods | WorkingDocument}, `saftSection`, `saftTypeCode`, `agtDocumentType`, behaviour flags)
+- `TaxCode`/TaxTable (moved from Sprint 08a and extended: `taxType`, `taxCountryRegion`, `saftTaxCode` {NOR|ISE|RED|INT|NS}, `percentage`/`fixedAmount`, `regime`, `legalReference`, effective dates)
+- `TaxRegime`, `TaxRate`, `TaxRule`
+- `TaxExemptionReason` (the AGT M-code catalogue; seeded from official annexes)
+- `WithholdingTaxRule`, `StampDutyRule`
+- Domain Events: creation / deactivation / new-version events per catalogue
+
+## SoftwareCertification Aggregate — *Planned, EP-015*
+
+- Aggregate Root: `SoftwareCertification` (**global**, about the software product/producer)
+- Data: `validationNumberPublic` (e.g. `41/AGT/2019`), `validationNumberApi` (e.g. `C_134`), certified version, producer NIF, producer public key reference
+- Domain Events: `SoftwareCertificationRegistered`, `SoftwareVersionCertified`
+
+## FiscalKey Aggregate — *Planned, EP-015*
+
+- Aggregate Root: `FiscalKey` (owner: SoftwareProducer **or** Taxpayer; purpose: Software/Document/Request signature)
+- Rules: PEM; RSA ≥ 2048; **private key encrypted at rest / HSM**, never exposed; rotation and revocation supported; a revoked key blocks new signatures but historical ones remain verifiable
+- Domain Events: `FiscalKeyRegistered`, `FiscalKeyRotated`, `FiscalKeyRevoked`
+
+## FiscalSeries Aggregate — *Planned, EP-015 (Sprint 10)*
+
+- Aggregate Root: `FiscalSeries` (scoped by taxpayer + establishment + document type + fiscal year + contingency)
+- Owned: the **next-number reservation** (concurrency-safe boundary), the AGT-authorized range, `status` {Open | InUse | Closed}, `isDefault`; optional child `FiscalDocumentNumber` ledger (Reserved | Consumed | Voided)
+- Invariants: sequential, gap-free per series; respect the AGT authorized range; exactly one default per taxpayer+establishment+type+year
+- Domain Events: `SeriesRequested`, `SeriesAuthorized`, `NumberReserved`, `SeriesExtensionRequested`, `SeriesClosed`
+
+## FiscalDocument Aggregate — *Planned, EP-015 (Sprint 10)*
+
+A **single aggregate for all document families**, its behaviour driven by the referenced `FiscalDocumentType`.
+
+- Aggregate Root: `FiscalDocument`
+- Entities (via root): `FiscalDocumentLine`, `FiscalDocumentTax`, `FiscalDocumentWithholding`, `FiscalDocumentStampDuty`, `FiscalDocumentReference` (NC → original; receipt → settled document)
+- Value Objects: `FiscalDocumentTotals` (net / tax / gross / withholding / payable), `FiscalDocumentCurrency`, `Money`, `DocumentHash` (+ `PreviousHash`, the SAF-T chain), and **snapshots** (customer fiscal data, exemption mention + legal reference, software-certification number)
+- References by id: `Company`, `Establishment`, `Customer`, `Product` (per line), `FiscalDocumentType`, `FiscalSeries`, `TaxCode`, `TaxExemptionReason`
+- Invariants: **immutable once finalised** (corrections only via new documents); gap-free legal number taken from `FiscalSeries`; NC requires an original reference; decimal money with the AGT rounding rules; the SAF-T hash is chained per series/type and computed at finalisation
+- Domain Events (the `FiscalDocumentEvent` stream): `DraftCreated`, `DraftUpdated`, `Issued`, `Signed`, `SubmittedToAgt`, `AcceptedByAgt`, `RejectedByAgt`, `Cancelled`, `CorrectedByCreditNote`, `PrintedOriginal`, `PrintedCopy`, `ExportedToSaft`
+
+The **SAF-T document hash** (a `FiscalDocumentSignature` of type `SaftHash`) is owned by `FiscalDocument`; the **JWS document signature** is owned by `ElectronicInvoiceSubmission` (different, asynchronous lifecycle).
+
+## ElectronicInvoiceSubmission Aggregate — *Planned, EP-015 (Sprint 12)*
+
+- Aggregate Root: `ElectronicInvoiceSubmission` (references `FiscalDocument` by id)
+- Data: `jwsDocumentSignature` (RS256), `requestID`, state machine (`Pending → Submitted → Accepted / Rejected`)
+- Entities (via root): `AgtIntegrationLog`
+- Rules: **asynchronous outbox** — document finalisation must not block on the AGT; idempotent retries; resilient to AGT downtime
+- Domain Events: `SubmissionQueued`, `SubmissionSent`, `SubmissionAccepted`, `SubmissionRejected`
+
+## SaftExport Aggregate — *Planned, EP-015 (Sprint 11)*
+
+- Aggregate Root: `SaftExport` (per company + fiscal period; stores the schema version used)
+- Entities (via root): `SaftExportHistory`
+- Rules: XML validated against the official XSD (v1.01_01); validate references / TaxTable / totals / hash chain before export
+- Domain Events: `SaftExportGenerated`, `SaftExportValidated`
+
+## Auditability
+
+`AuditLog` is an append-only, cross-cutting audit facility (technical), complementary to the `FiscalDocument` event stream. Finalised fiscal records are immutable and retained for the legal period (≥ 5 years; parametrizable).
+
+## Aggregate boundaries (overview)
+
+```mermaid
+flowchart TB
+  subgraph Tenancy
+    Company["Company (root)<br/>+ Establishment<br/>+ CompanyFiscalProfile"]
+  end
+  subgraph FiscalCompliance
+    Cat["Reference / tax-engine catalogues<br/>FiscalDocumentType, TaxCode, TaxRegime,<br/>TaxRate, TaxRule, TaxExemptionReason,<br/>WithholdingTaxRule, StampDutyRule"]
+    Cert["SoftwareCertification"]
+    Key["FiscalKey"]
+    Series["FiscalSeries (root)<br/>+ number reservation"]
+    Doc["FiscalDocument (root)<br/>+ Line/Tax/Withholding/StampDuty/Reference<br/>+ Totals/Currency/Hash (VOs)"]
+    Sub["ElectronicInvoiceSubmission (root)<br/>+ AgtIntegrationLog"]
+    Saft["SaftExport (root) + History"]
+  end
+  subgraph MasterData
+    Cust["Customer / Supplier<br/>(+ CustomerFiscalIdentity)"]
+    Prod["Product (+ fiscal classification)"]
+    Curr["Currency + ExchangeRate"]
+  end
+  Company -. CompanyId .-> Doc
+  Company -. CompanyId .-> Series
+  Doc -- reserves number --> Series
+  Doc -- references by id --> Cat
+  Doc -- references by id --> Cust
+  Doc -- references by id --> Prod
+  Sub -- references by id --> Doc
+  Saft -- reads --> Doc
+  Doc -- SaftHash --> Doc
+  Sub -- JWS --> Key
+```
+
+---
+
+# 7. Inventory, Sales, Purchasing and Finance Bounded Contexts
+
+The Aggregates for these Bounded Contexts (Stock, Sales Orders, Purchase Orders, Invoices, Payments, and related entities) will be detailed here as each corresponding Epic is planned in the Product Backlog, following the same modelling approach defined in Section 2. Sales invoices, receipts and movement documents are **fiscal documents owned by the FiscalCompliance context** (§6); Sales/Finance build on that foundation rather than reimplementing fiscal rules.
+
+---
+
+# 8. Business Intelligence and AI Bounded Contexts
 
 These contexts consume domain data from the other Bounded Contexts rather than owning their own transactional Aggregates. Their models will be documented here once their supporting Epics (EP-008 and EP-009) are scheduled for implementation.
 
 ---
 
-# 7. Domain Events and Integration
+# 9. Domain Events and Integration
 
 Domain Events raised within one Bounded Context shall not directly invoke behaviour in another Bounded Context.
 
@@ -145,7 +274,7 @@ Cross-context reactions shall be handled through explicit, documented integratio
 
 ---
 
-# 8. Relationship with Other Documents
+# 10. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -157,7 +286,7 @@ This document should be read together with:
 
 ---
 
-# 9. Success Criteria
+# 11. Success Criteria
 
 The Domain Model shall be considered successful when:
 
