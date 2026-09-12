@@ -58,7 +58,7 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | --- | --- | --- |
 | 3.1 | AGT certification of invoicing software | ✅ Validated by owner (2026-09-12) |
 | 3.2 | Fiscal document types | ✅ Validated by owner (2026-09-12) |
-| 3.3 | Document series & legal numbering | ⏳ Pending |
+| 3.3 | Document series & legal numbering | ✅ Validated by owner (2026-09-12) |
 | 3.4 | Tamper-evidence: signature / hash | 🟡 Partly confirmed (hash string, JWS RS256) |
 | 3.5 | IVA regime | 🟡 Partly (14% standard; regime thresholds via 3.1) |
 | 3.6 | Withholding taxes & Imposto de Selo | ⏳ Pending |
@@ -209,14 +209,58 @@ allowsPaymentReceipt, requiresPaymentReceipt, isInsuranceSpecific, isActive`.
 **Residual `[VALIDAR]`:** the `PP` WorkType (no clear description); the exact contexts where `GR`
 belongs to MovementOfGoods vs WorkingDocuments; whether insurance-specific codes are in-scope for v1.
 
-## 3.3 Document series & legal numbering
+## 3.3 Document series & legal numbering — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** sequential, gap-free legal numbering per document series/type. `[VALIDAR]`
-- **Believed `[KB]`:** documents are identified by **series + number** (`DOCUMENTO = serie/fac/nº`).
-- **`[VALIDAR]`:** rules for series definition, per-year reset, format of the legal number, whether
-  numbering must be strictly sequential with no gaps, and how cancellations are represented.
-- **Platform impact:** a numbering service with strong guarantees (no gaps, concurrency-safe);
-  affects transaction boundaries and the data model.
+**Requirement (confirmed):** series and numbering are a **critical fiscal service, not a simple
+counter**. A `FiscalSeries` is a first-class fiscal entity, not free text on the document.
+
+**Legal basis** (owner-provided): DP 71/25 (sequential + chronological numbering **per document type
+and economic year**, one or more identified series); DE 317/20 (cancelled documents in SAF-T + watermark).
+
+**Series definition** — a series is scoped by **taxpayer + establishment + document type + fiscal
+year + contingency indicator**. In e-invoicing the series is requested from the AGT via `solicitarSerie`
+(`taxRegistrationNumber, seriesYear, documentType, establishmentNumber, seriesContingencyIndicator`).
+The series code embeds the year, 2 or 4 digits (`25`/`2025`); contingency appends `C` (`25C`/`2025C`).
+Examples: `FT2026-SEDE`, `FR2026-SEDE`, `NC2026-SEDE`, `FT2026-LOJA01`, `FT2026C-LOJA01`.
+
+**Sequential, no gaps, annual reset:** numbering is sequential and chronological per type and economic
+year → **one series per fiscal year**, closed at year end. Numbers are **never reused or deleted**;
+**cancelled documents stay in the sequence** (SAF-T exports them flagged so sequentiality is verifiable).
+The AGT returns an **authorized range** (`firstDocumentNo`, `lastDocumentNo`, `authorizedQuantity`); the
+ERP must respect it and request `estenderSerie` before exhausting the range. Number assignment must be
+**concurrency-safe** (serializable transaction reserving `nextNumber`), and must reject when the range is
+exhausted (pending AGT extension).
+
+**Legal number format** (AGT `documentNo`): `<internal document code> <series>/<sequential>`, the
+sequential having **no leading zeros**. Correct: `FT FT2026/1`, `NC NC2026/1`, `GT GT2026/1`. Avoid
+`FT FT2026/000001`, `FT-FT2026-1`, `FT/2026/1`. **Store the components separately**
+(`DocumentTypeCode`, `SeriesCode`, `SequentialNumber`, `LegalNumber`) — never only `LegalNumber`, since
+SAF-T, the AGT API, filtering and series control all need the parts.
+
+**Cancellation (confirmed):** a cancelled document keeps its number (not deleted, not freed). In SAF-T
+its status goes `N` (Normal) → `A` (Anulada); (re)prints carry an **"Anulado" watermark**; e-invoicing
+has `anularFactura` for a previously-accepted document. Per DE 317/20: **header-only fixes** (name/NIF)
+may be an **annulment**; **value/tax/quantity/price corrections must be a Nota de Crédito**, never a bare edit.
+
+**Rejected AGT documents (confirmed):** a document sent to and **rejected** by the AGT must **not** be
+corrected and resubmitted with the same number — reissue with a **new legal number**, linking the rejected one.
+
+**Multiple active series:** allowed per type (DP 71/25 "one or more"), but the ERP must **not** let users
+pick freely — enforce **exactly one default normal series** per `taxpayer + establishment + document type +
+fiscal year`, with an automatic `selectSeries(...)` policy (separation by establishment, channel, POS,
+normal-vs-contingency, self-billing, etc.).
+
+**Data-model (feeds ADR-0004 / the fiscal data model):**
+- `FiscalSeries` (Id, TaxpayerId, EstablishmentId, DocumentTypeCode, FiscalYear, SeriesCode,
+  SeriesContingencyIndicator {Normal|Contingency}, Status {Open|InUse|Closed}, FirstDocumentApproved,
+  LastDocumentApproved, First/LastDocumentCreated, NextNumber, IsDefault, agtSeriesRequestId, timestamps).
+  Unique by Taxpayer + Establishment + DocumentType + FiscalYear + SeriesCode.
+- `FiscalDocumentNumber` (Id, FiscalSeriesId, DocumentTypeCode, SeriesCode, SequentialNumber, LegalNumber,
+  ReservedAtUtc, ConsumedAtUtc, Status {Reserved|Consumed|Voided}).
+- `FiscalDocument.status`: Draft | Reserved | Finalized | Submitted | Accepted | Rejected | Cancelled |
+  Annulled; `invoiceStatusSaft` {N|A}; cancellation reason/audit + AGT cancellation request id.
+- Reinforces **Establishment** (from 3.1) and per-taxpayer scoping (`CompanyId`, ADR-0005) — series are
+  per taxpayer + establishment.
 
 ## 3.4 Tamper-evidence: digital signature / hash chaining
 
