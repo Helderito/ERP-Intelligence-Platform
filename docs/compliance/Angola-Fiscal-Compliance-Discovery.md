@@ -57,7 +57,7 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | # | Area | Status |
 | --- | --- | --- |
 | 3.1 | AGT certification of invoicing software | ✅ Validated by owner (2026-09-12) |
-| 3.2 | Fiscal document types | ⏳ Pending |
+| 3.2 | Fiscal document types | ✅ Validated by owner (2026-09-12) |
 | 3.3 | Document series & legal numbering | ⏳ Pending |
 | 3.4 | Tamper-evidence: signature / hash | 🟡 Partly confirmed (hash string, JWS RS256) |
 | 3.5 | IVA regime | 🟡 Partly (14% standard; regime thresholds via 3.1) |
@@ -142,14 +142,72 @@ when blocked by the applicant (missing docs, program, data dictionary or clarifi
 operational format and how it relates to the public number `[VALIDAR]`; confirm current SAF-T scope
 wording in the latest AGT communication `[VALIDAR]`.
 
-## 3.2 Fiscal document types
+## 3.2 Fiscal document types — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** support the legally recognised document types with correct fiscal treatment.
-- **Believed `[KB]`/`[VALIDAR]`:** at least **Fatura**, **Fatura-Recibo**, **Nota de Crédito**,
-  **Nota de Débito**, **Recibo**; possibly **Fatura Global/Proforma**, **Guia de Remessa/Transporte**.
-  KB confirms invoices and credit notes in the real deployment. `[VALIDAR]` the full legal list and
-  each type's rules (e.g. what can be credited, referencing the original document).
-- **Platform impact:** document-type taxonomy in the Sales/Finance domain; each type's invariants.
+**Requirement (confirmed):** document types are a **law-driven fiscal catalogue**, not a simple enum.
+The **same code can behave differently** depending on its SAF-T section, the AGT API `documentType`,
+and the operational flow — so the platform must model this as configurable reference data.
+
+**Legal basis** (owner-provided): DP 71/25 (lists documents that are *not* invoices though fiscally
+relevant); Decreto Executivo n.º 317/20 (invoice cancellation vs rectification).
+
+**Four families** (= SAF-T sections): `SalesInvoice`, `Payment`, `MovementOfGoods`, `WorkingDocument`.
+
+**Codes by SAF-T section / API:**
+
+- **SalesInvoices / InvoiceType:** `FT` Factura · `FR` Factura-Recibo · `FG` Factura Global ·
+  `GF` Factura Genérica · `FA` Factura de Adiantamento (API FE) · `AC` Aviso de Cobrança ·
+  `AR` Aviso de Cobrança/Recibo · `TV` Talão de Venda · `ND` Nota de Débito · `NC` Nota de Crédito ·
+  `AF` Autofacturação · insurance: `RP` Prémio · `RE` Estorno · `CS` Co-seguradoras ·
+  `LD` Co-seguradora Líder · `RA` Resseguro Aceite.
+- **Payments / PaymentType:** `RC` Recibo emitido · `RG` Outros recibos · `AR` Aviso de Cobrança/Recibo.
+- **MovementOfGoods / MovementType:** `GR` Guia de Remessa · `GT` Guia de Transporte ·
+  `GA` Movimentação de Activos Fixos Próprios · `GD` Guia/Nota de Devolução.
+- **WorkingDocuments / WorkType:** `CM` Consulta de Mesa · `CC` Crédito de Consignação · `GR` ·
+  `NR` Nota de Remessa · `FO` Folha de Obra · `NE` Nota de Encomenda · `OR` Orçamento · `PF` Pró-forma ·
+  `DC` Documento de conferência · `GC` Guia de Consignação · `OU` Outros · insurance codes · `PP` `[VALIDAR]` (in XSD, no clear description).
+- **API AGT `documentType`:** FA, FT, FR, FG, GF, AC, AR, TV, RC, RG, RE, ND, NC, AF, RP, RA, CS, LD.
+
+**Platform classification & obligations:**
+- **FiscalInvoice** (FT, FR, FG, GF, FA, AC, AR, TV, ND, NC, AF): series, sequential numbering,
+  signature/hash, SAF-T, AGT submission (when applicable), controlled (re)printing, fiscal state.
+- **PaymentDocument** (RC, RG, AR): prove full/partial payment; SAF-T `Payments`; API requires `paymentReceipt`.
+- **MovementDocument** (GR, GT, GA, GD): goods circulation; SAF-T `MovementOfGoods`.
+- **WorkingDocument** (PF, OR, NE, FO, CM, DC, GC, OU): must **not** settle tax or post receivables like
+  an invoice, but many still appear in SAF-T `WorkingDocuments` and may need numbering/hash/traceability.
+
+**Per-type rules (confirmed):**
+- **FT** — issued up to the 5th working day after the operation; sequential number, issuer/customer, lines, taxes, totals.
+- **FR** — invoice + receipt in one; used when sale and full payment coincide; no separate receipt.
+- **FT + separate RC/RG** — when payment is later/partial; FT creates the receivable, RC/RG settles it.
+- **FG** — aggregates operations over a period (max monthly), backed by individualising documents; issued up to 5th working day after period end.
+- **GF** — monthly aggregation typical of financial institutions.
+- **NC** — cancels/rectifies an issued invoice; must state reason, **reference the original document**,
+  and have proof the buyer was informed; **value corrections go through NC, never by editing the invoice**.
+- **ND** — for debit situations without an invoice obligation; **no tax settlement** on ND (DP 71/25);
+  e.g. pass-through of third-party expenses at full value without IVA.
+- **RC/RG** — mandatory on any full/partial payment of an invoiced good/service; include withholdings/
+  reverse-charged/captive taxes when applicable; does not replace an invoice (except FR-type).
+- **GR/GT** — not invoices; accompany goods circulation; `MovementOfGoods` (or `WorkingDocuments` when used as a conference/work doc).
+- **PF** — not an invoice; no tax settlement, no receivable, no fiscal obligation; **own series, never sharing invoice numbering**.
+- **Cancellation (DE 317/20):** header-data fixes (name/NIF) may be a **cancellation**; **value
+  changes must be a Nota de Crédito**.
+
+**Data-model (feeds ADR-0004 / the fiscal data model) — `FiscalDocumentType` catalogue:**
+`code, name, family (SalesInvoice|Payment|MovementOfGoods|WorkingDocument), agtDocumentType,
+saftSection, saftTypeCode, isTaxRelevant, isInvoice, isPayment, isMovement, signsHash, submitsToAgt,
+affectsAccountsReceivable, affectsStockMovement, requiresOriginalDocumentReference, allowsTaxSettlement,
+allowsPaymentReceipt, requiresPaymentReceipt, isInsuranceSpecific, isActive`.
+
+**Minimum domain rules (confirmed):**
+- `NC` ⇒ require `originalDocumentId` + `correctionReason`; forbid editing original totals.
+- `FR` ⇒ require payment data; mark invoice paid. `FT` ⇒ allow later receipt.
+- `PF|OR|NE` ⇒ forbid tax settlement/receivable; allow conversion/reference to FT/FR.
+- `GR|GT` ⇒ require shipFrom, shipTo, movementDate, goods lines.
+- finalised ⇒ forbid delete/edit of fiscal fields; corrections only via the allowed document flow.
+
+**Residual `[VALIDAR]`:** the `PP` WorkType (no clear description); the exact contexts where `GR`
+belongs to MovementOfGoods vs WorkingDocuments; whether insurance-specific codes are in-scope for v1.
 
 ## 3.3 Document series & legal numbering
 
