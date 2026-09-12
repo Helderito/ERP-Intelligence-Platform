@@ -60,7 +60,7 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | 3.2 | Fiscal document types | ✅ Validated by owner (2026-09-12) |
 | 3.3 | Document series & legal numbering | ✅ Validated by owner (2026-09-12) |
 | 3.4 | Tamper-evidence: signature / hash | ✅ Validated by owner (2026-09-12) |
-| 3.5 | IVA regime | 🟡 Partly (14% standard; regime thresholds via 3.1) |
+| 3.5 | IVA regime (rates, regimes, cash VAT, captivation, exemptions) | ✅ Validated by owner (2026-09-12) |
 | 3.6 | Withholding taxes & Imposto de Selo | ⏳ Pending |
 | 3.7 | SAF-T (AO) | ⏳ Pending |
 | 3.8 | Party tax identification (NIF) | ⏳ Pending |
@@ -319,16 +319,69 @@ hash, "Anulado" watermark if cancelled, and a "2.ª via" mention on reprints.
 **Residual `[VALIDAR]`:** exact SAF-T (AO) hash algorithm + key size vs the official spec; exact
 `jwsDocumentSignature` field set vs the current API spec; the FE certification-number format in the PDF line.
 
-## 3.5 IVA (VAT) regime
+## 3.5 IVA (VAT) regime — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** correct IVA calculation, multiple rates, exemptions with legal reason codes.
-- **Believed `[KB]`:** multiple IVA codes/rates in use — observed **14** (standard), **7, 5, 2, 1,
-  0** and a special/exempt code (`90`); rate applied as `Taxa/100`. `[VALIDAR]` the current legal
-  rates, which goods/services map to each, the exemption reason codes required on documents, and
-  reduced-regime rules (e.g. specific provinces/sectors). 
-- **Platform impact:** our `TaxCode` (code, name, rate 0–100) is directionally right but needs:
-  exemption **reason codes**, a **tax category/type**, and effective-dating of rates. Feeds a
-  revisit of the Sprint 08a `TaxCode` model.
+**Requirement (confirmed):** IVA must be a **parametrizable Tax Engine** — rates, regimes, exemptions,
+captivation/withholding, effective dates, region and taxable-person type — **never a fixed rate in code**.
+
+**Legal basis** (owner-provided): Lei n.º 14/23 (art. 19.º, republishes the IVA Code); Decreto
+Legislativo Presidencial n.º 4/22 (Regime Especial de Cabinda); AGT / Portal do Contribuinte.
+
+**Rates and application:**
+- **14%** — general (imports, goods, services).
+- **7%** — Regime Simplificado; and hotelaria/restauração (only when the eligibility conditions are met).
+- **5%** — broad-consumption food & agricultural inputs listed in the IVA Code annexes.
+- **2%** — Cabinda special regime: port services & public water distribution.
+- **1%** — Cabinda special regime: imports/goods transmissions covered.
+- **0%** — zero-rated / exempt / not-subject — **always with a reason code + legal ground**.
+
+**Special regimes:**
+- **General:** IVA settled on the invoice; deduction per rules; periodic declaration; SAF-T; validated software.
+- **Simplificado (7%):** invoice must print **"IVA - Regime Simplificado"**; tax computed on **amounts
+  actually received** (incl. exempt ops, advances) → receipts matter for apuramento. Regime shown in the fiscal profile.
+- **Hotelaria/Restauração (7%):** **eligibility-based**, not a flat rate — depends on cumulative
+  conditions (registered premises/vehicles, e-invoicing, prior declarations). Model `VatRateEligibility`
+  per taxpayer/activity; fall back to 14% if not eligible.
+- **Food/Agri inputs (5%):** driven by a **product tax classification catalogue** (NCM/pauta/fiscal
+  category), never hard-coded by product name → `ProductTaxClassification(productId, taxCategory,
+  defaultVatRate, legalReference, validFrom/To)`.
+- **Cabinda:** region + **effective dates** matter (regime evolved). Rules keyed on taxpayer/operation
+  location + product/service eligibility (1% goods/imports; 2% port services & public water).
+- **0% / Exempt / Not-subject / Reverse-charge (autoliquidação):** distinct kinds — when rate 0 or no
+  settlement, the invoice requires **exemption reason code + legal reference + PDF mention**. (This
+  defines area 3.6/exemptions too; the official reason-code catalogue is loaded from AGT annexes — `[VALIDAR]`.)
+
+**Regime de Caixa (Cash VAT) — Angola-specific, high impact:** tax becomes due on **receipt** (full or
+partial), for the amount received. Requires a **special series**, the mention **"IVA - Regime de Caixa"**,
+a **mandatory receipt on payment** (communicated electronically); deduction depends on holding the
+invoice-receipt/receipt; if unpaid by the **12th month** after issue, the tax becomes due then. → the
+model must link `Invoice → Payment → Receipt → VatDueEvent`; VAT is **not** recognised on the invoice alone.
+
+**IVA cativo (captivation by certain buyers):**
+- **100%** captivation: oil investors, the State and its bodies/organs (even if personalised), local
+  authorities (autarquias) — **excluding public companies**.
+- **50%** captivation: BNA, commercial banks, insurers, reinsurers, telecom operators.
+- The captor withholds that share of the invoice IVA and remits it to the State; the supplier is paid
+  `grossTotal − captivatedVat`. DP 71/25 requires receipts to show retained/reverse-charged/**captive**
+  taxes. → `VatCaptivationProfile(customerId, captivationRate {0|50|100}, legalBasis, validFrom/To)`;
+  `InvoiceTotals` and `Receipt` carry captivated amount and amount payable to supplier.
+
+**Data-model / Tax Engine (feeds ADR-0004; supersedes the Sprint-08a `TaxCode` shape):**
+`TaxRegime {General|Simplified|CashVat|Exclusion}`; `TaxRate(taxType, code, rate, category,
+legalReference, validFrom/To, region, appliesToProduct/ServiceCategory)`; `TaxRule(taxpayerRegime,
+customerType, product/serviceTaxCategory, province, operationType, rate, exemptionReasonRequired,
+invoiceMention, effectiveFrom/To)`; `VatCaptivationProfile`; `ProductTaxClassification`;
+`VatRateEligibility`; `TaxExemptionReason(code, description, legalReference, appliesToTaxType,
+validFrom/To)`; `FiscalDocumentTaxLine(taxType, taxCode, taxRate, taxableAmount, taxAmount,
+exemptionReasonCode, legalReference, captivatedRate, captivatedAmount)`.
+
+**PDF impacts:** per-rate breakdown (taxable base + IVA per rate); exemption reason when 0%; the
+"Regime Simplificado" / "Regime de Caixa" mentions; captive IVA; total payable to supplier; captive
+IVA to be remitted by the buyer.
+
+**Residual `[VALIDAR]`:** the official product/service→rate mapping annexes; the official
+`TaxExemptionReason` catalogue; the exact current Cabinda rates/effective dates vs Lei 14/23 vs DLP 4/22;
+the precise Simplificado apuramento formula on received amounts.
 
 ## 3.6 Withholding taxes & Imposto de Selo
 
