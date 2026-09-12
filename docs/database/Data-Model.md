@@ -149,9 +149,11 @@ and evolved into managed reference data in Sprint 08a. Their codes remain immuta
 audit timestamps and soft deactivation. Product creation and editing can select active records only,
 while existing Products retain their foreign-key references if a referenced item is deactivated.
 
-`TaxCode` was implemented in Sprint 08a as independent managed reference data with an immutable
-code, name, percentage rate (`0` to `100`), audit timestamps and soft deactivation. Assigning a
-TaxCode to Product and calculating tax remain future work.
+`TaxCode` was implemented in Sprint 08a as independent managed reference data. Under the commercial
+pivot ([ADR-0004](../decisions/ADR-0004.md)) it **moves into the FiscalCompliance context and is
+extended** into a full tax catalogue (see §5 · FiscalCompliance), and `Product` gains a fiscal
+classification (`ProductType`, SAF-T code, fiscal/tax category, customs details). These fiscal
+extensions are owned by **EP-015**.
 
 ---
 
@@ -170,7 +172,55 @@ transfers, bin locations, picking and default-warehouse rules remain outside thi
 
 ---
 
-Future domains such as Inventory, Purchasing and Sales will introduce additional aggregates following the same principles.
+## Company (Tenancy) — *planned, EP-015*
+
+Aggregate Root
+
+- Company — the tenant/taxpayer (introduced by [ADR-0005](../decisions/ADR-0005.md))
+
+Related data
+
+- Establishment (managed through Company)
+- CompanyFiscalProfile (NIF, VAT regime, fiscal address, SAF-T header data, AGT credential references)
+
+`Company` establishes the `CompanyId` that scopes all company-owned data (see the multi-company note below).
+
+---
+
+## FiscalCompliance — *planned, EP-015*
+
+The FiscalCompliance context (Angola / AGT) owns the fiscal catalogues, documents, numbering,
+signatures, SAF-T export and AGT integration. Its full aggregate set, invariants and events are
+defined in the [Domain Model](Domain-Model.md) §6 and [ADR-0004](../decisions/ADR-0004.md) §4.1.
+Conceptually the main aggregates are:
+
+- **Fiscal catalogues** (reference data, versioned): FiscalDocumentType, TaxCode/TaxTable (moved and
+  extended from Sprint 08a), TaxRegime, TaxRate, TaxRule, TaxExemptionReason (AGT M-codes),
+  WithholdingTaxRule, StampDutyRule.
+- **SoftwareCertification** (global) and **FiscalKey** (producer vs taxpayer signing keys).
+- **FiscalSeries** — legal series with concurrency-safe, gap-free numbering.
+- **FiscalDocument** — a single aggregate for all document families (invoices, receipts, movement
+  and working documents), driven by FiscalDocumentType; owns lines, taxes, withholding, stamp duty,
+  references, totals, currency and the SAF-T document hash; immutable once finalised.
+- **ElectronicInvoiceSubmission** — asynchronous AGT submission (JWS RS256, requestID/status, integration log).
+- **SaftExport** (+ history) — SAF-T (AO) v1.01_01 XML validated against the official XSD.
+
+Sales invoices, receipts and movement documents are fiscal documents owned by this context;
+Sales/Purchasing/Finance build on it rather than reimplementing fiscal rules.
+
+---
+
+## Multi-company (tenancy)
+
+Per [ADR-0005](../decisions/ADR-0005.md), the platform uses a **shared schema with a `CompanyId`**
+on every company-owned entity (Master Data and all fiscal/transactional data), filtered by the
+current company (application-level filter now, database row-level security later). Global reference
+catalogues (`Country`, `Currency`, `PaymentTerm`, exemption codes) are **tenant-agnostic** and carry
+no `CompanyId`.
+
+---
+
+Future domains such as Inventory, Purchasing and Sales will introduce additional aggregates following the same principles, all built on the Company/tenant and FiscalCompliance foundations above.
 
 ---
 
@@ -217,7 +267,9 @@ Sprint 08b completes the Master Data epic with three seeded, read-only reference
 - `Currency`: deterministic identifier, ISO 4217 code and name. The curated seed includes EUR, USD, AOA, BRL and GBP.
 - `PaymentTerm`: deterministic identifier, code, name and non-negative `NetDays`. The seed provides NET0, NET15, NET30, NET60 and NET90.
 
-These records have no user-managed lifecycle, timestamps or soft-delete state. They are selection data for future Purchasing, Sales and Finance modules; exchange rates and transactional rules remain outside this model. With their implementation, EP-003 - Master Data is complete.
+These records have no user-managed lifecycle, timestamps or soft-delete state. They are selection data for future Purchasing, Sales and Finance modules. With their implementation, EP-003 - Master Data is complete.
+
+Under EP-015, `Currency` gains a separate `ExchangeRate` aggregate (rates by date and source) to support foreign-currency and export documents; the seeded currency list itself stays tenant-agnostic. `TaxCode` is no longer plain reference data — it moves into the FiscalCompliance tax engine (see §5).
 
 Examples:
 
