@@ -62,7 +62,7 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | 3.4 | Tamper-evidence: signature / hash | ✅ Validated by owner (2026-09-12) |
 | 3.5 | IVA regime (rates, regimes, cash VAT, captivation) | ✅ Validated by owner (2026-09-12) |
 | 3.5b | Tax exemptions / non-liability / regime codes (M-codes) | ✅ Validated by owner (2026-09-12) |
-| 3.6 | Withholding taxes & Imposto de Selo | ⏳ Pending |
+| 3.6 | Withholding taxes & Imposto de Selo | ✅ Validated by owner (2026-09-12) |
 | 3.7 | SAF-T (AO) | ⏳ Pending |
 | 3.8 | Party tax identification (NIF) | ⏳ Pending |
 | 3.9 | Auditability & record integrity | ⏳ Pending |
@@ -434,13 +434,56 @@ mention + default code (`M00`/`M04`); the same reason flows to PDF, SAF-T and th
 **Residual `[VALIDAR]`:** the IS (6.5) and IEC (6.6) exemption catalogues (only IVA/6.4 captured here);
 exact `AppliesToTaxCode` mapping for `M00`.
 
-## 3.6 Withholding taxes & Imposto de Selo
+## 3.6 Withholding taxes & Imposto de Selo — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** support withholding tax (retenção na fonte) and stamp duty (Imposto de Selo)
-  where applicable. `[VALIDAR]`
-- **`[VALIDAR]`:** which transactions trigger withholding, the rates, who withholds, and how it
-  appears on documents and in reporting; stamp-duty applicability and rates.
-- **Platform impact:** tax engine beyond simple IVA; document totals model; reporting.
+**Requirement (confirmed):** keep **three distinct concepts** separate: (a) **IVA cativo** (captive VAT,
+§3.5); (b) **withholding at source** on income (II, IRT, IAC, IP…); (c) **Imposto de Selo** (stamp duty),
+which may be a **line tax** or a **withholding**. All are **versioned fiscal rules, not hard-coded** in Sales.
+
+**AGT API `withholdingTaxList` types:** `IRT`, `II`, `IS`, `IVA`, `IP`, `IAC`, `OU`, plus future
+`IRPC`/`IRPS` and `CFQA` (Contribuição para Formação de Quadros Angolanos).
+
+**Withholding at source — rates & triggers (owner-provided; Lei n.º 26/20):**
+- **Imposto Industrial (II), resident services:** **6.5%**; withheld by the paying/acquiring entity at
+  payment; remitted by the last working day of the following month.
+- **II, non-resident services:** **15%** (accidental/without permanent establishment in Angola); withheld by the Angolan payer.
+- **Self-billing (AF):** goods **2%**, services **6.5%** (non-liberatory); withheld by the acquirer
+  issuing the self-invoice; remitted within 5 days.
+- **IRT (individuals, groups B/C) providing services:** typically **6.5%**; withheld by the payer with (simplified) accounting.
+- **IAC (capital income — interest/dividends/royalties):** parametrizable rule-based rate (not hard-coded).
+- **IVA cativo:** represented in the API as `withholdingTaxType = IVA` (see §3.5 for the 50%/100% rules).
+
+**Effect on totals (confirmed):** withholding does **not** reduce the taxable base or the IVA — it reduces
+the cash paid to the supplier. `GrossTotal = NetTotal + TaxPayable`; `NetPayable = GrossTotal − WithholdingTotal`.
+
+**Representation:**
+- **PDF:** show the withholding line(s), stamp duty, and the net amount payable.
+- **AGT API:** document-level `withholdingTaxList[{withholdingTaxType, withholdingTaxDescription, withholdingTaxAmount}]`.
+  For receipt-type docs (`RC`/`RG`/`AR`) the amount is aggregated from the source documents, credit notes counted negative.
+- **SAF-T (AO):** the `WithholdingTax` element (`WithholdingTaxType`, `WithholdingTaxDescription`, `WithholdingTaxAmount`).
+
+**Imposto de Selo — applicability & key rates (owner-provided):**
+- **Recibo de quitação** (commercial/industrial receipts): **1%** (except residential lease by individuals) —
+  most relevant to invoicing/receipts.
+- **Credit operations:** ≤1yr 0.5% · >1yr 0.4% · ≥5yr 0.3% · current-account/overdraft/indefinite 0.1% · housing 0.1%.
+- **Financial institutions/commissions:** discount/loan interest 0.2% · bills 0.5% · guarantee commissions
+  0.5% · other financial-service commissions 0.7% · foreign drafts/gold/public-fund sales 1%.
+- **Leasing:** immovable 0.3% · movable-with-maintenance 0.4%. **Insurance:** caução 0.3% · maritime/river 0.3%
+  · air 0.2% · transported-goods 0.1% · other 0.3% · brokerage commissions 0.4%. **Publicity:** fixed amounts.
+- IS appears either as a **line tax** (`taxType=IS`, `taxCode` e.g. `23.3`, `taxPercentage`) when it belongs
+  to the operation/line, or in **`withholdingTaxList`** (`withholdingTaxType=IS`) when aggregated on the receipt/document.
+
+**Data-model (feeds ADR-0004; versioned rules):**
+- `FiscalDocumentTotals(netTotal, taxPayable, grossTotal, withholdingTotal, payableTotal)`.
+- `WithholdingTaxRule(Code, TaxType {II|IRT|IAC|IVA|IS|IP|OU}, Rate, AppliesToSupplier/Customer/Operation/
+  DocumentType, LegalReference, ValidFrom/To, IsActive)` + `FiscalDocumentWithholding(WithholdingTaxType,
+  Description, TaxableBase, Rate, Amount, LegalReference, IsCaptivation)`.
+- `StampDutyRule(Code, TaxCode, RateType {Percentage|FixedAmount}, Rate, FixedAmount, AppliesToOperation/
+  DocumentType, LegalReference, ValidFrom/To, IsActive)` + `FiscalDocumentStampDuty(StampDutyRuleId,
+  TaxableBase, Rate, Amount, LegalReferenceSnapshot)`.
+
+**Residual `[VALIDAR]`:** confirm current IAC rates by income type; exact IS `taxCode` values (stamp-duty
+table entries) for line-tax use; remittance deadlines per tax; whether CFQA is in v1 scope.
 
 ## 3.7 SAF-T (AO) reporting
 
