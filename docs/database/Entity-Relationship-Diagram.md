@@ -223,7 +223,175 @@ erDiagram
 
 ---
 
-# 5. Shared Reference Data
+# 5. Tenancy & FiscalCompliance Bounded Contexts — *planned, EP-015*
+
+Conceptual ERD for the commercial-pivot foundation ([ADR-0004](../decisions/ADR-0004.md),
+[ADR-0005](../decisions/ADR-0005.md); [Domain Model](Domain-Model.md) §5–6). Attributes are
+representative, not exhaustive; all company-owned tables also carry `CompanyId` (tenancy), while
+global catalogues do not. Existing Master Data entities are **extended** under EP-015 (not redrawn
+here): `Customer`/`Supplier` gain a fiscal identity (NIF, `customerKind`, fiscal address) and
+`CompanyId`; `Product` gains a fiscal classification (`ProductType`, SAF-T code, tax category,
+customs) and `CompanyId`; `Currency` gains an `ExchangeRate` table.
+
+```mermaid
+erDiagram
+    COMPANY ||--o{ ESTABLISHMENT : has
+    COMPANY ||--|| COMPANY_FISCAL_PROFILE : has
+    COMPANY ||--o{ FISCAL_SERIES : owns
+    ESTABLISHMENT ||--o{ FISCAL_SERIES : scopes
+    FISCAL_DOCUMENT_TYPE ||--o{ FISCAL_SERIES : "typed as"
+    FISCAL_SERIES ||--o{ FISCAL_DOCUMENT : numbers
+    FISCAL_DOCUMENT ||--o{ FISCAL_DOCUMENT_LINE : has
+    FISCAL_DOCUMENT ||--o{ FISCAL_DOCUMENT_TAX : has
+    FISCAL_DOCUMENT ||--o{ FISCAL_DOCUMENT_WITHHOLDING : has
+    FISCAL_DOCUMENT ||--o{ FISCAL_DOCUMENT_REFERENCE : has
+    FISCAL_DOCUMENT ||--o{ ELECTRONIC_INVOICE_SUBMISSION : "submitted via"
+    FISCAL_DOCUMENT }o--|| CUSTOMER : "billed to"
+    FISCAL_DOCUMENT_LINE }o--|| PRODUCT : "of"
+    FISCAL_DOCUMENT_LINE }o--|| TAX_CODE : "taxed as"
+    FISCAL_DOCUMENT_TAX }o--o| TAX_EXEMPTION_REASON : "exempt by"
+    COMPANY ||--o{ SAFT_EXPORT : produces
+
+    COMPANY {
+        guid Id PK
+        string Name "max 200 chars"
+        bool IsActive
+    }
+    ESTABLISHMENT {
+        guid Id PK
+        guid CompanyId FK
+        string Code
+        string Name
+        string EstablishmentNumber "AGT"
+    }
+    COMPANY_FISCAL_PROFILE {
+        guid Id PK
+        guid CompanyId FK
+        string Nif
+        string VatRegime "General|Simplified|CashVat|Exclusion"
+        string FiscalAddress
+        string SoftwareValidationNumber
+    }
+    SOFTWARE_CERTIFICATION {
+        guid Id PK
+        string ValidationNumberPublic "e.g. 41/AGT/2019"
+        string ValidationNumberApi "e.g. C_134"
+        string CertifiedVersion
+        string ProducerNif
+    }
+    FISCAL_KEY {
+        guid Id PK
+        string OwnerType "SoftwareProducer|Taxpayer"
+        guid OwnerId "nullable"
+        string KeyPurpose "Software|Document|Request"
+        string PublicKeyPem
+        datetime RevokedAt "nullable"
+    }
+    FISCAL_DOCUMENT_TYPE {
+        guid Id PK
+        string Code "FT, FR, NC, RC, GT..."
+        string Family "SalesInvoice|Payment|MovementOfGoods|WorkingDocument"
+        string SaftTypeCode
+        string AgtDocumentType
+    }
+    TAX_CODE {
+        guid Id PK
+        guid CompanyId FK "nullable if global"
+        string TaxType "IVA|IS|NS|OUTROS"
+        string SaftTaxCode "NOR|ISE|RED|INT|NS"
+        decimal Percentage "nullable"
+        datetime ValidFrom
+        datetime ValidTo "nullable"
+    }
+    TAX_EXEMPTION_REASON {
+        guid Id PK
+        string Code "M10, M02, M00, M04..."
+        string TaxType "IVA|IS|IEC"
+        string Classification "Exempt|NotSubject|Simplified|Exclusion|ZeroRated"
+        string LegalReference
+    }
+    FISCAL_SERIES {
+        guid Id PK
+        guid CompanyId FK
+        guid EstablishmentId FK
+        string DocumentTypeCode
+        int FiscalYear
+        string SeriesCode
+        string ContingencyIndicator "Normal|Contingency"
+        int NextNumber
+        int LastDocumentApproved
+        string Status "Open|InUse|Closed"
+        bool IsDefault
+    }
+    FISCAL_DOCUMENT {
+        guid Id PK
+        guid CompanyId FK
+        guid FiscalSeriesId FK
+        guid CustomerId FK
+        string LegalNumber "FT FT2026/1"
+        string Status "Draft|Issued|Submitted|Accepted|Rejected|Cancelled"
+        string InvoiceStatusSaft "N|A"
+        datetime IssueDate
+        decimal NetTotal
+        decimal TaxPayable
+        decimal GrossTotal
+        decimal WithholdingTotal
+        decimal PayableTotal
+        string Hash
+        string PreviousHash
+    }
+    FISCAL_DOCUMENT_LINE {
+        guid Id PK
+        guid FiscalDocumentId FK
+        guid ProductId FK "nullable"
+        string Description
+        decimal Quantity
+        decimal UnitPrice
+        decimal NetAmount
+    }
+    FISCAL_DOCUMENT_TAX {
+        guid Id PK
+        guid FiscalDocumentLineId FK
+        string TaxType
+        string TaxCode
+        decimal TaxPercentage
+        decimal TaxAmount
+        string ExemptionCodeSnapshot "nullable"
+        string ExemptionMentionSnapshot "nullable"
+    }
+    FISCAL_DOCUMENT_WITHHOLDING {
+        guid Id PK
+        guid FiscalDocumentId FK
+        string WithholdingTaxType "II|IRT|IAC|IVA|IS|IP|OU"
+        decimal Rate
+        decimal Amount
+    }
+    FISCAL_DOCUMENT_REFERENCE {
+        guid Id PK
+        guid FiscalDocumentId FK
+        string ReferencedLegalNumber
+        string Reason "nullable"
+    }
+    ELECTRONIC_INVOICE_SUBMISSION {
+        guid Id PK
+        guid FiscalDocumentId FK
+        string RequestId "nullable"
+        string State "Pending|Submitted|Accepted|Rejected"
+        string JwsDocumentSignature
+    }
+    SAFT_EXPORT {
+        guid Id PK
+        guid CompanyId FK
+        int FiscalYear
+        int FiscalMonth
+        string SchemaVersion "1.01_01"
+        datetime GeneratedAtUtc
+    }
+```
+
+---
+
+# 6. Shared Reference Data
 
 `Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog, then evolved additively into managed, auditable, soft-deletable data in Sprint 08a. Existing Product foreign keys remain intact, while Product selection endpoints return active records only. `TaxCode` was implemented in Sprint 08a as independent managed reference data. `TaxCodeId` is intentionally not present in the Product table or EF model; the dashed conceptual relationship above remains a future Product Catalog tax assignment, outside Sprint 08a. Tax calculations and fiscal rules are also out of scope.
 
@@ -235,7 +403,7 @@ erDiagram
 
 ---
 
-# 6. Diagram Governance
+# 7. Diagram Governance
 
 This diagram is illustrative of the conceptual model, not a physical database schema.
 
@@ -245,7 +413,7 @@ This diagram shall be updated whenever a new Aggregate is added to the Domain Mo
 
 ---
 
-# 7. Relationship with Other Documents
+# 8. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -257,6 +425,6 @@ This document should be read together with:
 
 ---
 
-# 8. Success Criteria
+# 9. Success Criteria
 
 This diagram shall be considered successful when it remains an accurate, up-to-date reflection of the entities defined in the Data Model and Domain Model, allowing engineers and AI assistants to reason about relationships without inspecting the database directly.
