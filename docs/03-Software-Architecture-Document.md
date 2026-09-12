@@ -184,7 +184,7 @@ Stock, Movements, Physical Inventories.
 
 ## Sales
 
-Customers, Sales Orders, Invoices.
+Customers, Sales Orders, Invoices. Sales invoices and related fiscal documents are **fiscal documents owned by the FiscalCompliance context** (numbering, hash, signature, SAF-T); Sales references that context rather than reimplementing fiscal rules.
 
 ## Purchasing
 
@@ -193,6 +193,10 @@ Suppliers, Purchases, Goods Receipts.
 ## Finance
 
 Treasury, Payments, Receipts.
+
+## FiscalCompliance
+
+Angola fiscal compliance (AGT): company tax profile and establishments, fiscal document types, series and gap-free legal numbering, tax regimes, tax codes and exemption reasons, fiscal documents with a SAF-T hash chain, electronic-invoice submission to the AGT, and SAF-T (AO) export. This context is a **data-model-first foundation that precedes the transactional modules** and is the single authority for fiscal rules. See [ADR-0004](decisions/ADR-0004.md).
 
 ## Business Intelligence
 
@@ -235,6 +239,14 @@ Authorization:
 - Permission-based policies implemented for Identity administration and Product Catalog endpoints
 
 Bootstrap: an `Administrator` role holding every administrative permission is seeded via migration, and the first user to register is automatically granted that role. Without this, no user could ever manage roles, because every management endpoint requires a permission only reachable through an existing administrator. Subsequent users receive no role by default.
+
+Fiscal security (Angola / AGT — see [ADR-0004](decisions/ADR-0004.md)):
+
+- **Invoicing software certification** by the AGT is a prerequisite for issuing fiscal documents in production.
+- **Two-level key management:** the software-producer key pair is generated locally and its private key never leaves the producer environment (public key registered in the Partner Portal); taxpayer keys are held per company. No private key is committed or shipped to the client.
+- **Document integrity:** finalised fiscal documents are immutable and carry a SAF-T hash chain; electronic-invoice submissions to the AGT carry JWS (RS256) signatures. These two mechanisms are modelled separately.
+
+Multi-company isolation: company-scoped data is filtered by `CompanyId` (application-level global filter now, PostgreSQL row-level security later). See [ADR-0005](decisions/ADR-0005.md).
 
 ---
 
@@ -368,7 +380,7 @@ The architecture shall allow:
 - Multi-user support.
 - Cloud Native deployment.
 
-Multi-company support remains a long-term goal but is explicitly deferred beyond the MVP: no tenant or company identifier exists in the current Data Model or Domain Model. See [ADR-0003](decisions/ADR-0003.md).
+Multi-company support is adopted via a **shared-schema `CompanyId`** model with row-level filtering, introduced ahead of the fiscal and transactional modules because Angolan fiscal identity is per taxpayer (NIF, series, keys, SAF-T and AGT submissions are all company-scoped). Global reference catalogues (Country, Currency, Payment Term) remain tenant-agnostic. This revisits and supersedes the earlier deferral. See [ADR-0005](decisions/ADR-0005.md) (which revisits [ADR-0003](decisions/ADR-0003.md)).
 
 ---
 

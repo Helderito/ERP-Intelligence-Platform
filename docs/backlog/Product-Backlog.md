@@ -64,6 +64,15 @@ The ERP Intelligence Platform is organised into the following Epics.
 | EP-012  | Mobile                  |
 | EP-013  | DevOps                  |
 | EP-014  | Observability           |
+| EP-015  | Angola Fiscal Compliance |
+
+---
+
+## Delivery Sequence (updated 2026-09-12)
+
+Following the commercial pivot to an Angolan fiscal ERP (Project Charter §1–2), the delivery order is re-sequenced so fiscal compliance is a **foundation, not a late add-on**:
+
+**EP-015 — Angola Fiscal Compliance (P0) is delivered before EP-004 Inventory and EP-006 Sales.** SAF-T (AO), electronic invoicing and AGT certification impose fields and invariants on Company, Customer, Supplier, TaxCode, Currency and all fiscal documents; building the transactional modules first would require rebuilding them. Sales, Purchasing and Finance are then built **on top of** the FiscalCompliance foundation (a sales invoice *is* a fiscal document). See [ADR-0004](../decisions/ADR-0004.md) and [ADR-0005](../decisions/ADR-0005.md).
 
 ---
 
@@ -146,7 +155,7 @@ sprints (05–08).
 * Currencies (seeded read-only reference data implemented in Sprint 08b)
 * Payment Terms (seeded read-only reference data implemented in Sprint 08b)
 
-EP-003 was completed by Sprint 08a and Sprint 08b. Language Configuration remains deferred until it has a concrete specification and is not part of the completed epic scope.
+EP-003 was completed by Sprint 08a and Sprint 08b **against its original (fiscally-neutral) scope**. The commercial pivot adds fiscal requirements that extend these entities — `CompanyId` (ADR-0005), NIF and fiscal address on Customer/Supplier, and tax type/category/exemption-reason/legal-reference/effective-dates on TaxCode, plus exchange rates on Currency. Those **fiscal extensions are owned by EP-015**, not a reopening of EP-003. Language Configuration remains deferred until it has a concrete specification.
 
 ---
 
@@ -274,6 +283,39 @@ EP-003 was completed by Sprint 08a and Sprint 08b. Language Configuration remain
 * Metrics
 * Tracing
 * Health Checks
+
+---
+
+## EP-015 — Angola Fiscal Compliance
+
+### Business Value
+
+Critical — legally required to sell and operate an invoicing ERP in Angola.
+
+### Priority
+
+P0
+
+### Delivery
+
+Precedes EP-004 (Inventory) and EP-006 (Sales). See the Delivery Sequence note above and [ADR-0004](../decisions/ADR-0004.md) / [ADR-0005](../decisions/ADR-0005.md).
+
+### Features
+
+* Company & tenant model (`Company`, shared-schema `CompanyId`) — ADR-0005
+* Company tax profile & establishments (NIF, fiscal regime, keys, certification data)
+* Master Data fiscal extensions (Customer/Supplier NIF & fiscal address; TaxCode tax type/category/exemption reason/legal reference/effective dates; Currency exchange rates)
+* Tax regimes and `TaxExemptionReason` catalogue (loaded from official AGT annexes)
+* Fiscal document types, series and gap-free legal numbering
+* Fiscal documents (immutable once finalised) with the SAF-T document hash chain
+* Fiscal PDF with all legally required fields
+* SAF-T (AO) export (XML validated against the official XSD)
+* Electronic-invoice submission to the AGT (asynchronous; JWS RS256; requestID/status; integration log)
+* AGT software certification readiness (cross-cutting acceptance gate)
+
+### Notes
+
+Many legal parameters remain to be validated against official AGT sources — see the [Angola Fiscal Compliance discovery](../compliance/Angola-Fiscal-Compliance-Discovery.md) `[VALIDAR]` items and ADR-0004 §9.
 
 ---
 
