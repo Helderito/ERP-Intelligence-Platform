@@ -2,8 +2,8 @@
 
 ## ERP Intelligence Platform
 
-**Version:** 0.1 (Discovery / Draft)
-**Status:** In progress — legal facts pending owner validation
+**Version:** 1.0 (Discovery — all core areas validated)
+**Status:** Owner-validated 2026-09-12; narrow residual `[VALIDAR]` items remain per area
 **Owner:** Helder Gonçalves
 **Date:** 2026-09-12
 
@@ -65,8 +65,12 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | 3.6 | Withholding taxes & Imposto de Selo | ✅ Validated by owner (2026-09-12) |
 | 3.7 | SAF-T (AO) — data contract | ✅ Validated by owner (2026-09-12) |
 | 3.8 | Party tax identification (NIF) | ✅ Validated by owner (2026-09-12) |
-| 3.9 | Auditability & record integrity | ⏳ Pending |
-| 3.10 | Currency, rounding & language | ⏳ Pending |
+| 3.9 | Auditability, integrity & retention | ✅ Validated by owner (2026-09-12) |
+| 3.10 | Currency, rounding & language | ✅ Validated by owner (2026-09-12) |
+
+**All core areas validated (2026-09-12).** Remaining `[VALIDAR]` are narrow residual items noted per
+area (mostly exact XSD field-level details, IS/IEC exemption catalogues, and confirmation of current AGT
+versions/rates), to be confirmed against official AGT sources during implementation.
 
 ---
 
@@ -588,21 +592,59 @@ legalNameFromTaxAuthority, manualVerificationNotes)`. Applies equally to Supplie
 
 **Residual `[VALIDAR]`:** whether any authorized AGT NIF-lookup interface exists to wire into the adapter.
 
-## 3.9 Auditability & record integrity
+## 3.9 Auditability, integrity & retention — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** fiscal records must be immutable once finalised, fully audit-trailed
-  (who/when/what), and retained for the legally required period. `[VALIDAR]` retention period.
-- **Platform impact:** finalised documents become append-only (corrections via credit/debit notes,
-  never edits); implement the audit trail (Created/Updated By — currently modelled but not built);
-  immutable audit log. Robustness gaps already noted in the project become hard requirements here.
+**Retention (confirmed):** fiscal documents and records must be kept **≥ 5 years** (invoices, receipts,
+NC/ND, guias, accounting records, generated/submitted SAF-T, backups, and the technical documentation of
+the software version that issued documents). DP 71/25 refers archiving to the Código Geral Tributário
+deadlines and requires digital copies **immediately available to the AGT**. Recommendation: make
+retention **parametrizable, defaulting conservatively to 10 years** (tax prescription can reach 10y).
 
-## 3.10 Currency, rounding & language
+**Immutability (confirmed):** once issued/signed/communicated, a fiscal document's essential fields are
+**not editable** — `documentType, documentNumber, series, issueDate, customerFiscalData snapshot, line
+items, taxes, totals, hash, previousHash, AGT requestId/response, softwareValidationNumber, createdBy,
+createdAt`. Corrections only via credit note / debit note / permitted annulment / rectifying document /
+regularised contingency. **Golden rule:** Draft editable · Issued not · AcceptedByAgt not · Cancelled
+never disappears · **Deleted does not exist for a fiscal document** · a fiscal correction creates a new document.
 
-- **Requirement:** base currency **AOA (Kwanza)**; defined rounding rules on tax and totals;
-  multi-currency for foreign trade with exchange rates; Portuguese documents. `[VALIDAR]` official
-  rounding rules and multi-currency reporting obligations.
-- **Platform impact:** `Currency` (seeded in 08b) needs **exchange-rate** support; money/rounding
-  value objects; document totals precision.
+**Legal integrity duties (DP 71/25):** authenticity, integrity and legibility from issue to end of the
+archival period; operational + data integrity; access control; detection of unauthorized changes;
+preservation for operation reconstruction; backups; exact-copy export; technical documentation + data
+dictionary; auditability of the control features.
+
+**Data-model (feeds ADR-0004):** `AuditLog(id, tenantId, entityType, entityId, action, actorUserId,
+actorRole, occurredAt, ipAddress, userAgent, beforeSnapshotHash, afterSnapshotHash, reason, correlationId)`
+and a `FiscalDocumentEvent` stream (DraftCreated, DraftUpdated, Issued, Signed, SubmittedToAgt,
+AcceptedByAgt, RejectedByAgt, Cancelled, CorrectedByCreditNote, PrintedOriginal, PrintedCopy,
+ExportedToSaft). This turns the project's previously-"future" audit trail into a **hard requirement**.
+
+## 3.10 Currency, rounding & language — ✅ Validated by owner (2026-09-12)
+
+**Rounding (confirmed):** monetary calculation always uses **`decimal`, never float/double**.
+- **`taxContribution`** (tax per line) ≤ 2 decimals, **rounded UP to the next cent** (AGT rule):
+  `23.144→23.15`, `0.001844→0.01`, `5.9999999→6.00`.
+- **Exchange/contravalor** uses **mathematical rounding (half-up) to 2 decimals**:
+  `100.125→100.13`, `99990.12499…→99990.12`.
+- **Order:** line net → apply line discount **before** tax → tax per line/rate → round `taxContribution`
+  per line (AGT rule) → sum to `TaxPayable`; sum line nets → `NetTotal`; `GrossTotal = NetTotal +
+  TaxPayable`; group taxes by TaxType + TaxCode + TaxPercentage.
+- `Money` value object: `amount decimal(18,4)` internal for calc, `roundedAmount decimal(18,2)` for fiscal
+  values, `currencyCode`; `TaxCalculationLine(taxableAmount, taxRate, rawTaxAmount, roundedTaxAmount, roundingMode)`.
+
+**Currency (confirmed):** base/functional currency **AOA**; fiscal reporting AOA; document currency AOA by
+default. SAF-T `Header/CurrencyCode` is AOA (XSD accepts AOA and USD). In the AGT API the `currency`
+object is **omitted** for invoices issued and fully paid in Kwanzas without FX and not for export; it is
+**used** for foreign-currency settlement and export invoices:
+- `currencyCode ≠ AOA`: `currencyAmount = grossTotal × exchangeRate` (math round, 2 dp).
+- export in AOA: `currencyAmount = grossTotal ÷ exchangeRate` (math round, 2 dp).
+- `FiscalDocumentCurrency(documentCurrencyCode, baseCurrencyCode, exchangeRate, grossTotalInDocumentCurrency,
+  grossTotalInBaseCurrency, exchangeRateDate, exchangeRateSource, isExportDocument)`. This confirms the
+  08b `Currency` needs **exchange-rate** support. FX/export PDFs show the transaction currency, rate, and AOA counter-value.
+
+**Language:** documents in **Portuguese** (already the platform's frontend-first language).
+
+**Residual `[VALIDAR]`:** confirm whether currencies beyond AOA/USD are accepted by the current XSD;
+any sector-specific rounding exceptions.
 
 ---
 
