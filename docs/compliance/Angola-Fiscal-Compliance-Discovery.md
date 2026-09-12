@@ -50,22 +50,97 @@ evidence of practice but is **not** a substitute for the current AGT regulation.
 
 ---
 
+# 2b. Validation Status
+
+Owner validation is being captured area by area. `[VALIDAR]` markers are cleared as each area is confirmed.
+
+| # | Area | Status |
+| --- | --- | --- |
+| 3.1 | AGT certification of invoicing software | ✅ Validated by owner (2026-09-12) |
+| 3.2 | Fiscal document types | ⏳ Pending |
+| 3.3 | Document series & legal numbering | ⏳ Pending |
+| 3.4 | Tamper-evidence: signature / hash | 🟡 Partly confirmed (hash string, JWS RS256) |
+| 3.5 | IVA regime | 🟡 Partly (14% standard; regime thresholds via 3.1) |
+| 3.6 | Withholding taxes & Imposto de Selo | ⏳ Pending |
+| 3.7 | SAF-T (AO) | ⏳ Pending |
+| 3.8 | Party tax identification (NIF) | ⏳ Pending |
+| 3.9 | Auditability & record integrity | ⏳ Pending |
+| 3.10 | Currency, rounding & language | ⏳ Pending |
+
+---
+
 # 3. Compliance Areas
 
 Each area states the **requirement**, **what we currently believe** (with source & confidence),
 the **`[VALIDAR]`** questions for the owner, and the **platform impact**.
 
-## 3.1 AGT certification of invoicing software
+## 3.1 AGT certification of invoicing software — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** billing/invoicing software used in Angola must be certified/authorised by the
-  AGT before it can be sold and used to issue fiscal documents. `[VALIDAR]`
-- **Believed:** certification is a formal process with technical prerequisites (tamper-evident
-  documents, signature, SAF-T export, audit trail). It is a *product/legal milestone*, not a code
-  feature. `[VALIDAR]`
-- **`[VALIDAR]`:** What is the exact certification process, prerequisites, cost, timeline, and the
-  legal instrument that mandates it? Is there a distinction between "certified software" and a
-  "certified taxpayer/issuer"? Are there thresholds (turnover) that change obligations?
-- **Platform impact:** gates go-to-market; defines a non-functional acceptance bar for Sales/Finance.
+**Requirement (confirmed):** invoicing software used in Angola must be **validated by the AGT**
+before it can be sold/used to issue fiscal documents.
+
+**Legal basis** (owner-provided):
+- **Decreto Presidencial n.º 312/18, de 21 Dez** — Regime Jurídico de Submissão Electrónica dos
+  Elementos Contabilísticos; requires electronic invoicing systems to be validated by the AGT and
+  sets minimum validation requirements.
+- **Decreto Executivo n.º 74/19, de 6 Mar** — rules/requirements for validation of IVA systems.
+- **Decreto Presidencial n.º 71/25, de 20 Mar** — obliges IVA **Regime Geral** and **Regime
+  Simplificado** taxpayers to issue invoices via AGT-validated software; frames electronic invoicing.
+- **Lei n.º 14/23** — amended IVA code; defines the regime thresholds below.
+
+**Certification process** (DP 312/18): producer submits a validation request → AGT may request
+additional elements → commercialisation depends on prior validation → AGT runs conformance tests →
+producer provides a program sample, technical documentation, data dictionary and clarifications →
+if approved, AGT issues the validation certificate and lists the validated system/version publicly.
+For electronic invoicing there is an additional **Partner Portal** layer: request API credentials,
+register the producer software, submit the public key that validates `jwsSoftwareSignature`, and use
+a homologation environment before production. Basic Auth credentials are requested by e-mail to
+`produtores.dfe.dcrr.agt@minfin.gov.ao` with company name + NIF.
+
+**Technical prerequisites** (DP 312/18, cumulative): producer resident/represented in Angola;
+SAF-T (AO) export; identify changes to invoices/rectifying documents via asymmetric-cipher algorithm
+with a producer-exclusive private key; per-user authentication/access control; no direct/indirect
+change of fiscal data without evidence attached to the original; plus further MinFin/AGT-approved
+requirements. Electronic-invoicing adds: AGT API integration, Basic Auth, **JWS RS256**, **RSA key
+≥ 2048 bits**, producer private key kept local, public key in the Partner Portal, `jwsSoftwareSignature`,
+document/request signatures with taxpayer keys, series control, `requestID` traceability, async
+processing + status query.
+
+**Timeline:** legal limit **45 days** to issue the validation certificate (DP 312/18); suspendable
+when blocked by the applicant (missing docs, program, data dictionary or clarifications).
+
+**Software-validation vs taxpayer/issuer (distinct concepts, confirmed):**
+- *Validated software* = product+version approved by AGT. Public list uses numbers like
+  `41/AGT/2019` (PRIMAVERA ERP), `96/AGT/2019` (SAP Business One), `101/AGT/2019` (Odoo Angola).
+  Belongs to the software/producer, not the client.
+- The new e-invoicing API also uses an operational form, e.g. `"softwareValidationNumber": "C_134"`.
+  → **Model both:** `SoftwareValidationNumberPublic` (`41/AGT/2019`) and `SoftwareValidationNumberApi` (`C_134`).
+- *Taxpayer/issuer* = the company issuing invoices with validated software; needs the correct fiscal
+  regime, NIF, series, keys, credentials.
+- **Invoice PDF (DP 71/25):** must identify the AGT-validated software, the **hash code**, and the
+  **validation/certification number** — e.g. `Processado por programa validado pela AGT n.º 41/AGT/2019` + `Hash: …`.
+
+**Regime thresholds (Lei 14/23) — obligations differ by regime:**
+- **Regime de Exclusão:** turnover/imports < **Kz 25 000 000** — outside IVA scope (may bear input IVA).
+- **Regime Simplificado:** ≥ Kz 25 000 000 and < **Kz 350 000 000** — invoices must carry the mention
+  `IVA - Regime Simplificado`; monthly simplified declaration.
+- **Regime Geral:** ≥ **Kz 350 000 000** (also manufacturing > Kz 25 000 000).
+- **E-invoicing (DP 71/25):** mandatory for Geral + Simplificado; Exclusão may opt in.
+- **SAF-T:** DP 312/18 originally scoped turnover > Kz 50 000 000, but AGT's 2025 public communication
+  states all Geral + Simplificado taxpayers must submit SAF-T.
+
+**Platform impact / data-model (feeds ADR-0004 and the data model):**
+- `SoftwareCertification` (validationNumberPublic, validationNumberApi, certifiedVersion,
+  certificationDate, producerNif, producerName, publicKey, keyVersion, status).
+- `TaxpayerFiscalProfile` (nif, legalName, **vatRegime: GENERAL | SIMPLIFIED | EXCLUSION**,
+  regimeEffectiveFrom, agtApprovedForVat, electronicInvoicingEnabled, taxpayerKeys, agtCredentials).
+- **The platform must vary obligations by fiscal regime** (Geral / Simplificado / Exclusão): e.g. the
+  `IVA - Regime Simplificado` mention, e-invoicing on/off, SAF-T applicability.
+- Certification remains a **cross-cutting go-to-market gate**.
+
+**Residual items to keep flagged:** exact PDF legal wording template `[VALIDAR]`; confirm the `C_134`
+operational format and how it relates to the public number `[VALIDAR]`; confirm current SAF-T scope
+wording in the latest AGT communication `[VALIDAR]`.
 
 ## 3.2 Fiscal document types
 
