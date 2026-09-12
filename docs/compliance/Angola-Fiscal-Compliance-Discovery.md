@@ -64,7 +64,7 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | 3.5b | Tax exemptions / non-liability / regime codes (M-codes) | ✅ Validated by owner (2026-09-12) |
 | 3.6 | Withholding taxes & Imposto de Selo | ✅ Validated by owner (2026-09-12) |
 | 3.7 | SAF-T (AO) — data contract | ✅ Validated by owner (2026-09-12) |
-| 3.8 | Party tax identification (NIF) | ⏳ Pending |
+| 3.8 | Party tax identification (NIF) | ✅ Validated by owner (2026-09-12) |
 | 3.9 | Auditability & record integrity | ⏳ Pending |
 | 3.10 | Currency, rounding & language | ⏳ Pending |
 
@@ -553,12 +553,40 @@ robust `TaxCode`/TaxTable, `FiscalDocument`, `FiscalDocumentLine`, `FiscalDocume
 **Residual `[VALIDAR]`:** confirm `1.01_01` is the AGT-current version (repo is the ASSOFT reference);
 exact optional-vs-required fields per section against the XSD; GeneralLedgerEntries scope for v1.
 
-## 3.8 Party tax identification (NIF)
+## 3.8 Party tax identification (NIF) — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** capture and validate the **NIF** (tax number) of customers/suppliers and the
-  issuing company; handle "consumidor final" (final consumer) cases. `[VALIDAR]`
-- **Platform impact:** add NIF (+ validation rules) to Customer/Supplier and company profile;
-  affects existing Master Data entities.
+**Requirement (confirmed):** treat the NIF as a **flexible, auditable fiscal identity**, not a rigid
+numeric/check-digit field.
+
+**NIF forms (owner-provided):** national individuals = the **Bilhete de Identidade** number; resident
+foreigners = the **Cartão de Residente** number; non-resident foreigners/others = AGT sequential
+assignment; legal persons/companies = AGT sequential. → **Do not** enforce a single rigid rule
+("always 10 digits", "always a check digit"); that would reject real NIFs.
+
+**Structural validation (confirmed):** store without country prefix; accept letters **and** digits;
+uppercase; strip spaces/hyphens/separators; length ~6–20; alphanumeric only; result is
+*structurally-valid-but-not-confirmed*. `999999999` (or empty) is valid **only** for final consumer.
+
+**Final consumer (confirmed):** when a domestic buyer gives no NIF → `CustomerTaxID = 999999999`,
+`CompanyName = "Consumidor final"`, country `AO`; SAF-T carries a generic `CONSUMIDOR_FINAL` customer;
+the PDF shows "Consumidor final". **Require a real NIF** for B2B, professional clients, public entities,
+and whenever there is a current account, credit, contract, withholding, captivation or tax deduction, or
+when the customer requests an identified invoice. **No universal value threshold** for issuing without a
+NIF — the rule is driven by customer type + operation context, not an amount.
+
+**Online validation (confirmed):** do **not** assume a stable public AGT lookup API without a formal
+technical contract. Provide a `NifValidationService` with three layers: (1) **LocalStructuralValidation**
+(normalize, chars, length, final-consumer, reject clearly-invalid); (2) **ManualVerificationStatus**
+(mark verified, by whom/when/source/notes); (3) **ExternalLookupAdapter** (future AGT/authorized service —
+optional, non-blocking, cached, audited, tolerant of downtime). **A NIF check must never block fiscal
+issuance** on network failure or external unavailability.
+
+**Data-model (feeds ADR-0004 / Master Data extensions):** `CustomerFiscalIdentity(countryCode, taxId,
+normalizedTaxId, customerKind {Individual|Company|PublicEntity|Foreign|FinalConsumer}, taxIdStatus
+{NotProvided|StructurallyValid|Verified|Invalid|FinalConsumer}, taxIdVerifiedAt, taxIdVerificationSource,
+legalNameFromTaxAuthority, manualVerificationNotes)`. Applies equally to Supplier and the issuing company.
+
+**Residual `[VALIDAR]`:** whether any authorized AGT NIF-lookup interface exists to wire into the adapter.
 
 ## 3.9 Auditability & record integrity
 
