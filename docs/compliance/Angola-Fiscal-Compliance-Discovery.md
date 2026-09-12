@@ -60,7 +60,8 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | 3.2 | Fiscal document types | ✅ Validated by owner (2026-09-12) |
 | 3.3 | Document series & legal numbering | ✅ Validated by owner (2026-09-12) |
 | 3.4 | Tamper-evidence: signature / hash | ✅ Validated by owner (2026-09-12) |
-| 3.5 | IVA regime (rates, regimes, cash VAT, captivation, exemptions) | ✅ Validated by owner (2026-09-12) |
+| 3.5 | IVA regime (rates, regimes, cash VAT, captivation) | ✅ Validated by owner (2026-09-12) |
+| 3.5b | Tax exemptions / non-liability / regime codes (M-codes) | ✅ Validated by owner (2026-09-12) |
 | 3.6 | Withholding taxes & Imposto de Selo | ⏳ Pending |
 | 3.7 | SAF-T (AO) | ⏳ Pending |
 | 3.8 | Party tax identification (NIF) | ⏳ Pending |
@@ -379,9 +380,59 @@ exemptionReasonCode, legalReference, captivatedRate, captivatedAmount)`.
 "Regime Simplificado" / "Regime de Caixa" mentions; captive IVA; total payable to supplier; captive
 IVA to be remitted by the buyer.
 
-**Residual `[VALIDAR]`:** the official product/service→rate mapping annexes; the official
-`TaxExemptionReason` catalogue; the exact current Cabinda rates/effective dates vs Lei 14/23 vs DLP 4/22;
-the precise Simplificado apuramento formula on received amounts.
+**Residual `[VALIDAR]`:** the official product/service→rate mapping annexes; the exact current
+Cabinda rates/effective dates vs Lei 14/23 vs DLP 4/22; the precise Simplificado apuramento formula on
+received amounts. *(The exemption-reason catalogue is now captured in §3.5b.)*
+
+## 3.5b Tax exemptions, non-liability & regime codes — ✅ Validated by owner (2026-09-12)
+
+**Principle (confirmed):** exemption, zero-rate, simplified regime, exclusion regime and non-liability
+are **not** the same — all can yield `taxPercentage = 0` but carry different fiscal meaning and **own codes**.
+
+**API/SAF-T rule:** `taxExemptionCode` is **mandatory** when `taxCode = ISE` (exempt) or `taxType = NS`
+(not-subject). Codes come from the AGT annexes: **6.4 IVA**, **6.5 IS** (stamp), **6.6 IEC** (excise).
+
+**Official IVA exemption catalogue (seed for `TaxExemptionReason`)** — owner-provided from the AGT FE spec:
+- *Internal ops, Art. 12.º CIVA:* `M10` food (Anexo I) · `M11` medicines · `M12` wheelchairs/disability
+  equipment · `M13` books (incl. digital) · `M14` residential property leasing (excl. hotel) · `M15`
+  SISA-subject ops · `M16` gambling/social entertainment · `M17` collective passenger transport · `M18`
+  financial intermediation/leasing · `M19` health/life insurance & reinsurance · `M20` petroleum products
+  (Anexo II) · `M21` teaching (recognised establishments) · `M22` medical-sanitary services · `M23`
+  patient transport (ambulances) · `M24` medical equipment for health establishments.
+- *Imports, Art. 14.º:* `M80` definitive imports whose internal supply is exempt · `M81` BNA gold/coins/notes
+  · `M82` disaster-relief donations · `M83` petroleum/mining goods & equipment · `M84` foreign currency by
+  banks · `M85` international treaties/agreements · `M86` diplomatic/consular.
+- *Exports & equivalent, Art. 15.º:* `M30` exported goods · `M31`/`M32`/`M33` ship/aircraft/rescue supply ·
+  `M34` international-traffic vessels/aircraft ops · `M35` diplomatic/consular · `M36` international
+  organisations · `M37` treaties/agreements · `M38` international passenger transport.
+- *Suspensive customs / free zones, Art. 16.º:* `M90` free-zone/customs-warehouse imports · `M91` goods to
+  such zones · `M92` connected supplies while under the regime · `M93` transit/drawback/temporary import.
+- *Special/regime codes:* `M00` IVA – Regime Simplificado · `M02` transmission of goods/service **not subject**
+  · `M04` IVA – Regime de Exclusão.
+
+**Classification & treatment (distinct in ERP, PDF, SAF-T, AGT API):**
+- **Isenção** — operation *within* IVA scope but exempted by law → `taxType=IVA`, `taxCode=ISE`,
+  `taxPercentage=0`, `taxExemptionCode` (e.g. `M13`); PDF shows the legal mention.
+- **Não sujeição** — operation *outside* the tax's incidence → `taxType=NS`, `taxPercentage=0`,
+  `taxExemptionCode` (e.g. `M02`).
+- **Regime de Exclusão** — a *taxpayer* framing → `taxType=NS`, code `M04`, mention "IVA – Regime de Exclusão".
+- **Regime Simplificado** — a *taxpayer* framing → code `M00`, mention "IVA – Regime Simplificado".
+
+**Data-model:** `TaxExemptionReason(Code, TaxType {IVA|IS|IEC}, Classification {Exempt|NotSubject|
+SimplifiedRegime|ExclusionRegime|ZeroRated}, DocumentMention, LegalReference, Description,
+AppliesToTaxCode {ISE|NS|OUT…}, AppliesToOperationType, ValidFrom/To, IsActive)` — a **versioned
+catalogue seeded from AGT annexes, never a hard-coded enum**.
+
+**Critical design rule — snapshot on the document:** `FiscalDocumentTaxLine` stores
+`ExemptionCodeSnapshot`, `ExemptionMentionSnapshot`, `LegalReferenceSnapshot` at issue time, so a past
+invoice keeps the legal text in force **at its emission date** even if the law later changes.
+
+**Engineering rules:** rate 0 ⇒ require exemption reason; `ISE` ⇒ Classification=Exempt & taxType=IVA;
+`NS` ⇒ Classification ∈ {NotSubject, ExclusionRegime} & code present; Simplificado/Exclusão ⇒ required
+mention + default code (`M00`/`M04`); the same reason flows to PDF, SAF-T and the AGT API.
+
+**Residual `[VALIDAR]`:** the IS (6.5) and IEC (6.6) exemption catalogues (only IVA/6.4 captured here);
+exact `AppliesToTaxCode` mapping for `M00`.
 
 ## 3.6 Withholding taxes & Imposto de Selo
 
