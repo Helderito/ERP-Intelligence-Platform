@@ -4,7 +4,7 @@
 
 **Sprint Number:** 08
 
-**Status:** In Progress (Sprint 08a implemented; Sprint 08b planned)
+**Status:** Done
 
 **Sprint Type:** Goal-Based Sprint
 
@@ -66,7 +66,6 @@ By the end of this sprint the platform shall support:
 - Countries
 - Currencies
 - Payment Terms
-- Language Configuration (foundation for internationalisation)
 
 ---
 
@@ -77,10 +76,9 @@ By the end of this sprint the platform shall support:
 - Category Management
 - Unit of Measure Management
 - Tax Code Management
-- Country Management
-- Currency Management
-- Payment Term Management
-- Language Configuration
+- Seeded read-only Countries
+- Seeded read-only Currencies
+- Seeded read-only Payment Terms
 
 ---
 
@@ -91,6 +89,7 @@ By the end of this sprint the platform shall support:
 - Tax Calculations
 - Multi-language Translations
 - Regional Fiscal Configurations
+- Language Configuration (deferred pending a concrete specification)
 
 These capabilities will be implemented in future releases.
 
@@ -103,10 +102,10 @@ These capabilities will be implemented in future releases.
 - [x] Evolve Category into managed reference data (Sprint 08a)
 - [x] Evolve UnitOfMeasure into managed reference data (Sprint 08a)
 - [x] Create TaxCode Entity (Sprint 08a)
-- [ ] Create Country Entity
-- [ ] Create Currency Entity
-- [ ] Create PaymentTerm Entity
-- [x] Define business validation rules for Sprint 08a
+- [x] Create Country Entity (Sprint 08b)
+- [x] Create Currency Entity (Sprint 08b)
+- [x] Create PaymentTerm Entity (Sprint 08b)
+- [x] Define business validation rules
 
 ---
 
@@ -124,9 +123,9 @@ These capabilities will be implemented in future releases.
 - [x] Update Tax Code
 - [x] Deactivate Tax Code
 
-- [ ] Create Country
-- [ ] Create Currency
-- [ ] Create Payment Term
+- [x] List Countries (read-only)
+- [x] List Currencies (read-only)
+- [x] List Payment Terms (read-only)
 
 ---
 
@@ -135,6 +134,9 @@ These capabilities will be implemented in future releases.
 - [x] Configure Sprint 08a repositories
 - [x] Configure Sprint 08a Entity Framework mappings
 - [x] Add the additive `AddManagedReferenceData` migration
+- [x] Configure Sprint 08b read-only repositories
+- [x] Configure Sprint 08b Entity Framework mappings and deterministic seeds
+- [x] Add the `AddSharedReferenceData` migration
 
 ---
 
@@ -156,11 +158,11 @@ These capabilities will be implemented in future releases.
 - [x] PUT /tax-codes/{id}
 - [x] DELETE /tax-codes/{id}
 
-- [ ] GET /countries
+- [x] GET /countries
 
-- [ ] GET /currencies
+- [x] GET /currencies
 
-- [ ] GET /payment-terms
+- [x] GET /payment-terms
 
 ---
 
@@ -169,9 +171,7 @@ These capabilities will be implemented in future releases.
 - [x] Categories Management
 - [x] Units of Measure Management
 - [x] Tax Codes Management
-- [ ] Countries read-only listing (Sprint 08b)
-- [ ] Currencies read-only listing (Sprint 08b)
-- [ ] Payment Terms read-only listing (Sprint 08b)
+- [x] No Sprint 08b UI required; endpoints are backing data for future modules
 
 ---
 
@@ -180,9 +180,9 @@ These capabilities will be implemented in future releases.
 - [x] Evolve existing Category table additively
 - [x] Evolve existing UnitOfMeasure table additively
 - [x] TaxCode table
-- [ ] Countries table
-- [ ] Currencies table
-- [ ] PaymentTerms table
+- [x] Country table
+- [x] Currency table
+- [x] PaymentTerm table
 
 ---
 
@@ -191,16 +191,20 @@ These capabilities will be implemented in future releases.
 - [x] Sprint 08a Unit Tests
 - [x] Sprint 08a Integration Tests
 - [x] Sprint 08a Validation Tests
+- [x] Sprint 08b Unit Tests
+- [x] Sprint 08b Integration Tests
+- [x] Sprint 08b Validation Tests
 
 ---
 
 ## Documentation
 
-- [ ] Update PRD
-- [ ] Update SAD
+- [x] Review PRD (no update required)
+- [x] Review SAD (no architecture deviation)
 - [x] Update API Documentation for Sprint 08a
 - [x] Update Product Backlog for Sprint 08a
 - [x] Update Master Data Documentation for Sprint 08a
+- [x] Update Sprint 08b API, backlog, data-model and living documentation
 
 ---
 
@@ -242,9 +246,9 @@ Sprint 08 is complete when:
 - Categories can be managed.
 - Units of Measure can be managed.
 - Tax Codes can be managed.
-- Countries can be managed.
-- Currencies can be managed.
-- Payment Terms can be managed.
+- Countries are available as seeded, read-only reference data.
+- Currencies are available as seeded, read-only reference data.
+- Payment Terms are available as seeded, read-only reference data.
 - Validation rules are enforced.
 - All automated tests pass successfully.
 

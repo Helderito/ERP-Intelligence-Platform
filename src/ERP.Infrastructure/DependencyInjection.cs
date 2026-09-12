@@ -44,6 +44,9 @@ public static class DependencyInjection
         services.AddScoped<IWarehouseRepository, WarehouseRepository>();
         services.AddScoped<IWarehouseTypeRepository, WarehouseTypeRepository>();
         services.AddScoped<ITaxCodeRepository, TaxCodeRepository>();
+        services.AddScoped<ICountryRepository, CountryRepository>();
+        services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+        services.AddScoped<IPaymentTermRepository, PaymentTermRepository>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 

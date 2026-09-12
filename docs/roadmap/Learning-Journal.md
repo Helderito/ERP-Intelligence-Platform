@@ -322,13 +322,43 @@ The review found the new Master Data module threw its domain and application exc
 
 ---
 
-# 12. Cumulative Progress Against the Learning Roadmap
+# 12. Sprint 08b — Seeded Reference Data
+
+**Implemented:** 2026-09-12 · **Release:** 0.2.0
+
+## What Was Delivered
+
+- `Country`, `Currency` and `PaymentTerm` were added as sealed read-only reference entities built on `Entity<Guid>`, with normalized codes, required names and no timestamps, domain events, soft-delete state or write behavior.
+- A curated deterministic catalog provides 25 countries, including Portugal and Angola; 15 currencies, including EUR, USD, AOA, BRL and GBP; and the NET0, NET15, NET30, NET60 and NET90 payment terms with non-negative `NetDays`.
+- `SharedReferenceDataService` and three narrow repository contracts expose lightweight lists. PostgreSQL repositories use no-tracking queries ordered by code.
+- The `AddSharedReferenceData` migration creates three singular tables, unique code indexes and all seed rows without changing existing Master Data tables.
+- The API exposes authenticated GET-only endpoints at `/countries`, `/currencies` and `/payment-terms`. No management permission, write endpoint, React page or navigation link was added.
+- Unit tests cover validation and normalization. PostgreSQL integration tests cover the seeded payloads, ordering, `401 Unauthorized` responses and the absence of write operations.
+
+## What Was Learned
+
+- Standard global catalogs have a different lifecycle from business-managed reference data. Treating them as deterministic, read-only seeds avoids unnecessary CRUD, audit and soft-delete complexity while keeping one source of truth.
+- A curated catalog is a deliberate bootstrap boundary, not a claim of exhaustive ISO coverage. Stable identifiers and unique standard codes allow later expansion without changing existing references.
+- General selection feeders should require authentication without inheriting an unrelated module's management permission. This keeps shared reference data reusable by future Purchasing, Sales and Finance modules.
+- Scope restraint is architectural work: omitting UI and commands here is what preserves the documented distinction between managed Sprint 08a data and seeded Sprint 08b data.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 2 — Backend Development | Advanced: seeded read-only catalogs, deterministic EF Core data and authenticated feeder endpoints complete EP-003 - Master Data. |
+| Stage 1 — Software Architecture | Reinforced: lifecycle and authorization were matched to the nature of shared standard reference data. |
+| Stage 4 — Frontend Development | Unchanged by design: no consuming screen exists yet, so no UI or navigation was introduced. |
+
+---
+
+# 13. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a (managed reference data done; seeded read-only Sprint 08b remains) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a, Sprint 08b |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a, Sprint 08b (EP-003 - Master Data complete) |
 | Stage 3 — Infrastructure | Done (local) | Sprint 01 |
 | Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a (managed reference-data UI with component tests done) |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01, Sprint 06 (local delivery discipline formalised; cloud deployment pending) |
@@ -339,7 +369,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 13. Relationship with Other Documents
+# 14. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -351,6 +381,6 @@ This document should be read together with:
 
 ---
 
-# 13. Success Criteria
+# 15. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

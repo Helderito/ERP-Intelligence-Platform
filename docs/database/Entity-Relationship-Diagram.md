@@ -12,7 +12,7 @@
 
 This document provides the conceptual Entity Relationship Diagram (ERD) for the entities currently defined in the [Data Model](Data-Model.md) and the [Domain Model](Domain-Model.md).
 
-It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03; `Product`, `Category` and `UnitOfMeasure` were implemented in Sprint 04; `Customer`, `CustomerContact` and `CustomerAddress` were implemented in Sprint 05; `Supplier`, `SupplierContact` and `SupplierAddress` were implemented in Sprint 06; `Warehouse` and `WarehouseType` were implemented in Sprint 07; and managed `Category`, `UnitOfMeasure` plus `TaxCode` were implemented in Sprint 08a. The implemented columns below match the actual `AppDbContext` mapping.
+It covers the Identity and Master Data Bounded Contexts, which correspond to the scope planned in Sprints 02 through 08 of the [Product Backlog](../backlog/Product-Backlog.md). `User` and `RefreshToken` were implemented in Sprint 02; `Role`, `Permission`, `RolePermission` and `UserRole` were implemented in Sprint 03; `Product`, `Category` and `UnitOfMeasure` were implemented in Sprint 04; `Customer`, `CustomerContact` and `CustomerAddress` were implemented in Sprint 05; `Supplier`, `SupplierContact` and `SupplierAddress` were implemented in Sprint 06; `Warehouse` and `WarehouseType` were implemented in Sprint 07; managed `Category`, `UnitOfMeasure` plus `TaxCode` were implemented in Sprint 08a; and seeded `Country`, `Currency` plus `PaymentTerm` were implemented in Sprint 08b. The implemented columns below match the actual `AppDbContext` mapping.
 
 Inventory, Sales, Purchasing, Finance, Business Intelligence and AI entities will be added here as their corresponding Epics are planned in detail.
 
@@ -83,7 +83,7 @@ erDiagram
 
 # 4. Master Data Bounded Context
 
-Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer fields reflect the Sprint 05 implementation; Supplier fields reflect the Sprint 06 implementation; Warehouse fields reflect the Sprint 07 implementation; managed Category, UnitOfMeasure and TaxCode fields reflect Sprint 08a. Country, Currency and PaymentTerm remain planned for Sprint 08b.
+Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md). Product Catalog fields without a "planned" annotation reflect the Sprint 04 implementation; Customer fields reflect the Sprint 05 implementation; Supplier fields reflect the Sprint 06 implementation; Warehouse fields reflect the Sprint 07 implementation; managed Category, UnitOfMeasure and TaxCode fields reflect Sprint 08a; seeded Country, Currency and PaymentTerm fields reflect Sprint 08b.
 
 ```mermaid
 erDiagram
@@ -203,6 +203,22 @@ erDiagram
         string Code "unique, max 50 chars, seeded"
         string Name "max 100 chars, seeded"
     }
+    COUNTRY {
+        guid Id PK
+        string Code "unique, 2 chars, seeded"
+        string Name "max 100 chars, seeded"
+    }
+    CURRENCY {
+        guid Id PK
+        string Code "unique, 3 chars, seeded"
+        string Name "max 100 chars, seeded"
+    }
+    PAYMENT_TERM {
+        guid Id PK
+        string Code "unique, max 50 chars, seeded"
+        string Name "max 100 chars, seeded"
+        int NetDays "non-negative, seeded"
+    }
 ```
 
 ---
@@ -211,7 +227,7 @@ erDiagram
 
 `Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog, then evolved additively into managed, auditable, soft-deletable data in Sprint 08a. Existing Product foreign keys remain intact, while Product selection endpoints return active records only. `TaxCode` was implemented in Sprint 08a as independent managed reference data. `TaxCodeId` is intentionally not present in the Product table or EF model; the dashed conceptual relationship above remains a future Product Catalog tax assignment, outside Sprint 08a. Tax calculations and fiscal rules are also out of scope.
 
-`WarehouseType` was implemented in [Sprint 07](../backlog/Sprint-07.md) as seeded, read-only reference data (`MAIN`, `TRANSIT`, `VIRTUAL`). `Country`, `Currency` and `PaymentTerm` remain planned as seeded, read-only reference data for Sprint 08b.
+`WarehouseType` was implemented in [Sprint 07](../backlog/Sprint-07.md) as seeded, read-only reference data (`MAIN`, `TRANSIT`, `VIRTUAL`). `Country`, `Currency` and `PaymentTerm` were implemented in Sprint 08b as curated, deterministic, read-only catalogs exposed to authenticated consumers. They have no relationships yet because the Purchasing, Sales and Finance aggregates that will consume them are future work.
 
 `Customer`, `CustomerContact` and `CustomerAddress` were implemented in [Sprint 05](../backlog/Sprint-05.md). Contacts and addresses are entities inside the `Customer` Aggregate and are managed exclusively through the `Customer` root, not through independent API resources.
 
