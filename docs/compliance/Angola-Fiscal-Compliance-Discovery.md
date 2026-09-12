@@ -63,7 +63,7 @@ Owner validation is being captured area by area. `[VALIDAR]` markers are cleared
 | 3.5 | IVA regime (rates, regimes, cash VAT, captivation) | ✅ Validated by owner (2026-09-12) |
 | 3.5b | Tax exemptions / non-liability / regime codes (M-codes) | ✅ Validated by owner (2026-09-12) |
 | 3.6 | Withholding taxes & Imposto de Selo | ✅ Validated by owner (2026-09-12) |
-| 3.7 | SAF-T (AO) | ⏳ Pending |
+| 3.7 | SAF-T (AO) — data contract | ✅ Validated by owner (2026-09-12) |
 | 3.8 | Party tax identification (NIF) | ⏳ Pending |
 | 3.9 | Auditability & record integrity | ⏳ Pending |
 | 3.10 | Currency, rounding & language | ⏳ Pending |
@@ -485,15 +485,73 @@ the cash paid to the supplier. `GrossTotal = NetTotal + TaxPayable`; `NetPayable
 **Residual `[VALIDAR]`:** confirm current IAC rates by income type; exact IS `taxCode` values (stamp-duty
 table entries) for line-tax use; remittance deadlines per tax; whether CFQA is in v1 scope.
 
-## 3.7 SAF-T (AO) reporting
+## 3.7 SAF-T (AO) reporting — ✅ Validated by owner (2026-09-12)
 
-- **Requirement:** produce the standardised **SAF-T (Angola)** audit file for the AGT. `[VALIDAR]`
-- **`[VALIDAR]`:** the exact SAF-T (AO) schema version, its sections (header, master files —
-  customers/suppliers/products/tax table —, source documents — invoices/payments —, movements),
-  submission frequency/format, and validation rules.
-- **Platform impact:** the SAF-T schema is effectively a **contract on our data model** — customer,
-  supplier, product, tax, and document entities must carry every field SAF-T requires. This is why
-  discovery precedes EP-004. A dedicated export module + conformance tests.
+**Requirement (confirmed):** treat SAF-T (AO) as a **technical data contract for the ERP**, not an XML
+generated at the end. The data model must be born SAF-T-ready — this is the linchpin that shapes every
+master-data and document entity.
+
+**Schema (owner-provided):** version **`1.01_01`**, namespace **`urn:OECD:StandardAuditFile-Tax:AO_1.01_01`**,
+file `SAFTAO1.01_01.xsd` (reference repo `github.com/assoft-portugal/SAF-T-AO`). Store the schema version
+**per export** (`saft_schema_version`, `saft_namespace`) — future versions may change fields/validations.
+
+**Structure:** `AuditFile → Header, MasterFiles, GeneralLedgerEntries, SourceDocuments`
+(`SalesInvoices`, `Payments`, `MovementOfGoods`, `WorkingDocuments`). Header + MasterFiles are
+structurally required; the rest are **functionally required by module used**: GeneralLedgerEntries when
+there's GL accounting; SalesInvoices when fiscal sales docs exist; Payments for receipts/settlements;
+MovementOfGoods for guias; WorkingDocuments for proformas/orçamentos/etc. **Prepare now:** Header,
+MasterFiles (Customer/Supplier/Product/TaxTable), and all four SourceDocuments sections;
+GeneralLedgerEntries is a future module but **model the accounting link early**.
+
+**Submission:** XML, UTF-8, XSD-validated, per fiscal period (monthly base); filename
+`SAFT_AO_<NIF>_<ANO>_<MES>.xml`. The ERP must generate monthly and by date range, keep an **export
+history**, validate **before** export, and block/alert on documents without hash, without valid tax, or
+without a master-data reference. Re-generating a closed period is a new versioned/audited export.
+
+**Header → `CompanyFiscalProfile`:** AuditFileVersion, CompanyID, **TaxRegistrationNumber** (taxpayer NIF),
+TaxAccountingBasis, CompanyName, BusinessName, CompanyAddress, FiscalYear, StartDate, EndDate,
+**CurrencyCode** (normally AOA), DateCreated, **TaxEntity** (establishment or "Global"/"Sede"),
+**ProductCompanyTaxID** (software-house NIF), **SoftwareValidationNumber**, **ProductID**, **ProductVersion**.
+
+**MasterFiles → fiscal fields required on existing Master Data (confirms the EP-015 extensions):**
+- **Customer:** CustomerID, AccountID, **CustomerTaxID (NIF)**, CompanyName, **BillingAddress**,
+  **SelfBillingIndicator**, (Contact/ShipTo/Telephone/Email optional). → Customer is not name+email; needs
+  structured fiscal identity, country, fiscal address, self-billing flag, active state.
+- **Supplier:** SupplierID, AccountID, **SupplierTaxID**, CompanyName, BillingAddress, SelfBillingIndicator,
+  ShipFromAddress. Must be model-ready even before a Supplier frontend exists (purchases, withholding, self-billing).
+- **Product:** **ProductType**, ProductCode, ProductDescription, ProductNumberCode, ProductGroup,
+  CustomsDetails. → Product Catalog needs SAF-T product type, normalized code, **fiscal category**, unit,
+  applicable tax, exemption/reduced-rate eligibility, customs data.
+- **TaxTable:** TaxType, TaxCountryRegion, TaxCode, Description, TaxExpirationDate, TaxPercentage|TaxAmount.
+
+**`TaxCode` evolves (supersedes the Sprint-08a shape):** `code, taxType {IVA|IS|NS|OUTROS},
+taxCountryRegion, saftTaxCode {NOR|ISE|RED|INT|NS…}, description, percentage, fixedAmount, validFrom/To,
+exemptionReasonCode, legalReference, regime, isActive`.
+
+**Known validation failures to guard against (feed conformance tests):** wrong namespace/version; missing
+Header fields (ProductCompanyTaxID, SoftwareValidationNumber); invalid currency/NIF; duplicate
+Customer/Supplier/ProductCode; documents referencing non-existent customers/products; customers without
+NIF/fiscal address; products without ProductType; incomplete TaxTable; documents using taxes absent from
+TaxTable; duplicate/gapped document numbers; **cancelled document removed instead of exported with status
+A**; NC without original reference; receipt without settled-document reference; FR treated as plain FT;
+proforma wrongly omitted from WorkingDocuments; guias without ship-from/to; totals errors (TaxPayable/
+NetTotal/GrossTotal, rounding, discounts, withholding, NC signs); missing/broken **hash chain**; altering
+an already-signed document; rejected-then-reused legal number.
+
+**Architecture (feeds ADR-0004):** a dedicated SAF-T module, separate from XML generation —
+`SaftExportService`, `SaftXmlBuilder`, `SaftSchemaValidator`, `SaftBusinessValidator`,
+`SaftHashChainValidator`, `SaftTotalsValidator`, `SaftMasterDataValidator`, `SaftExportHistory`. Export
+flow: select company+period → load fiscal profile → load MasterFiles used → load period documents →
+validate references → validate TaxTable → validate totals → validate hash chain → build XML → validate
+vs XSD → store history → download/submit.
+
+**Core blocks to consolidate before full invoicing (compliance-first from the data source):**
+`CompanyFiscalProfile`, Customer fiscal data, Supplier fiscal data, Product fiscal classification,
+robust `TaxCode`/TaxTable, `FiscalDocument`, `FiscalDocumentLine`, `FiscalDocumentTax`,
+`FiscalDocumentReference`, `FiscalDocumentHash`, `SaftExportHistory`.
+
+**Residual `[VALIDAR]`:** confirm `1.01_01` is the AGT-current version (repo is the ASSOFT reference);
+exact optional-vs-required fields per section against the XSD; GeneralLedgerEntries scope for v1.
 
 ## 3.8 Party tax identification (NIF)
 
