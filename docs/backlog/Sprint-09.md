@@ -21,6 +21,8 @@ The fiscal foundation mixes a **high-risk cross-cutting retrofit** (adding `Comp
 - **Sprint 09a — Tenancy foundation (this document's detailed scope).** Introduce the `Company`/tenant aggregate and the **shared-schema `CompanyId`** across existing Master Data, with an additive migration and cross-company isolation — *without* breaking any existing module. No fiscal fields beyond `CompanyFiscalProfile`.
 - **Sprint 09b — Master Data fiscal extensions + tax-engine catalogues (outlined below, detailed later).** Built on 09a: `CustomerFiscalIdentity`/NIF + fiscal address (Customer/Supplier), Product fiscal classification, `Currency` `ExchangeRate`; migrate/extend `TaxCode` into FiscalCompliance + `TaxRegime`, `TaxRate`, `TaxExemptionReason` (seed the AGT M-codes), `TaxRule`, `WithholdingTaxRule`, `StampDutyRule`.
 
+  **Scoping decision (owner, 2026-09-13), correcting 09a:** when `TaxCode` moves into the FiscalCompliance tax engine, it — and the other fiscal catalogues (`TaxRegime`, `TaxRate`, `TaxExemptionReason`, `TaxRule`, `WithholdingTaxRule`, `StampDutyRule`) — become **global (national law): `CompanyId` nullable, `null` = global**, seeded once and shared by all companies (per-company override deferred). 09a scoped `TaxCode` as company-owned (NOT NULL); 09b makes it global. **`Category` and `UnitOfMeasure` remain per-company** (`CompanyId` NOT NULL, as delivered in 09a).
+
 **Confirmed decisions (owner, 2026-09-12):**
 1. Each `User` belongs to **one** `Company`; the current company is resolved from the authenticated user (company switching deferred).
 2. **Identity stays global** — `User`/`Role`/`Permission` do **not** carry `CompanyId` in this phase; only Master Data business entities are tenant-scoped.
