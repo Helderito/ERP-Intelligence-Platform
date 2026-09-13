@@ -14,7 +14,10 @@ public sealed class WarehouseManagementServiceTests
     {
         var type = CreateWarehouseType();
         var repository = new FakeWarehouseRepository();
-        var service = new WarehouseManagementService(repository, new FakeWarehouseTypeRepository(type));
+        var service = new WarehouseManagementService(
+            repository,
+            new FakeWarehouseTypeRepository(type),
+            new TestCurrentCompanyProvider());
 
         var result = await service.CreateWarehouseAsync(
             new CreateWarehouseCommand("main-01", "Main Warehouse", type.Id));
@@ -29,7 +32,10 @@ public sealed class WarehouseManagementServiceTests
     {
         var type = CreateWarehouseType();
         var repository = new FakeWarehouseRepository();
-        var service = new WarehouseManagementService(repository, new FakeWarehouseTypeRepository(type));
+        var service = new WarehouseManagementService(
+            repository,
+            new FakeWarehouseTypeRepository(type),
+            new TestCurrentCompanyProvider());
         await service.CreateWarehouseAsync(new CreateWarehouseCommand("main-01", "Main", type.Id));
 
         await Assert.ThrowsAsync<WarehouseCodeAlreadyExistsException>(() =>
@@ -41,7 +47,8 @@ public sealed class WarehouseManagementServiceTests
     {
         var service = new WarehouseManagementService(
             new FakeWarehouseRepository(),
-            new FakeWarehouseTypeRepository());
+            new FakeWarehouseTypeRepository(),
+            new TestCurrentCompanyProvider());
 
         await Assert.ThrowsAsync<MasterDataReferenceNotFoundException>(() =>
             service.CreateWarehouseAsync(new CreateWarehouseCommand("MAIN-01", "Main", Guid.NewGuid())));
@@ -53,7 +60,8 @@ public sealed class WarehouseManagementServiceTests
         var type = CreateWarehouseType();
         var service = new WarehouseManagementService(
             new FakeWarehouseRepository(),
-            new FakeWarehouseTypeRepository(type));
+            new FakeWarehouseTypeRepository(type),
+            new TestCurrentCompanyProvider());
 
         await Assert.ThrowsAsync<WarehouseNotFoundException>(() =>
             service.UpdateWarehouseAsync(new UpdateWarehouseCommand(Guid.NewGuid(), "Missing", type.Id)));
@@ -64,7 +72,10 @@ public sealed class WarehouseManagementServiceTests
     {
         var type = CreateWarehouseType();
         var repository = new FakeWarehouseRepository();
-        var service = new WarehouseManagementService(repository, new FakeWarehouseTypeRepository(type));
+        var service = new WarehouseManagementService(
+            repository,
+            new FakeWarehouseTypeRepository(type),
+            new TestCurrentCompanyProvider());
         await service.CreateWarehouseAsync(new CreateWarehouseCommand("main-01", "Main Warehouse", type.Id));
 
         var result = await service.SearchWarehousesAsync(new SearchWarehousesQuery("main", 1, 200));

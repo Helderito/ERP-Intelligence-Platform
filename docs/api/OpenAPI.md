@@ -382,6 +382,21 @@ GET /payment-terms
 
 These endpoints require authentication but no management permission. Results are ordered by code. Country responses use ISO 3166-1 alpha-2 codes, Currency responses use ISO 4217 codes, and Payment Term responses also include `netDays`. The three resources have no POST, PUT or DELETE operations.
 
+Sprint 09a introduces the Company/tenant administration endpoints:
+
+```
+GET /companies
+GET /companies/{id}
+POST /companies
+PUT /companies/{id}
+POST /companies/{id}/establishments
+PUT /companies/{id}/fiscal-profile
+```
+
+All Company endpoints require `company.manage`; requests without authentication receive `401 Unauthorized`, while authenticated users without the permission receive `403 Forbidden`. Company creation includes its initial establishment. Establishments and the minimal fiscal profile are managed through the Company aggregate.
+
+Authentication responses and JWTs now include `companyId`, resolved from the user's single `UserCompany` membership. Existing Customer, Supplier, Product, Category, UnitOfMeasure, TaxCode and Warehouse contracts are unchanged, but their reads and writes are transparently scoped to that company. Country, Currency, PaymentTerm and WarehouseType remain global catalogues and are not tenant-filtered.
+
 ---
 
 # 15. Error Handling

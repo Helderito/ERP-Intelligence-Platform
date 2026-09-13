@@ -1,9 +1,10 @@
 using ERP.Domain.MasterData.Events;
+using ERP.Domain.Tenancy;
 using ERP.SharedKernel;
 
 namespace ERP.Domain.MasterData;
 
-public sealed class Customer : Entity<Guid>
+public sealed class Customer : Entity<Guid>, ICompanyOwned
 {
     private readonly List<CustomerContact> _contacts = [];
     private readonly List<CustomerAddress> _addresses = [];
@@ -17,11 +18,13 @@ public sealed class Customer : Entity<Guid>
 
     private Customer(
         Guid id,
+        Guid companyId,
         CustomerCode code,
         string name,
         DateTime createdAtUtc)
         : base(id)
     {
+        CompanyId = EnsureRequiredCompanyId(companyId);
         Code = code;
         Name = NormalizeName(name);
         IsActive = true;
@@ -29,6 +32,8 @@ public sealed class Customer : Entity<Guid>
     }
 
     public CustomerCode Code { get; private set; }
+
+    public Guid CompanyId { get; private set; }
 
     public string Name { get; private set; }
 
@@ -44,12 +49,22 @@ public sealed class Customer : Entity<Guid>
 
     public IReadOnlyCollection<CustomerAddress> Addresses => _addresses.AsReadOnly();
 
-    public static Customer Create(CustomerCode code, string name, DateTime createdAtUtc)
+    public static Customer Create(Guid companyId, CustomerCode code, string name, DateTime createdAtUtc)
     {
-        var customer = new Customer(Guid.NewGuid(), code, name, createdAtUtc);
+        var customer = new Customer(Guid.NewGuid(), companyId, code, name, createdAtUtc);
         customer.RaiseDomainEvent(new CustomerCreated(customer.Id, customer.Code.Value, createdAtUtc));
 
         return customer;
+    }
+
+    private static Guid EnsureRequiredCompanyId(Guid companyId)
+    {
+        if (companyId == Guid.Empty)
+        {
+            throw new ArgumentException("Company identifier is required.", nameof(companyId));
+        }
+
+        return companyId;
     }
 
     public CustomerContact AddContact(string name, string? email, string? phone)

@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using ERP.Domain.MasterData.Events;
 
 namespace ERP.UnitTests.MasterData;
@@ -94,6 +95,10 @@ public sealed class SupplierTests
 
     private static Supplier CreateSupplier()
     {
-        return Supplier.Create(SupplierCode.Create("sup-001"), "Sample Supplier", DateTime.UtcNow);
+        return Supplier.Create(
+            TenancySeed.DefaultCompanyId,
+            SupplierCode.Create("sup-001"),
+            "Sample Supplier",
+            DateTime.UtcNow);
     }
 }

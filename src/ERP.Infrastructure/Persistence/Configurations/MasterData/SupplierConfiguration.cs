@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,6 +18,10 @@ public sealed class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
         builder.Property(supplier => supplier.Id)
             .ValueGeneratedNever();
 
+        builder.Property(supplier => supplier.CompanyId).IsRequired();
+        builder.HasIndex(supplier => supplier.CompanyId);
+        builder.HasOne<Company>().WithMany().HasForeignKey(supplier => supplier.CompanyId).OnDelete(DeleteBehavior.Restrict);
+
         builder.OwnsOne(supplier => supplier.Code, codeBuilder =>
         {
             codeBuilder.Property(code => code.Value)
@@ -24,8 +29,6 @@ public sealed class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
                 .HasMaxLength(50)
                 .IsRequired();
 
-            codeBuilder.HasIndex(code => code.Value)
-                .IsUnique();
         });
 
         builder.Property(supplier => supplier.Name)

@@ -10,6 +10,7 @@ const navigationItems = [
   { label: "Categorias", to: "/categories", permission: "reference.manage" },
   { label: "Unidades de Medida", to: "/units-of-measure", permission: "reference.manage" },
   { label: "Códigos de Imposto", to: "/tax-codes", permission: "reference.manage" },
+  { label: "Empresa", to: "/company", permission: "company.manage" },
   { label: "Roles", to: "/roles", permission: "roles.manage" },
   { label: "Permissions", to: "/permissions", permission: "roles.manage" },
   { label: "Utilizadores", to: "/users/roles", permission: "users.manage" },

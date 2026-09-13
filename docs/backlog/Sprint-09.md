@@ -4,7 +4,7 @@
 
 **Sprint Number:** 09
 
-**Status:** Planned
+**Status:** In Progress — Sprint 09a implemented; Sprint 09b planned
 
 **Sprint Type:** Goal-Based Sprint
 
@@ -75,48 +75,48 @@ This is the base on which all fiscal (EP-015) and future transactional modules a
 
 ## Domain
 
-- [ ] `Company` aggregate root (+ `Establishment` entity, `CompanyFiscalProfile`)
-- [ ] `Nif`, `FiscalAddress` value objects
-- [ ] Domain events: `CompanyRegistered`, `EstablishmentAdded`, `FiscalProfileUpdated`
-- [ ] A tenancy abstraction for "current company" consumed by company-scoped repositories
+- [x] `Company` aggregate root (+ `Establishment` entity, `CompanyFiscalProfile`)
+- [x] `Nif`, `FiscalAddress` value objects
+- [x] Domain events: `CompanyRegistered`, `EstablishmentAdded`, `FiscalProfileUpdated`
+- [x] A tenancy abstraction for "current company" consumed by company-scoped repositories
 
 ## Application
 
-- [ ] Create/Update Company, Establishment, CompanyFiscalProfile
-- [ ] `User`–`Company` membership assignment; current-company resolver
-- [ ] `company.manage` permission (seeded, linked to Administrator)
+- [x] Create/Update Company, Establishment, CompanyFiscalProfile
+- [x] `User`–`Company` membership assignment; current-company resolver
+- [x] `company.manage` permission (seeded, linked to Administrator)
 
 ## Infrastructure
 
-- [ ] `CompanyId` on company-owned Master Data configurations + repositories
-- [ ] Global query filter by current company (global catalogues exempt)
-- [ ] Additive migration `AddCompanyTenancy` (nullable → backfill default company → NOT NULL) + default `Company` seed + Administrator user membership backfill
-- [ ] Repository review: every company-scoped query is filtered
+- [x] `CompanyId` on company-owned Master Data configurations + repositories
+- [x] Global query filter by current company (global catalogues exempt)
+- [x] Additive migration `AddCompanyTenancy` (nullable → backfill default company → NOT NULL) + default `Company` seed + Administrator user membership backfill
+- [x] Repository review: every company-scoped query is filtered
 
 ## API
 
-- [ ] `GET/POST/PUT /companies`, establishments and fiscal profile (as needed), under `company.manage`
-- [ ] Current-company context applied to all existing Master Data endpoints (transparently)
+- [x] `GET/POST/PUT /companies`, establishments and fiscal profile (as needed), under `company.manage`
+- [x] Current-company context applied to all existing Master Data endpoints (transparently)
 
 ## Frontend
 
-- [ ] Minimal company profile/administration screen (Portuguese) as needed to view/set the company
-- [ ] Existing Master Data screens keep working under the current company
+- [x] Minimal company profile/administration screen (Portuguese) as needed to view/set the company
+- [x] Existing Master Data screens keep working under the current company
 
 ## Database
 
-- [ ] `Company`, `Establishment`, `CompanyFiscalProfile` tables
-- [ ] `CompanyId` columns + indexes on company-owned Master Data tables
-- [ ] `UserCompany` membership
+- [x] `Company`, `Establishment`, `CompanyFiscalProfile` tables
+- [x] `CompanyId` columns + indexes on company-owned Master Data tables
+- [x] `UserCompany` membership
 
 ## Testing
 
-- [ ] Unit tests (Company aggregate, resolver)
-- [ ] Integration tests incl. **cross-company isolation** (a company cannot read another's data) and existing-module regression under the default company
+- [x] Unit tests (Company aggregate, resolver)
+- [x] Integration tests incl. **cross-company isolation** (a company cannot read another's data) and existing-module regression under the default company
 
 ## Documentation
 
-- [ ] Update OpenAPI, Product Backlog (09a done), Data-Model/Domain-Model/ERD notes as needed, Learning Journal + Technical Learning Guide (PT)
+- [x] Update OpenAPI, Product Backlog (09a done), Data-Model/Domain-Model/ERD notes as needed, Learning Journal + Technical Learning Guide (PT)
 
 ---
 

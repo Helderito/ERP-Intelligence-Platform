@@ -5,6 +5,7 @@ using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Models;
 using ERP.Application.MasterData.Queries;
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Application.MasterData.Services;
 
@@ -14,13 +15,16 @@ public sealed class WarehouseManagementService
 
     private readonly IWarehouseRepository _warehouseRepository;
     private readonly IWarehouseTypeRepository _warehouseTypeRepository;
+    private readonly ICurrentCompanyProvider _currentCompanyProvider;
 
     public WarehouseManagementService(
         IWarehouseRepository warehouseRepository,
-        IWarehouseTypeRepository warehouseTypeRepository)
+        IWarehouseTypeRepository warehouseTypeRepository,
+        ICurrentCompanyProvider currentCompanyProvider)
     {
         _warehouseRepository = warehouseRepository;
         _warehouseTypeRepository = warehouseTypeRepository;
+        _currentCompanyProvider = currentCompanyProvider;
     }
 
     public async Task<WarehouseDto> CreateWarehouseAsync(
@@ -35,7 +39,12 @@ public sealed class WarehouseManagementService
             throw new WarehouseCodeAlreadyExistsException(code.Value);
         }
 
-        var warehouse = Warehouse.Create(code, command.Name, command.WarehouseTypeId, DateTime.UtcNow);
+        var warehouse = Warehouse.Create(
+            _currentCompanyProvider.GetRequiredCompanyId(),
+            code,
+            command.Name,
+            command.WarehouseTypeId,
+            DateTime.UtcNow);
         await _warehouseRepository.AddAsync(warehouse, cancellationToken);
         await _warehouseRepository.SaveChangesAsync(cancellationToken);
 

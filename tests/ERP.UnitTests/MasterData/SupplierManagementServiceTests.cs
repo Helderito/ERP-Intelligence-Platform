@@ -13,7 +13,7 @@ public sealed class SupplierManagementServiceTests
     public async Task CreateSupplierAsync_ShouldCreateSupplierWithContactsAndAddresses_WhenCodeIsUnique()
     {
         var supplierRepository = new FakeSupplierRepository();
-        var service = new SupplierManagementService(supplierRepository);
+        var service = new SupplierManagementService(supplierRepository, new TestCurrentCompanyProvider());
 
         var supplier = await service.CreateSupplierAsync(
             new CreateSupplierCommand(
@@ -32,7 +32,7 @@ public sealed class SupplierManagementServiceTests
     public async Task CreateSupplierAsync_ShouldThrow_WhenCodeAlreadyExists()
     {
         var supplierRepository = new FakeSupplierRepository();
-        var service = new SupplierManagementService(supplierRepository);
+        var service = new SupplierManagementService(supplierRepository, new TestCurrentCompanyProvider());
 
         await service.CreateSupplierAsync(new CreateSupplierCommand("sup-001", "Sample Supplier", [], []));
 
@@ -44,7 +44,7 @@ public sealed class SupplierManagementServiceTests
     public async Task UpdateSupplierAsync_ShouldReplaceContactsAndAddresses()
     {
         var supplierRepository = new FakeSupplierRepository();
-        var service = new SupplierManagementService(supplierRepository);
+        var service = new SupplierManagementService(supplierRepository, new TestCurrentCompanyProvider());
         var created = await service.CreateSupplierAsync(
             new CreateSupplierCommand(
                 "sup-001",
@@ -69,7 +69,7 @@ public sealed class SupplierManagementServiceTests
     [Fact]
     public async Task UpdateSupplierAsync_ShouldThrow_WhenSupplierDoesNotExist()
     {
-        var service = new SupplierManagementService(new FakeSupplierRepository());
+        var service = new SupplierManagementService(new FakeSupplierRepository(), new TestCurrentCompanyProvider());
 
         await Assert.ThrowsAsync<SupplierNotFoundException>(
             () => service.UpdateSupplierAsync(new UpdateSupplierCommand(Guid.NewGuid(), "Missing", [], [])));
@@ -79,7 +79,7 @@ public sealed class SupplierManagementServiceTests
     public async Task SearchSuppliersAsync_ShouldReturnPagedLightResults()
     {
         var supplierRepository = new FakeSupplierRepository();
-        var service = new SupplierManagementService(supplierRepository);
+        var service = new SupplierManagementService(supplierRepository, new TestCurrentCompanyProvider());
 
         await service.CreateSupplierAsync(new CreateSupplierCommand("sup-001", "Sample Supplier", [], []));
 

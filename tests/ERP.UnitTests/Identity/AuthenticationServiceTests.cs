@@ -2,7 +2,9 @@ using ERP.Application.Identity.Abstractions;
 using ERP.Application.Identity.Commands;
 using ERP.Application.Identity.Models;
 using ERP.Application.Identity.Services;
+using ERP.Application.Tenancy.Abstractions;
 using ERP.Domain.Identity;
+using ERP.Domain.Tenancy;
 
 namespace ERP.UnitTests.Identity;
 
@@ -18,7 +20,9 @@ public sealed class AuthenticationServiceTests
             refreshTokenRepository,
             new FakePasswordHasher(),
             new FakeJwtTokenGenerator(),
-            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository));
+            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository),
+            new FakeUserCompanyRepository(),
+            new FakeCurrentCompanyProvider());
 
         var result = await service.RegisterAsync(new RegisterUserCommand("user@example.com", "password"));
 
@@ -38,7 +42,9 @@ public sealed class AuthenticationServiceTests
             new FakeRefreshTokenRepository(),
             new FakePasswordHasher(),
             new FakeJwtTokenGenerator(),
-            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository));
+            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository),
+            new FakeUserCompanyRepository(),
+            new FakeCurrentCompanyProvider());
 
         await service.RegisterAsync(new RegisterUserCommand("first@example.com", "password"));
         await service.RegisterAsync(new RegisterUserCommand("second@example.com", "password"));
@@ -60,12 +66,38 @@ public sealed class AuthenticationServiceTests
             refreshTokenRepository,
             new FakePasswordHasher(),
             new FakeJwtTokenGenerator(),
-            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository));
+            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository),
+            new FakeUserCompanyRepository(),
+            new FakeCurrentCompanyProvider());
 
         await service.RegisterAsync(new RegisterUserCommand("user@example.com", "password"));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => service.LoginAsync(new LoginCommand("user@example.com", "wrong-password")));
+    }
+
+    [Fact]
+    public async Task LoginAsync_ShouldPreferPersistedMembership_WhenCurrentTokenHasStaleCompany()
+    {
+        var userRepository = new FakeUserRepository();
+        var userCompanyRepository = new FakeUserCompanyRepository();
+        var currentCompanyProvider = new FakeCurrentCompanyProvider();
+        var service = new AuthenticationService(
+            userRepository,
+            new FakeRefreshTokenRepository(),
+            new FakePasswordHasher(),
+            new FakeJwtTokenGenerator(),
+            new AuthorizationService(new FakeRoleRepository(), new FakePermissionRepository(), userRepository),
+            userCompanyRepository,
+            currentCompanyProvider);
+
+        var registration = await service.RegisterAsync(new RegisterUserCommand("user@example.com", "password"));
+        currentCompanyProvider.UserIdValue = registration.UserId;
+        currentCompanyProvider.CompanyIdValue = Guid.NewGuid();
+
+        var login = await service.LoginAsync(new LoginCommand("user@example.com", "password"));
+
+        Assert.Equal(TenancySeed.DefaultCompanyId, login.CompanyId);
     }
 
     private sealed class FakeUserRepository : IUserRepository
@@ -202,7 +234,7 @@ public sealed class AuthenticationServiceTests
 
     private sealed class FakeJwtTokenGenerator : IJwtTokenGenerator
     {
-        public AccessTokenResult Generate(User user, IReadOnlyCollection<string> roleNames)
+        public AccessTokenResult Generate(User user, IReadOnlyCollection<string> roleNames, Guid companyId)
         {
             return new AccessTokenResult($"token:{user.Id}", DateTime.UtcNow.AddMinutes(15));
         }
@@ -211,5 +243,37 @@ public sealed class AuthenticationServiceTests
         {
             return null;
         }
+    }
+
+    private sealed class FakeUserCompanyRepository : IUserCompanyRepository
+    {
+        private readonly List<UserCompany> _memberships = [];
+
+        public Task<Guid?> GetCompanyIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Guid?>(_memberships.SingleOrDefault(item => item.UserId == userId)?.CompanyId);
+        }
+
+        public Task AddAsync(UserCompany membership, CancellationToken cancellationToken = default)
+        {
+            _memberships.Add(membership);
+            return Task.CompletedTask;
+        }
+
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+    }
+
+    private sealed class FakeCurrentCompanyProvider : ICurrentCompanyProvider
+    {
+        public Guid? UserIdValue { get; set; }
+
+        public Guid? CompanyIdValue { get; set; }
+
+        public Guid? UserId => UserIdValue;
+
+        public Guid? CompanyId => CompanyIdValue;
+
+        public Guid GetRequiredCompanyId()
+            => throw new InvalidOperationException("No current company is available in this test.");
     }
 }

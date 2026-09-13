@@ -352,15 +352,47 @@ The review found the new Master Data module threw its domain and application exc
 
 ---
 
-# 13. Cumulative Progress Against the Learning Roadmap
+# 13. Sprint 09a — Tenancy Foundation
+
+**Implemented:** 2026-09-13 · **Release:** 0.3.0
+
+## What Was Delivered
+
+- A Tenancy bounded context now owns `Company`, child `Establishment`, the minimal `CompanyFiscalProfile`, `UserCompany` membership and the `Nif`/`FiscalAddress` value objects.
+- `Customer`, `Supplier`, `Product`, `Category`, `UnitOfMeasure`, `TaxCode` and `Warehouse` now carry a required `CompanyId`; global Country, Currency, PaymentTerm and WarehouseType catalogues, plus Identity, remain tenant-agnostic.
+- The `AddCompanyTenancy` migration creates the tenancy tables, seeds a deterministic default company and establishment, adds nullable `CompanyId` columns, backfills all existing rows and users, then enforces non-null foreign keys and per-company indexes without recreating existing tables.
+- Current-company resolution is represented in JWTs through a `companyId` claim. EF Core global query filters and write guards isolate all company-owned Master Data transparently behind the unchanged APIs.
+- The `company.manage` permission is bootstrapped for Administrator. Company profile and establishment endpoints power the Portuguese-first Empresa page.
+- Unit, PostgreSQL migration and integration tests cover aggregate rules, bootstrap, `401`/`403`, migration upgrade safety, tenant-specific code uniqueness, global-catalog visibility and cross-company read/write isolation. React tests cover company rendering, editing, establishment creation and error handling.
+
+## What Was Learned
+
+- Retrofitting tenancy safely is primarily a data-migration problem: nullable-first columns, deterministic backfill, and only then `NOT NULL` constraints preserve deployed rows and foreign keys.
+- A global query filter provides a centralized default for isolation, while a save guard prevents new or modified aggregates from escaping the current company. Both are needed because read filtering alone does not protect writes.
+- Business codes that were globally unique must become unique per company. The migration must replace those indexes as deliberately as it adds `CompanyId`.
+- JWT claims are useful request context but membership remains authoritative at token issuance; otherwise a stale token can perpetuate an outdated company assignment.
+- Global catalogues and global Identity data need an explicit exemption from tenant filtering. Multi-company readiness is not the same as indiscriminately adding `CompanyId` to every table.
+
+## Learning Roadmap Mapping
+
+| Stage | Contribution |
+| --- | --- |
+| Stage 1 — Software Architecture | Advanced: ADR-0005 is realized through an explicit Tenancy boundary and shared-schema isolation model. |
+| Stage 2 — Backend Development | Advanced: cross-cutting current-company resolution, scoped repositories and Company management are implemented. |
+| Stage 3 — Infrastructure | Advanced: a non-destructive tenancy retrofit and upgrade-path test protect existing PostgreSQL data. |
+| Stage 4 — Frontend Development | Advanced: permission-aware Portuguese company administration with component tests is implemented. |
+
+---
+
+# 14. Cumulative Progress Against the Learning Roadmap
 
 | Stage | Status | Contributing Sprints |
 | --- | --- | --- |
 | Stage 0 — Project Foundation | Done | Sprint 00 |
-| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a, Sprint 08b |
-| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a, Sprint 08b (EP-003 - Master Data complete) |
-| Stage 3 — Infrastructure | Done (local) | Sprint 01 |
-| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a (managed reference-data UI with component tests done) |
+| Stage 1 — Software Architecture | Partial | Sprint 00, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a, Sprint 08b, Sprint 09a |
+| Stage 2 — Backend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a, Sprint 08b, Sprint 09a |
+| Stage 3 — Infrastructure | Done (local) | Sprint 01, Sprint 09a (additive tenancy retrofit) |
+| Stage 4 — Frontend Development | Partial | Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05, Sprint 06, Sprint 07, Sprint 08a, Sprint 09a |
 | Stage 5 — DevOps & Cloud | Partial | Sprint 00, Sprint 01, Sprint 06 (local delivery discipline formalised; cloud deployment pending) |
 | Stage 6 — Business Intelligence | Not started | — |
 | Stage 7 — Artificial Intelligence | Partial | Sprint 00 (governance and specs only; no AI agent implemented) |
@@ -369,7 +401,7 @@ This table is updated whenever a new entry is added above.
 
 ---
 
-# 14. Relationship with Other Documents
+# 15. Relationship with Other Documents
 
 This document should be read together with:
 
@@ -381,6 +413,6 @@ This document should be read together with:
 
 ---
 
-# 15. Success Criteria
+# 16. Success Criteria
 
 This journal is considered successful when a future reader — including the project's own author, months later — can understand not just what exists in the codebase, but why it was built that way and what it took to get there, without re-reading every Sprint and every commit.

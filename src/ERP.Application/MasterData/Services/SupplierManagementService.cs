@@ -5,6 +5,7 @@ using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Models;
 using ERP.Application.MasterData.Queries;
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Application.MasterData.Services;
 
@@ -13,10 +14,14 @@ public sealed class SupplierManagementService
     public const int MaximumPageSize = 100;
 
     private readonly ISupplierRepository _supplierRepository;
+    private readonly ICurrentCompanyProvider _currentCompanyProvider;
 
-    public SupplierManagementService(ISupplierRepository supplierRepository)
+    public SupplierManagementService(
+        ISupplierRepository supplierRepository,
+        ICurrentCompanyProvider currentCompanyProvider)
     {
         _supplierRepository = supplierRepository;
+        _currentCompanyProvider = currentCompanyProvider;
     }
 
     public async Task<SupplierDto> CreateSupplierAsync(
@@ -31,7 +36,7 @@ public sealed class SupplierManagementService
             throw new SupplierCodeAlreadyExistsException(code.Value);
         }
 
-        var supplier = Supplier.Create(code, command.Name, DateTime.UtcNow);
+        var supplier = Supplier.Create(_currentCompanyProvider.GetRequiredCompanyId(), code, command.Name, DateTime.UtcNow);
         AddContacts(supplier, command.Contacts);
         AddAddresses(supplier, command.Addresses);
 

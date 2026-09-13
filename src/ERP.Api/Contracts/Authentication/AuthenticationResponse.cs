@@ -4,6 +4,7 @@ namespace ERP.Api.Contracts.Authentication;
 
 public sealed record AuthenticationResponse(
     Guid UserId,
+    Guid CompanyId,
     string Email,
     string AccessToken,
     DateTime AccessTokenExpiresAtUtc,
@@ -16,6 +17,7 @@ public sealed record AuthenticationResponse(
     {
         return new AuthenticationResponse(
             result.UserId,
+            result.CompanyId,
             result.Email,
             result.AccessToken,
             result.AccessTokenExpiresAtUtc,

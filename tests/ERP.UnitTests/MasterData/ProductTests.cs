@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using ERP.Domain.MasterData.Events;
 
 namespace ERP.UnitTests.MasterData;
@@ -46,6 +47,7 @@ public sealed class ProductTests
     private static Product CreateProduct()
     {
         return Product.Create(
+            TenancySeed.DefaultCompanyId,
             ProductCode.Create("sku-001"),
             "Sample Product",
             Guid.NewGuid(),

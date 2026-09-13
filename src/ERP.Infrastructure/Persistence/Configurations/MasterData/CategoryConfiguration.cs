@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,11 +18,15 @@ public sealed class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(category => category.Id)
             .ValueGeneratedNever();
 
+        builder.Property(category => category.CompanyId).IsRequired();
+        builder.HasIndex(category => category.CompanyId);
+        builder.HasOne<Company>().WithMany().HasForeignKey(category => category.CompanyId).OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(category => category.Code)
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.HasIndex(category => category.Code)
+        builder.HasIndex(category => new { category.CompanyId, category.Code })
             .IsUnique();
 
         builder.Property(category => category.Name)

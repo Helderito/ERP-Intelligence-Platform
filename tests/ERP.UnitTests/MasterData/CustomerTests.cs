@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using ERP.Domain.MasterData.Events;
 
 namespace ERP.UnitTests.MasterData;
@@ -94,6 +95,10 @@ public sealed class CustomerTests
 
     private static Customer CreateCustomer()
     {
-        return Customer.Create(CustomerCode.Create("cus-001"), "Sample Customer", DateTime.UtcNow);
+        return Customer.Create(
+            TenancySeed.DefaultCompanyId,
+            CustomerCode.Create("cus-001"),
+            "Sample Customer",
+            DateTime.UtcNow);
     }
 }

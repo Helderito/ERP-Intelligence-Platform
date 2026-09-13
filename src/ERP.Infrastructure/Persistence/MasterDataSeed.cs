@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Infrastructure.Persistence;
 
@@ -20,13 +21,13 @@ public static class MasterDataSeed
 
     public static readonly Category[] Categories =
     [
-        new Category(GeneralCategoryId, "GENERAL", "General", SeededAtUtc)
+        new Category(GeneralCategoryId, TenancySeed.DefaultCompanyId, "GENERAL", "General", SeededAtUtc)
     ];
 
     public static readonly UnitOfMeasure[] UnitsOfMeasure =
     [
-        new UnitOfMeasure(UnitOfMeasureUnitId, "UNIT", "Unit", SeededAtUtc),
-        new UnitOfMeasure(UnitOfMeasureKilogramId, "KG", "Kilogram", SeededAtUtc)
+        new UnitOfMeasure(UnitOfMeasureUnitId, TenancySeed.DefaultCompanyId, "UNIT", "Unit", SeededAtUtc),
+        new UnitOfMeasure(UnitOfMeasureKilogramId, TenancySeed.DefaultCompanyId, "KG", "Kilogram", SeededAtUtc)
     ];
 
     public static readonly WarehouseType[] WarehouseTypes =

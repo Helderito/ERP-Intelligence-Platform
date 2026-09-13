@@ -3,7 +3,9 @@ using ERP.Application.Identity.Abstractions;
 using ERP.Application.Identity.Commands;
 using ERP.Application.Identity.Models;
 using ERP.Application.Identity.Queries;
+using ERP.Application.Tenancy.Abstractions;
 using ERP.Domain.Identity;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Application.Identity.Services;
 
@@ -14,19 +16,25 @@ public sealed class AuthenticationService
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly AuthorizationService _authorizationService;
+    private readonly IUserCompanyRepository _userCompanyRepository;
+    private readonly ICurrentCompanyProvider _currentCompanyProvider;
 
     public AuthenticationService(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
         IJwtTokenGenerator jwtTokenGenerator,
-        AuthorizationService authorizationService)
+        AuthorizationService authorizationService,
+        IUserCompanyRepository userCompanyRepository,
+        ICurrentCompanyProvider currentCompanyProvider)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenGenerator = jwtTokenGenerator;
         _authorizationService = authorizationService;
+        _userCompanyRepository = userCompanyRepository;
+        _currentCompanyProvider = currentCompanyProvider;
     }
 
     public async Task<AuthenticationResult> RegisterAsync(
@@ -57,6 +65,9 @@ public sealed class AuthenticationService
         }
 
         await _userRepository.AddAsync(user, cancellationToken);
+        await _userCompanyRepository.AddAsync(
+            UserCompany.Create(user.Id, TenancySeed.DefaultCompanyId, utcNow),
+            cancellationToken);
         await _userRepository.SaveChangesAsync(cancellationToken);
 
         return await IssueAuthenticationResultAsync(user, cancellationToken);
@@ -147,7 +158,16 @@ public sealed class AuthenticationService
     {
         var roles = await _authorizationService.ListUserRolesAsync(user, cancellationToken);
         var permissions = await _authorizationService.ListUserPermissionsAsync(user, cancellationToken);
-        var accessToken = _jwtTokenGenerator.Generate(user, roles);
+        var companyId = await _userCompanyRepository.GetCompanyIdAsync(user.Id, cancellationToken);
+        companyId ??= _currentCompanyProvider.UserId == user.Id
+            ? _currentCompanyProvider.CompanyId
+            : null;
+        if (!companyId.HasValue)
+        {
+            throw new UnauthorizedAccessException("No company membership is assigned to this user.");
+        }
+
+        var accessToken = _jwtTokenGenerator.Generate(user, roles, companyId.Value);
         var utcNow = DateTime.UtcNow;
         var refreshTokenExpiresAtUtc = utcNow.AddDays(7);
         var refreshToken = RefreshToken.Issue(
@@ -161,6 +181,7 @@ public sealed class AuthenticationService
 
         return new AuthenticationResult(
             user.Id,
+            companyId.Value,
             user.Email.Value,
             accessToken.AccessToken,
             accessToken.ExpiresAtUtc,

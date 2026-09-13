@@ -61,6 +61,10 @@ Implemented in [Sprint 03](../backlog/Sprint-03.md).
 
 Implemented incrementally from [Sprint 04](../backlog/Sprint-04.md) through [Sprint 08](../backlog/Sprint-08.md).
 
+From Sprint 09a, the `Customer`, `Supplier`, `Product`, `Category`, `UnitOfMeasure`, `TaxCode`
+and `Warehouse` roots implement the company-owned contract and carry a required `CompanyId`.
+Their child entities inherit the scope through their aggregate root. Codes are unique per company.
+
 ## Customer Aggregate — *Implemented, Sprint 05*
 
 - Aggregate Root: `Customer` (inherits `Entity<Guid>`)
@@ -127,8 +131,8 @@ Sprint 08b completes EP-003 - Master Data. Language Configuration remains deferr
 
 The commercial pivot ([ADR-0004](../decisions/ADR-0004.md)) extends existing Master Data aggregates with fiscal fields, and moves `TaxCode` into the FiscalCompliance context. These are extensions to existing aggregates, not new ones:
 
-- `Customer` and `Supplier` gain a `CustomerFiscalIdentity` value object (NIF, `customerKind`, `taxIdStatus`), a structured fiscal address and a fiscal country; both become company-scoped (`CompanyId`, [ADR-0005](../decisions/ADR-0005.md)).
-- `Product` gains a fiscal classification (`ProductType`, SAF-T code, fiscal/tax category, customs details) and `CompanyId`.
+- `Customer` and `Supplier`, already company-scoped in Sprint 09a, gain a `CustomerFiscalIdentity` value object (NIF, `customerKind`, `taxIdStatus`), a structured fiscal address and a fiscal country.
+- `Product`, already company-scoped in Sprint 09a, gains a fiscal classification (`ProductType`, SAF-T code, fiscal/tax category, customs details).
 - `Currency` (global catalogue) gains a separate small `ExchangeRate` aggregate (rates by date/source) rather than being inflated.
 - `TaxCode` **moves from Master Data (Sprint 08a) into the FiscalCompliance tax engine** and is extended (see §6); the Sprint-08a shape is superseded.
 
@@ -138,18 +142,21 @@ Global catalogues (`Country`, `Currency`, `PaymentTerm`, exemption codes) remain
 
 # 5. Tenancy Bounded Context
 
-*Planned, EP-015 (Sprint 09).* Introduced by [ADR-0005](../decisions/ADR-0005.md); establishes the company/taxpayer identity that scopes all fiscal and transactional data.
+*Implemented, Sprint 09a.* Introduced by [ADR-0005](../decisions/ADR-0005.md); establishes the company/taxpayer identity that scopes all fiscal and transactional data.
 
-## Company Aggregate — *Planned, EP-015*
+## Company Aggregate — *Implemented, Sprint 09a*
 
 - Aggregate Root: `Company` (the tenant; `CompanyId` scopes company-owned aggregates)
 - Entities (via root): `Establishment` (1..N)
-- Owned data: `CompanyFiscalProfile` (NIF, `vatRegime` {General | Simplified | CashVat | Exclusion}, fiscal address, SAF-T Header data, references to taxpayer AGT credentials)
+- Owned data: `CompanyFiscalProfile` (NIF, `vatRegime` {General | Simplified | CashVat | Exclusion}, fiscal address)
 - Value Objects: `Nif`, `FiscalAddress`
-- References by id: `SoftwareCertification`, `FiscalKey` (separate lifecycles)
 - Domain Events: `CompanyRegistered`, `EstablishmentAdded`, `FiscalProfileUpdated`
 
-Company-scoped data is filtered by `CompanyId` (application-level global filter now, PostgreSQL row-level security later). Global reference catalogues are exempt.
+`UserCompany` links each global Identity user to one company in this phase. Registration assigns the
+default company, login emits a `companyId` JWT claim, and company-owned data is filtered by that
+current company through an EF Core global query filter. Global reference catalogues are exempt.
+PostgreSQL row-level security, company switching, SAF-T header data and AGT credential references
+remain planned.
 
 ---
 

@@ -1,9 +1,10 @@
 using ERP.Domain.MasterData.Events;
+using ERP.Domain.Tenancy;
 using ERP.SharedKernel;
 
 namespace ERP.Domain.MasterData;
 
-public sealed class Warehouse : Entity<Guid>
+public sealed class Warehouse : Entity<Guid>, ICompanyOwned
 {
     private Warehouse() : base(Guid.Empty)
     {
@@ -12,18 +13,23 @@ public sealed class Warehouse : Entity<Guid>
         WarehouseType = null!;
     }
 
-    private Warehouse(Guid id, WarehouseCode code, string name, Guid warehouseTypeId, DateTime createdAtUtc)
+    private Warehouse(Guid id, Guid companyId, WarehouseCode code, string name, Guid warehouseTypeId, DateTime createdAtUtc)
         : base(id)
     {
+        CompanyId = EnsureRequiredId(companyId, "Company identifier is required.", nameof(companyId));
         Code = code;
         Name = NormalizeName(name);
-        WarehouseTypeId = EnsureRequiredId(warehouseTypeId);
+        WarehouseTypeId = EnsureRequiredId(
+            warehouseTypeId,
+            "Warehouse type identifier is required.",
+            nameof(warehouseTypeId));
         WarehouseType = null!;
         IsActive = true;
         CreatedAtUtc = createdAtUtc;
     }
 
     public WarehouseCode Code { get; private set; }
+    public Guid CompanyId { get; private set; }
     public string Name { get; private set; }
     public Guid WarehouseTypeId { get; private set; }
     public WarehouseType WarehouseType { get; private set; }
@@ -32,9 +38,9 @@ public sealed class Warehouse : Entity<Guid>
     public DateTime? UpdatedAtUtc { get; private set; }
     public DateTime? DeactivatedAtUtc { get; private set; }
 
-    public static Warehouse Create(WarehouseCode code, string name, Guid warehouseTypeId, DateTime createdAtUtc)
+    public static Warehouse Create(Guid companyId, WarehouseCode code, string name, Guid warehouseTypeId, DateTime createdAtUtc)
     {
-        var warehouse = new Warehouse(Guid.NewGuid(), code, name, warehouseTypeId, createdAtUtc);
+        var warehouse = new Warehouse(Guid.NewGuid(), companyId, code, name, warehouseTypeId, createdAtUtc);
         warehouse.RaiseDomainEvent(new WarehouseCreated(warehouse.Id, warehouse.Code.Value, createdAtUtc));
         return warehouse;
     }
@@ -42,7 +48,7 @@ public sealed class Warehouse : Entity<Guid>
     public void UpdateDetails(string name, Guid warehouseTypeId, DateTime updatedAtUtc)
     {
         Name = NormalizeName(name);
-        WarehouseTypeId = EnsureRequiredId(warehouseTypeId);
+        WarehouseTypeId = EnsureRequiredId(warehouseTypeId, "Warehouse type identifier is required.", nameof(warehouseTypeId));
         UpdatedAtUtc = updatedAtUtc;
     }
 
@@ -69,13 +75,13 @@ public sealed class Warehouse : Entity<Guid>
         return name.Trim();
     }
 
-    private static Guid EnsureRequiredId(Guid warehouseTypeId)
+    private static Guid EnsureRequiredId(Guid id, string message, string parameterName)
     {
-        if (warehouseTypeId == Guid.Empty)
+        if (id == Guid.Empty)
         {
-            throw new ArgumentException("Warehouse type identifier is required.", nameof(warehouseTypeId));
+            throw new ArgumentException(message, parameterName);
         }
 
-        return warehouseTypeId;
+        return id;
     }
 }

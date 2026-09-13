@@ -1,5 +1,6 @@
 using ERP.Application.Identity.Services;
 using ERP.Application.MasterData.Services;
+using ERP.Application.Tenancy.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ERP.Application;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         services.AddScoped<WarehouseManagementService>();
         services.AddScoped<ReferenceDataManagementService>();
         services.AddScoped<SharedReferenceDataService>();
+        services.AddScoped<CompanyManagementService>();
 
         return services;
     }

@@ -302,8 +302,8 @@ Precedes EP-004 (Inventory) and EP-006 (Sales). See the Delivery Sequence note a
 
 ### Features
 
-* Company & tenant model (`Company`, shared-schema `CompanyId`) — ADR-0005
-* Company tax profile & establishments (NIF, fiscal regime, keys, certification data)
+* Company & tenant model (`Company`, shared-schema `CompanyId`) — **implemented, Sprint 09a** ([ADR-0005](../decisions/ADR-0005.md))
+* Company profile & establishments — **foundation implemented, Sprint 09a** (name, NIF, VAT regime and fiscal address); keys and certification data remain planned
 * Master Data fiscal extensions (Customer/Supplier NIF & fiscal address; TaxCode tax type/category/exemption reason/legal reference/effective dates; Currency exchange rates)
 * Tax regimes and `TaxExemptionReason` catalogue (loaded from official AGT annexes)
 * Fiscal document types, series and gap-free legal numbering
