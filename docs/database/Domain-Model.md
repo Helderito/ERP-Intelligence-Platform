@@ -194,6 +194,8 @@ Each is a small aggregate, versioned by `validFrom`/`validTo` and referenced by 
 - Invariants: sequential, gap-free per series; respect the AGT authorized range; exactly one default per taxpayer+establishment+type+year
 - Domain Events: `SeriesRequested`, `SeriesAuthorized`, `NumberReserved`, `SeriesExtensionRequested`, `SeriesClosed`
 
+The **establishment is bound at the series level** (each `FiscalSeries` references one `Establishment`, as the AGT `solicitarSerie` requires an `establishmentNumber`). The `Establishment` itself is defined at company level (Company 1..N Establishment, §5). A `FiscalDocument`'s establishment is therefore **derived from its series** — there is no separate establishment field on `FiscalDocument`, avoiding any divergence between a document and its series.
+
 ## FiscalDocument Aggregate — *Planned, EP-015 (Sprint 10)*
 
 A **single aggregate for all document families**, its behaviour driven by the referenced `FiscalDocumentType`.
