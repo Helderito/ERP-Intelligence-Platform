@@ -14,6 +14,7 @@ import { WarehousesPage } from "./pages/WarehousesPage";
 import { CategoriesPage } from "./pages/CategoriesPage";
 import { TaxCodesPage } from "./pages/TaxCodesPage";
 import { UnitsOfMeasurePage } from "./pages/UnitsOfMeasurePage";
+import { CompanyPage } from "./pages/CompanyPage";
 
 export const router = createBrowserRouter([
   {
@@ -89,6 +90,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredPermission="reference.manage">
             <TaxCodesPage />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "company",
+        element: (
+          <ProtectedRoute requiredPermission="company.manage">
+            <CompanyPage />
           </ProtectedRoute>
         )
       },

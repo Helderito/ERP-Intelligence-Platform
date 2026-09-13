@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using ERP.Infrastructure.Tenancy;
+using Microsoft.AspNetCore.Http;
 
 namespace ERP.Infrastructure.Persistence;
 
@@ -13,6 +15,6 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 
         optionsBuilder.UseNpgsql(connectionString);
 
-        return new AppDbContext(optionsBuilder.Options);
+        return new AppDbContext(optionsBuilder.Options, new CurrentCompanyProvider(new HttpContextAccessor()));
     }
 }

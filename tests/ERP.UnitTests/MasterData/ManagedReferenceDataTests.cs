@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using ERP.Domain.MasterData.Events;
 
 namespace ERP.UnitTests.MasterData;
@@ -12,13 +13,13 @@ public sealed class ManagedReferenceDataTests
     [InlineData("FOOD", "   ")]
     public void Category_ShouldRejectMissingCodeOrName(string code, string name)
     {
-        Assert.Throws<ArgumentException>(() => Category.Create(code, name, DateTime.UtcNow));
+        Assert.Throws<ArgumentException>(() => Category.Create(TenancySeed.DefaultCompanyId, code, name, DateTime.UtcNow));
     }
 
     [Fact]
     public void Category_ShouldNormalizeImmutableCodeAndSoftDeactivate()
     {
-        var category = Category.Create(" food ", "Food", DateTime.UtcNow);
+        var category = Category.Create(TenancySeed.DefaultCompanyId, " food ", "Food", DateTime.UtcNow);
 
         category.UpdateDetails("Fresh Food", DateTime.UtcNow);
         category.Deactivate(DateTime.UtcNow);
@@ -36,7 +37,7 @@ public sealed class ManagedReferenceDataTests
     [Fact]
     public void UnitOfMeasure_ShouldNormalizeImmutableCodeAndSoftDeactivate()
     {
-        var unit = UnitOfMeasure.Create(" box ", "Box", DateTime.UtcNow);
+        var unit = UnitOfMeasure.Create(TenancySeed.DefaultCompanyId, " box ", "Box", DateTime.UtcNow);
 
         unit.UpdateDetails("Shipping Box", DateTime.UtcNow);
         unit.Deactivate(DateTime.UtcNow);
@@ -58,7 +59,7 @@ public sealed class ManagedReferenceDataTests
     [InlineData("BOX", "   ")]
     public void UnitOfMeasure_ShouldRejectMissingCodeOrName(string code, string name)
     {
-        Assert.Throws<ArgumentException>(() => UnitOfMeasure.Create(code, name, DateTime.UtcNow));
+        Assert.Throws<ArgumentException>(() => UnitOfMeasure.Create(TenancySeed.DefaultCompanyId, code, name, DateTime.UtcNow));
     }
 
     [Theory]
@@ -67,7 +68,7 @@ public sealed class ManagedReferenceDataTests
     public void TaxCode_ShouldRejectRateOutsidePercentageRange(decimal rate)
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            TaxCode.Create("VAT", "VAT", rate, DateTime.UtcNow));
+            TaxCode.Create(TenancySeed.DefaultCompanyId, "VAT", "VAT", rate, DateTime.UtcNow));
     }
 
     [Theory]
@@ -76,7 +77,7 @@ public sealed class ManagedReferenceDataTests
     [InlineData(100)]
     public void TaxCode_ShouldAcceptRateInsidePercentageRange(decimal rate)
     {
-        var taxCode = TaxCode.Create(" vat ", "VAT", rate, DateTime.UtcNow);
+        var taxCode = TaxCode.Create(TenancySeed.DefaultCompanyId, " vat ", "VAT", rate, DateTime.UtcNow);
 
         Assert.Equal("VAT", taxCode.Code);
         Assert.Equal(rate, taxCode.Rate);
@@ -87,7 +88,7 @@ public sealed class ManagedReferenceDataTests
     [Fact]
     public void TaxCode_UpdateAndDeactivate_ShouldKeepCodeAndRaiseDeactivationEvent()
     {
-        var taxCode = TaxCode.Create("VAT", "VAT", 14, DateTime.UtcNow);
+        var taxCode = TaxCode.Create(TenancySeed.DefaultCompanyId, "VAT", "VAT", 14, DateTime.UtcNow);
 
         taxCode.UpdateDetails("Value Added Tax", 15, DateTime.UtcNow);
         taxCode.Deactivate(DateTime.UtcNow);
@@ -109,6 +110,6 @@ public sealed class ManagedReferenceDataTests
     [InlineData("VAT", "   ")]
     public void TaxCode_ShouldRejectMissingCodeOrName(string code, string name)
     {
-        Assert.Throws<ArgumentException>(() => TaxCode.Create(code, name, 14, DateTime.UtcNow));
+        Assert.Throws<ArgumentException>(() => TaxCode.Create(TenancySeed.DefaultCompanyId, code, name, 14, DateTime.UtcNow));
     }
 }

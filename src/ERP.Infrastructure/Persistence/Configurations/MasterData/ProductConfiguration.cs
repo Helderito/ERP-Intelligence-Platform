@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,6 +18,10 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(product => product.Id)
             .ValueGeneratedNever();
 
+        builder.Property(product => product.CompanyId).IsRequired();
+        builder.HasIndex(product => product.CompanyId);
+        builder.HasOne<Company>().WithMany().HasForeignKey(product => product.CompanyId).OnDelete(DeleteBehavior.Restrict);
+
         builder.OwnsOne(product => product.Code, codeBuilder =>
         {
             codeBuilder.Property(code => code.Value)
@@ -24,8 +29,6 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
                 .HasMaxLength(50)
                 .IsRequired();
 
-            codeBuilder.HasIndex(code => code.Value)
-                .IsUnique();
         });
 
         builder.Property(product => product.Name)

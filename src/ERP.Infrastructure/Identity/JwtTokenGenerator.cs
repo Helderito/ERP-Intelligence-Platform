@@ -5,6 +5,7 @@ using ERP.Application.Identity.Abstractions;
 using ERP.Application.Identity.Models;
 using ERP.Domain.Identity;
 using ERP.Infrastructure.Identity.Options;
+using ERP.Infrastructure.Tenancy;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -19,7 +20,7 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
         _jwtOptions = jwtOptions.Value;
     }
 
-    public AccessTokenResult Generate(User user, IReadOnlyCollection<string> roleNames)
+    public AccessTokenResult Generate(User user, IReadOnlyCollection<string> roleNames, Guid companyId)
     {
         var expiresAtUtc = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenMinutes);
         var securityKey = CreateSecurityKey();
@@ -28,7 +29,8 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email.Value),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(CurrentCompanyProvider.CompanyIdClaimType, companyId.ToString())
         };
 
         claims.AddRange(roleNames.Select(roleName => new Claim(ClaimTypes.Role, roleName)));

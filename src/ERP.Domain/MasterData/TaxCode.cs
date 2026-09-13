@@ -1,9 +1,10 @@
 using ERP.Domain.MasterData.Events;
+using ERP.Domain.Tenancy;
 using ERP.SharedKernel;
 
 namespace ERP.Domain.MasterData;
 
-public sealed class TaxCode : Entity<Guid>
+public sealed class TaxCode : Entity<Guid>, ICompanyOwned
 {
     private TaxCode() : base(Guid.Empty)
     {
@@ -11,8 +12,9 @@ public sealed class TaxCode : Entity<Guid>
         Name = string.Empty;
     }
 
-    private TaxCode(Guid id, string code, string name, decimal rate, DateTime createdAtUtc) : base(id)
+    private TaxCode(Guid id, Guid companyId, string code, string name, decimal rate, DateTime createdAtUtc) : base(id)
     {
+        CompanyId = EnsureRequiredCompanyId(companyId);
         Code = NormalizeCode(code);
         Name = NormalizeName(name);
         Rate = ValidateRate(rate);
@@ -21,6 +23,7 @@ public sealed class TaxCode : Entity<Guid>
     }
 
     public string Code { get; private set; }
+    public Guid CompanyId { get; private set; }
     public string Name { get; private set; }
     public decimal Rate { get; private set; }
     public bool IsActive { get; private set; }
@@ -28,11 +31,21 @@ public sealed class TaxCode : Entity<Guid>
     public DateTime? UpdatedAtUtc { get; private set; }
     public DateTime? DeactivatedAtUtc { get; private set; }
 
-    public static TaxCode Create(string code, string name, decimal rate, DateTime createdAtUtc)
+    public static TaxCode Create(Guid companyId, string code, string name, decimal rate, DateTime createdAtUtc)
     {
-        var taxCode = new TaxCode(Guid.NewGuid(), code, name, rate, createdAtUtc);
+        var taxCode = new TaxCode(Guid.NewGuid(), companyId, code, name, rate, createdAtUtc);
         taxCode.RaiseDomainEvent(new TaxCodeCreated(taxCode.Id, taxCode.Code, createdAtUtc));
         return taxCode;
+    }
+
+    private static Guid EnsureRequiredCompanyId(Guid companyId)
+    {
+        if (companyId == Guid.Empty)
+        {
+            throw new ArgumentException("Company identifier is required.", nameof(companyId));
+        }
+
+        return companyId;
     }
 
     public void UpdateDetails(string name, decimal rate, DateTime updatedAtUtc)

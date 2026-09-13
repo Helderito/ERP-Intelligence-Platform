@@ -1,9 +1,10 @@
 using ERP.Domain.MasterData.Events;
+using ERP.Domain.Tenancy;
 using ERP.SharedKernel;
 
 namespace ERP.Domain.MasterData;
 
-public sealed class Product : Entity<Guid>
+public sealed class Product : Entity<Guid>, ICompanyOwned
 {
     private Product()
         : base(Guid.Empty)
@@ -14,6 +15,7 @@ public sealed class Product : Entity<Guid>
 
     private Product(
         Guid id,
+        Guid companyId,
         ProductCode code,
         string name,
         Guid categoryId,
@@ -21,6 +23,7 @@ public sealed class Product : Entity<Guid>
         DateTime createdAtUtc)
         : base(id)
     {
+        CompanyId = EnsureRequiredId(companyId, nameof(companyId));
         Code = code;
         Name = NormalizeName(name);
         CategoryId = EnsureRequiredId(categoryId, nameof(categoryId));
@@ -30,6 +33,8 @@ public sealed class Product : Entity<Guid>
     }
 
     public ProductCode Code { get; private set; }
+
+    public Guid CompanyId { get; private set; }
 
     public string Name { get; private set; }
 
@@ -46,13 +51,14 @@ public sealed class Product : Entity<Guid>
     public DateTime? DeactivatedAtUtc { get; private set; }
 
     public static Product Create(
+        Guid companyId,
         ProductCode code,
         string name,
         Guid categoryId,
         Guid unitOfMeasureId,
         DateTime createdAtUtc)
     {
-        var product = new Product(Guid.NewGuid(), code, name, categoryId, unitOfMeasureId, createdAtUtc);
+        var product = new Product(Guid.NewGuid(), companyId, code, name, categoryId, unitOfMeasureId, createdAtUtc);
         product.RaiseDomainEvent(new ProductCreated(product.Id, product.Code.Value, createdAtUtc));
 
         return product;

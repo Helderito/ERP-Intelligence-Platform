@@ -5,6 +5,7 @@ using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Models;
 using ERP.Application.MasterData.Queries;
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Application.MasterData.Services;
 
@@ -13,10 +14,14 @@ public sealed class CustomerManagementService
     public const int MaximumPageSize = 100;
 
     private readonly ICustomerRepository _customerRepository;
+    private readonly ICurrentCompanyProvider _currentCompanyProvider;
 
-    public CustomerManagementService(ICustomerRepository customerRepository)
+    public CustomerManagementService(
+        ICustomerRepository customerRepository,
+        ICurrentCompanyProvider currentCompanyProvider)
     {
         _customerRepository = customerRepository;
+        _currentCompanyProvider = currentCompanyProvider;
     }
 
     public async Task<CustomerDto> CreateCustomerAsync(
@@ -31,7 +36,7 @@ public sealed class CustomerManagementService
             throw new CustomerCodeAlreadyExistsException(code.Value);
         }
 
-        var customer = Customer.Create(code, command.Name, DateTime.UtcNow);
+        var customer = Customer.Create(_currentCompanyProvider.GetRequiredCompanyId(), code, command.Name, DateTime.UtcNow);
         AddContacts(customer, command.Contacts);
         AddAddresses(customer, command.Addresses);
 

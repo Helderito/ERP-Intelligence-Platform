@@ -1,11 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using ERP.Domain.Identity;
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Infrastructure.Persistence;
 
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public sealed class AppDbContext(
+    DbContextOptions<AppDbContext> options,
+    ICurrentCompanyProvider currentCompanyProvider) : DbContext(options)
 {
+    private readonly ICurrentCompanyProvider _currentCompanyProvider = currentCompanyProvider;
+
     public DbSet<User> Users => Set<User>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -48,8 +53,61 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     public DbSet<PaymentTerm> PaymentTerms => Set<PaymentTerm>();
 
+    public DbSet<Company> Companies => Set<Company>();
+
+    public DbSet<Establishment> Establishments => Set<Establishment>();
+
+    public DbSet<UserCompany> UserCompanies => Set<UserCompany>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        modelBuilder.Entity<Customer>().HasQueryFilter(entity =>
+            entity.CompanyId == _currentCompanyProvider.CompanyId);
+        modelBuilder.Entity<Supplier>().HasQueryFilter(entity =>
+            entity.CompanyId == _currentCompanyProvider.CompanyId);
+        modelBuilder.Entity<Product>().HasQueryFilter(entity =>
+            entity.CompanyId == _currentCompanyProvider.CompanyId);
+        modelBuilder.Entity<Category>().HasQueryFilter(entity =>
+            entity.CompanyId == _currentCompanyProvider.CompanyId);
+        modelBuilder.Entity<UnitOfMeasure>().HasQueryFilter(entity =>
+            entity.CompanyId == _currentCompanyProvider.CompanyId);
+        modelBuilder.Entity<TaxCode>().HasQueryFilter(entity =>
+            entity.CompanyId == _currentCompanyProvider.CompanyId);
+        modelBuilder.Entity<Warehouse>().HasQueryFilter(entity =>
+            entity.CompanyId == _currentCompanyProvider.CompanyId);
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        ValidateCompanyScope();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateCompanyScope();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void ValidateCompanyScope()
+    {
+        var scopedEntries = ChangeTracker.Entries<ICompanyOwned>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .ToArray();
+
+        if (scopedEntries.Length == 0)
+        {
+            return;
+        }
+
+        var currentCompanyId = _currentCompanyProvider.GetRequiredCompanyId();
+        if (scopedEntries.Any(entry => entry.Entity.CompanyId != currentCompanyId))
+        {
+            throw new InvalidOperationException("A company-owned entity cannot be changed outside the current company.");
+        }
     }
 }

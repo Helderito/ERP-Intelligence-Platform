@@ -1,5 +1,6 @@
 export type AuthenticationSession = {
   userId: string;
+  companyId: string;
   email: string;
   accessToken: string;
   accessTokenExpiresAtUtc: string;

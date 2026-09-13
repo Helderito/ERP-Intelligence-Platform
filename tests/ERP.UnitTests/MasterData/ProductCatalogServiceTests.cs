@@ -18,7 +18,8 @@ public sealed class ProductCatalogServiceTests
         var service = new ProductCatalogService(
             productRepository,
             new FakeCategoryRepository(categoryId),
-            new FakeUnitOfMeasureRepository(unitOfMeasureId));
+            new FakeUnitOfMeasureRepository(unitOfMeasureId),
+            new TestCurrentCompanyProvider());
 
         var product = await service.CreateProductAsync(
             new CreateProductCommand("sku-001", "Sample Product", categoryId, unitOfMeasureId));
@@ -36,7 +37,8 @@ public sealed class ProductCatalogServiceTests
         var service = new ProductCatalogService(
             productRepository,
             new FakeCategoryRepository(categoryId),
-            new FakeUnitOfMeasureRepository(unitOfMeasureId));
+            new FakeUnitOfMeasureRepository(unitOfMeasureId),
+            new TestCurrentCompanyProvider());
 
         await service.CreateProductAsync(new CreateProductCommand("sku-001", "Sample Product", categoryId, unitOfMeasureId));
 
@@ -51,7 +53,8 @@ public sealed class ProductCatalogServiceTests
         var service = new ProductCatalogService(
             new FakeProductRepository(),
             new FakeCategoryRepository(),
-            new FakeUnitOfMeasureRepository(unitOfMeasureId));
+            new FakeUnitOfMeasureRepository(unitOfMeasureId),
+            new TestCurrentCompanyProvider());
 
         await Assert.ThrowsAsync<MasterDataReferenceNotFoundException>(
             () => service.CreateProductAsync(
@@ -67,7 +70,8 @@ public sealed class ProductCatalogServiceTests
         var service = new ProductCatalogService(
             productRepository,
             new FakeCategoryRepository(categoryId),
-            new FakeUnitOfMeasureRepository(unitOfMeasureId));
+            new FakeUnitOfMeasureRepository(unitOfMeasureId),
+            new TestCurrentCompanyProvider());
 
         await service.CreateProductAsync(new CreateProductCommand("sku-001", "Sample Product", categoryId, unitOfMeasureId));
 
@@ -80,14 +84,15 @@ public sealed class ProductCatalogServiceTests
     [Fact]
     public async Task GetCategoriesAsync_ShouldExcludeInactiveCategories()
     {
-        var active = Category.Create("ACTIVE", "Active", DateTime.UtcNow);
-        var inactive = Category.Create("OLD", "Retired", DateTime.UtcNow);
+        var active = Category.Create(new TestCurrentCompanyProvider().GetRequiredCompanyId(), "ACTIVE", "Active", DateTime.UtcNow);
+        var inactive = Category.Create(new TestCurrentCompanyProvider().GetRequiredCompanyId(), "OLD", "Retired", DateTime.UtcNow);
         inactive.Deactivate(DateTime.UtcNow);
 
         var service = new ProductCatalogService(
             new FakeProductRepository(),
             new StatefulCategoryRepository(active, inactive),
-            new FakeUnitOfMeasureRepository());
+            new FakeUnitOfMeasureRepository(),
+            new TestCurrentCompanyProvider());
 
         var categories = await service.GetCategoriesAsync();
 
@@ -98,14 +103,15 @@ public sealed class ProductCatalogServiceTests
     [Fact]
     public async Task GetUnitsOfMeasureAsync_ShouldExcludeInactiveUnits()
     {
-        var active = UnitOfMeasure.Create("EA", "Each", DateTime.UtcNow);
-        var inactive = UnitOfMeasure.Create("OLD", "Retired", DateTime.UtcNow);
+        var active = UnitOfMeasure.Create(new TestCurrentCompanyProvider().GetRequiredCompanyId(), "EA", "Each", DateTime.UtcNow);
+        var inactive = UnitOfMeasure.Create(new TestCurrentCompanyProvider().GetRequiredCompanyId(), "OLD", "Retired", DateTime.UtcNow);
         inactive.Deactivate(DateTime.UtcNow);
 
         var service = new ProductCatalogService(
             new FakeProductRepository(),
             new FakeCategoryRepository(),
-            new StatefulUnitOfMeasureRepository(active, inactive));
+            new StatefulUnitOfMeasureRepository(active, inactive),
+            new TestCurrentCompanyProvider());
 
         var units = await service.GetUnitsOfMeasureAsync();
 
@@ -213,7 +219,11 @@ public sealed class ProductCatalogServiceTests
         public Task<IReadOnlyCollection<Category>> ListAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyCollection<Category>>(
-                _categoryIds.Select(id => new Category(id, $"CAT-{id:N}"[..12], "Category")).ToArray());
+                _categoryIds.Select(id => new Category(
+                    id,
+                    new TestCurrentCompanyProvider().GetRequiredCompanyId(),
+                    $"CAT-{id:N}"[..12],
+                    "Category")).ToArray());
         }
     }
 
@@ -234,7 +244,11 @@ public sealed class ProductCatalogServiceTests
         public Task<IReadOnlyCollection<UnitOfMeasure>> ListAsync(CancellationToken cancellationToken = default)
         {
             return Task.FromResult<IReadOnlyCollection<UnitOfMeasure>>(
-                _unitOfMeasureIds.Select(id => new UnitOfMeasure(id, $"UOM-{id:N}"[..12], "Unit")).ToArray());
+                _unitOfMeasureIds.Select(id => new UnitOfMeasure(
+                    id,
+                    new TestCurrentCompanyProvider().GetRequiredCompanyId(),
+                    $"UOM-{id:N}"[..12],
+                    "Unit")).ToArray());
         }
     }
 }

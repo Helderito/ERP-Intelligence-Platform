@@ -98,9 +98,18 @@ erDiagram
     PRODUCT }o--|| TAX_CODE : "taxed as (planned future assignment)"
     WAREHOUSE }o--|| WAREHOUSE_TYPE : "typed as"
 
+    COMPANY ||--o{ CUSTOMER : owns
+    COMPANY ||--o{ SUPPLIER : owns
+    COMPANY ||--o{ PRODUCT : owns
+    COMPANY ||--o{ CATEGORY : owns
+    COMPANY ||--o{ UNIT_OF_MEASURE : owns
+    COMPANY ||--o{ TAX_CODE : owns
+    COMPANY ||--o{ WAREHOUSE : owns
+
     CUSTOMER {
         guid Id PK
-        string Code "unique, max 50 chars"
+        guid CompanyId FK
+        string Code "unique per company, max 50 chars"
         string Name "max 200 chars"
         bool IsActive
         datetime CreatedAtUtc
@@ -125,7 +134,8 @@ erDiagram
     }
     SUPPLIER {
         guid Id PK
-        string Code "unique, max 50 chars"
+        guid CompanyId FK
+        string Code "unique per company, max 50 chars"
         string Name "max 200 chars"
         bool IsActive
         datetime CreatedAtUtc
@@ -150,7 +160,8 @@ erDiagram
     }
     PRODUCT {
         guid Id PK
-        string Code "unique, max 50 chars"
+        guid CompanyId FK
+        string Code "unique per company, max 50 chars"
         string Name "max 200 chars"
         guid CategoryId FK
         guid UnitOfMeasureId FK
@@ -162,7 +173,8 @@ erDiagram
     }
     CATEGORY {
         guid Id PK
-        string Code "unique, max 50 chars"
+        guid CompanyId FK
+        string Code "unique per company, max 50 chars"
         string Name "max 100 chars"
         bool IsActive
         datetime CreatedAtUtc
@@ -171,7 +183,8 @@ erDiagram
     }
     UNIT_OF_MEASURE {
         guid Id PK
-        string Code "unique, max 50 chars"
+        guid CompanyId FK
+        string Code "unique per company, max 50 chars"
         string Name "max 100 chars"
         bool IsActive
         datetime CreatedAtUtc
@@ -180,7 +193,8 @@ erDiagram
     }
     TAX_CODE {
         guid Id PK
-        string Code "unique, max 50 chars"
+        guid CompanyId FK
+        string Code "unique per company, max 50 chars"
         string Name "max 100 chars"
         decimal Rate "numeric(5,2), 0 to 100"
         bool IsActive
@@ -190,7 +204,8 @@ erDiagram
     }
     WAREHOUSE {
         guid Id PK
-        string Code "unique, max 50 chars"
+        guid CompanyId FK
+        string Code "unique per company, max 50 chars"
         string Name "max 200 chars"
         guid WarehouseTypeId FK
         bool IsActive
@@ -223,20 +238,21 @@ erDiagram
 
 ---
 
-# 5. Tenancy & FiscalCompliance Bounded Contexts — *planned, EP-015*
+# 5. Tenancy — *implemented, Sprint 09a*; FiscalCompliance — *planned, EP-015*
 
 Conceptual ERD for the commercial-pivot foundation ([ADR-0004](../decisions/ADR-0004.md),
 [ADR-0005](../decisions/ADR-0005.md); [Domain Model](Domain-Model.md) §5–6). Attributes are
-representative, not exhaustive; all company-owned tables also carry `CompanyId` (tenancy), while
-global catalogues do not. Existing Master Data entities are **extended** under EP-015 (not redrawn
-here): `Customer`/`Supplier` gain a fiscal identity (NIF, `customerKind`, fiscal address) and
-`CompanyId`; `Product` gains a fiscal classification (`ProductType`, SAF-T code, tax category,
-customs) and `CompanyId`; `Currency` gains an `ExchangeRate` table.
+representative, not exhaustive. The `Company`, `Establishment`, `CompanyFiscalProfile` and
+`UserCompany` structures, plus `CompanyId` on the seven Master Data roots shown above, are implemented
+in Sprint 09a. FiscalCompliance entities and the fiscal extensions to Customer, Supplier, Product,
+TaxCode and Currency remain planned for Sprint 09b and later.
 
 ```mermaid
 erDiagram
     COMPANY ||--o{ ESTABLISHMENT : has
     COMPANY ||--|| COMPANY_FISCAL_PROFILE : has
+    COMPANY ||--o{ USER_COMPANY : has
+    USER ||--|| USER_COMPANY : "belongs through"
     COMPANY ||--o{ FISCAL_SERIES : owns
     ESTABLISHMENT ||--o{ FISCAL_SERIES : scopes
     FISCAL_DOCUMENT_TYPE ||--o{ FISCAL_SERIES : "typed as"
@@ -256,6 +272,9 @@ erDiagram
         guid Id PK
         string Name "max 200 chars"
         bool IsActive
+        datetime CreatedAtUtc
+        datetime UpdatedAtUtc "nullable"
+        datetime DeactivatedAtUtc "nullable"
     }
     ESTABLISHMENT {
         guid Id PK
@@ -265,12 +284,16 @@ erDiagram
         string EstablishmentNumber "AGT"
     }
     COMPANY_FISCAL_PROFILE {
-        guid Id PK
-        guid CompanyId FK
+        guid CompanyId PK "also FK"
         string Nif
         string VatRegime "General|Simplified|CashVat|Exclusion"
         string FiscalAddress
-        string SoftwareValidationNumber
+    }
+    USER_COMPANY {
+        guid Id PK
+        guid UserId FK "unique"
+        guid CompanyId FK
+        datetime AssignedAtUtc
     }
     SOFTWARE_CERTIFICATION {
         guid Id PK
@@ -393,7 +416,7 @@ erDiagram
 
 # 6. Shared Reference Data
 
-`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog, then evolved additively into managed, auditable, soft-deletable data in Sprint 08a. Existing Product foreign keys remain intact, while Product selection endpoints return active records only. `TaxCode` was implemented in Sprint 08a as independent managed reference data. `TaxCodeId` is intentionally not present in the Product table or EF model; the dashed conceptual relationship above remains a future Product Catalog tax assignment, outside Sprint 08a. Tax calculations and fiscal rules are also out of scope.
+`Category` and `UnitOfMeasure` were implemented in [Sprint 04](../backlog/Sprint-04.md) as seeded reference data for Product Catalog, then evolved additively into managed, auditable, soft-deletable data in Sprint 08a. Existing Product foreign keys remain intact, while Product selection endpoints return active records only. `TaxCode` was implemented in Sprint 08a as independent managed reference data. Sprint 09a makes all three company-owned and backfills their existing rows to the default company. `TaxCodeId` is intentionally not present in the Product table or EF model; the dashed conceptual relationship above remains a future Product Catalog tax assignment. Tax calculations and fiscal rules are also out of scope.
 
 `WarehouseType` was implemented in [Sprint 07](../backlog/Sprint-07.md) as seeded, read-only reference data (`MAIN`, `TRANSIT`, `VIRTUAL`). `Country`, `Currency` and `PaymentTerm` were implemented in Sprint 08b as curated, deterministic, read-only catalogs exposed to authenticated consumers. They have no relationships yet because the Purchasing, Sales and Finance aggregates that will consume them are future work.
 

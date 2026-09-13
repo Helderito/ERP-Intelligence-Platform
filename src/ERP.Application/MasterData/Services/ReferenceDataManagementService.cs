@@ -4,6 +4,7 @@ using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Models;
 using ERP.Application.MasterData.Queries;
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Application.MasterData.Services;
 
@@ -12,22 +13,29 @@ public sealed class ReferenceDataManagementService
     private readonly IManagedCategoryRepository _categoryRepository;
     private readonly IManagedUnitOfMeasureRepository _unitOfMeasureRepository;
     private readonly ITaxCodeRepository _taxCodeRepository;
+    private readonly ICurrentCompanyProvider _currentCompanyProvider;
 
     public ReferenceDataManagementService(
         IManagedCategoryRepository categoryRepository,
         IManagedUnitOfMeasureRepository unitOfMeasureRepository,
-        ITaxCodeRepository taxCodeRepository)
+        ITaxCodeRepository taxCodeRepository,
+        ICurrentCompanyProvider currentCompanyProvider)
     {
         _categoryRepository = categoryRepository;
         _unitOfMeasureRepository = unitOfMeasureRepository;
         _taxCodeRepository = taxCodeRepository;
+        _currentCompanyProvider = currentCompanyProvider;
     }
 
     public async Task<ReferenceDataItemDto> CreateCategoryAsync(
         CreateCategoryCommand command,
         CancellationToken cancellationToken = default)
     {
-        var category = Category.Create(command.Code, command.Name, DateTime.UtcNow);
+        var category = Category.Create(
+            _currentCompanyProvider.GetRequiredCompanyId(),
+            command.Code,
+            command.Name,
+            DateTime.UtcNow);
         if (await _categoryRepository.GetByCodeAsync(category.Code, cancellationToken) is not null)
         {
             throw new ReferenceCodeAlreadyExistsException("Category", category.Code);
@@ -70,7 +78,11 @@ public sealed class ReferenceDataManagementService
         CreateUnitOfMeasureCommand command,
         CancellationToken cancellationToken = default)
     {
-        var unit = UnitOfMeasure.Create(command.Code, command.Name, DateTime.UtcNow);
+        var unit = UnitOfMeasure.Create(
+            _currentCompanyProvider.GetRequiredCompanyId(),
+            command.Code,
+            command.Name,
+            DateTime.UtcNow);
         if (await _unitOfMeasureRepository.GetByCodeAsync(unit.Code, cancellationToken) is not null)
         {
             throw new ReferenceCodeAlreadyExistsException("Unit of measure", unit.Code);
@@ -113,7 +125,12 @@ public sealed class ReferenceDataManagementService
         CreateTaxCodeCommand command,
         CancellationToken cancellationToken = default)
     {
-        var taxCode = TaxCode.Create(command.Code, command.Name, command.Rate, DateTime.UtcNow);
+        var taxCode = TaxCode.Create(
+            _currentCompanyProvider.GetRequiredCompanyId(),
+            command.Code,
+            command.Name,
+            command.Rate,
+            DateTime.UtcNow);
         if (await _taxCodeRepository.GetByCodeAsync(taxCode.Code, cancellationToken) is not null)
         {
             throw new ReferenceCodeAlreadyExistsException("Tax code", taxCode.Code);

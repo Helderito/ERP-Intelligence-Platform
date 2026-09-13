@@ -172,18 +172,18 @@ transfers, bin locations, picking and default-warehouse rules remain outside thi
 
 ---
 
-## Company (Tenancy) — *planned, EP-015*
+## Company (Tenancy) — *implemented, Sprint 09a*
 
 Aggregate Root
 
-- Company — the tenant/taxpayer (introduced by [ADR-0005](../decisions/ADR-0005.md))
+- Company — the tenant/taxpayer (introduced by [ADR-0005](../decisions/ADR-0005.md); implemented in [Sprint 09](../backlog/Sprint-09.md))
 
 Related data
 
 - Establishment (managed through Company)
-- CompanyFiscalProfile (NIF, VAT regime, fiscal address, SAF-T header data, AGT credential references)
+- CompanyFiscalProfile (NIF, VAT regime and fiscal address in Sprint 09a; SAF-T header and AGT credential references remain planned)
 
-`Company` establishes the `CompanyId` that scopes all company-owned data (see the multi-company note below).
+`Company` establishes the `CompanyId` that scopes all company-owned data (see the multi-company note below). `UserCompany` provides one global-Identity-user-to-company membership in this phase, and each JWT carries the resolved `companyId`.
 
 ---
 
@@ -217,6 +217,11 @@ on every company-owned entity (Master Data and all fiscal/transactional data), f
 current company (application-level filter now, database row-level security later). Global reference
 catalogues (`Country`, `Currency`, `PaymentTerm`, exemption codes) are **tenant-agnostic** and carry
 no `CompanyId`.
+
+Sprint 09a implements this model for `Customer`, `Supplier`, `Product`, `Category`,
+`UnitOfMeasure`, `TaxCode` and `Warehouse`. Their codes are unique within a company. The
+`AddCompanyTenancy` migration adds nullable columns, backfills existing records to the deterministic
+default company, then enforces `NOT NULL`, indexes and foreign keys without recreating any existing table.
 
 ---
 

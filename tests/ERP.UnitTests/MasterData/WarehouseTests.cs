@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using ERP.Domain.MasterData.Events;
 
 namespace ERP.UnitTests.MasterData;
@@ -20,6 +21,7 @@ public sealed class WarehouseTests
     public void Create_ShouldThrow_WhenNameIsEmpty()
     {
         Assert.Throws<ArgumentException>(() => Warehouse.Create(
+            TenancySeed.DefaultCompanyId,
             WarehouseCode.Create("MAIN-01"),
             " ",
             Guid.NewGuid(),
@@ -30,6 +32,7 @@ public sealed class WarehouseTests
     public void Create_ShouldThrow_WhenWarehouseTypeIsMissing()
     {
         Assert.Throws<ArgumentException>(() => Warehouse.Create(
+            TenancySeed.DefaultCompanyId,
             WarehouseCode.Create("MAIN-01"),
             "Main Warehouse",
             Guid.Empty,
@@ -76,6 +79,7 @@ public sealed class WarehouseTests
     private static Warehouse CreateWarehouse()
     {
         return Warehouse.Create(
+            TenancySeed.DefaultCompanyId,
             WarehouseCode.Create("main-01"),
             "Main Warehouse",
             Guid.NewGuid(),

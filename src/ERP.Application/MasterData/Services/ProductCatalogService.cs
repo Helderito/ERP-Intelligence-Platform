@@ -5,6 +5,7 @@ using ERP.Application.MasterData.Exceptions;
 using ERP.Application.MasterData.Models;
 using ERP.Application.MasterData.Queries;
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 
 namespace ERP.Application.MasterData.Services;
 
@@ -15,15 +16,18 @@ public sealed class ProductCatalogService
     private readonly IProductRepository _productRepository;
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfMeasureRepository _unitOfMeasureRepository;
+    private readonly ICurrentCompanyProvider _currentCompanyProvider;
 
     public ProductCatalogService(
         IProductRepository productRepository,
         ICategoryRepository categoryRepository,
-        IUnitOfMeasureRepository unitOfMeasureRepository)
+        IUnitOfMeasureRepository unitOfMeasureRepository,
+        ICurrentCompanyProvider currentCompanyProvider)
     {
         _productRepository = productRepository;
         _categoryRepository = categoryRepository;
         _unitOfMeasureRepository = unitOfMeasureRepository;
+        _currentCompanyProvider = currentCompanyProvider;
     }
 
     public async Task<ProductDto> CreateProductAsync(
@@ -41,6 +45,7 @@ public sealed class ProductCatalogService
         }
 
         var product = Product.Create(
+            _currentCompanyProvider.GetRequiredCompanyId(),
             code,
             command.Name,
             command.CategoryId,

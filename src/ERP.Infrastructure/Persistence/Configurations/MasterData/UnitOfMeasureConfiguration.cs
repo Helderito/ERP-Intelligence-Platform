@@ -1,4 +1,5 @@
 using ERP.Domain.MasterData;
+using ERP.Domain.Tenancy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,11 +18,15 @@ public sealed class UnitOfMeasureConfiguration : IEntityTypeConfiguration<UnitOf
         builder.Property(unitOfMeasure => unitOfMeasure.Id)
             .ValueGeneratedNever();
 
+        builder.Property(unitOfMeasure => unitOfMeasure.CompanyId).IsRequired();
+        builder.HasIndex(unitOfMeasure => unitOfMeasure.CompanyId);
+        builder.HasOne<Company>().WithMany().HasForeignKey(unit => unit.CompanyId).OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(unitOfMeasure => unitOfMeasure.Code)
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.HasIndex(unitOfMeasure => unitOfMeasure.Code)
+        builder.HasIndex(unitOfMeasure => new { unitOfMeasure.CompanyId, unitOfMeasure.Code })
             .IsUnique();
 
         builder.Property(unitOfMeasure => unitOfMeasure.Name)

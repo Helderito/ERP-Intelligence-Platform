@@ -89,7 +89,8 @@ public sealed class ReferenceDataManagementServiceTests
         => new(
             categoryRepository ?? new FakeCategoryRepository(),
             unitRepository ?? new FakeUnitRepository(),
-            taxCodeRepository ?? new FakeTaxCodeRepository());
+            taxCodeRepository ?? new FakeTaxCodeRepository(),
+            new TestCurrentCompanyProvider());
 
     private sealed class FakeCategoryRepository : IManagedCategoryRepository
     {

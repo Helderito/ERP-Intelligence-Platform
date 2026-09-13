@@ -13,7 +13,7 @@ public sealed class CustomerManagementServiceTests
     public async Task CreateCustomerAsync_ShouldCreateCustomerWithContactsAndAddresses_WhenCodeIsUnique()
     {
         var customerRepository = new FakeCustomerRepository();
-        var service = new CustomerManagementService(customerRepository);
+        var service = new CustomerManagementService(customerRepository, new TestCurrentCompanyProvider());
 
         var customer = await service.CreateCustomerAsync(
             new CreateCustomerCommand(
@@ -32,7 +32,7 @@ public sealed class CustomerManagementServiceTests
     public async Task CreateCustomerAsync_ShouldThrow_WhenCodeAlreadyExists()
     {
         var customerRepository = new FakeCustomerRepository();
-        var service = new CustomerManagementService(customerRepository);
+        var service = new CustomerManagementService(customerRepository, new TestCurrentCompanyProvider());
 
         await service.CreateCustomerAsync(new CreateCustomerCommand("cus-001", "Sample Customer", [], []));
 
@@ -44,7 +44,7 @@ public sealed class CustomerManagementServiceTests
     public async Task UpdateCustomerAsync_ShouldReplaceContactsAndAddresses()
     {
         var customerRepository = new FakeCustomerRepository();
-        var service = new CustomerManagementService(customerRepository);
+        var service = new CustomerManagementService(customerRepository, new TestCurrentCompanyProvider());
         var created = await service.CreateCustomerAsync(
             new CreateCustomerCommand(
                 "cus-001",
@@ -69,7 +69,7 @@ public sealed class CustomerManagementServiceTests
     [Fact]
     public async Task UpdateCustomerAsync_ShouldThrow_WhenCustomerDoesNotExist()
     {
-        var service = new CustomerManagementService(new FakeCustomerRepository());
+        var service = new CustomerManagementService(new FakeCustomerRepository(), new TestCurrentCompanyProvider());
 
         await Assert.ThrowsAsync<CustomerNotFoundException>(
             () => service.UpdateCustomerAsync(new UpdateCustomerCommand(Guid.NewGuid(), "Missing", [], [])));
@@ -79,7 +79,7 @@ public sealed class CustomerManagementServiceTests
     public async Task SearchCustomersAsync_ShouldReturnPagedResults()
     {
         var customerRepository = new FakeCustomerRepository();
-        var service = new CustomerManagementService(customerRepository);
+        var service = new CustomerManagementService(customerRepository, new TestCurrentCompanyProvider());
 
         await service.CreateCustomerAsync(new CreateCustomerCommand("cus-001", "Sample Customer", [], []));
 

@@ -86,6 +86,12 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             Id = new Guid("cd69240d-0864-4a4c-a6a3-a159b831812e"),
                             Code = "reference.manage",
                             Description = "Manage shared reference data"
+                        },
+                        new
+                        {
+                            Id = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000003"),
+                            Code = "company.manage",
+                            Description = "Manage companies and establishments"
                         });
                 });
 
@@ -232,6 +238,13 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             PermissionId = new Guid("cd69240d-0864-4a4c-a6a3-a159b831812e"),
                             RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("b1a7c0de-0000-4000-a000-000000000108"),
+                            AssignedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            PermissionId = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000003"),
+                            RoleId = new Guid("b1a7c0de-0000-4000-a000-000000000001")
                         });
                 });
 
@@ -288,6 +301,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -309,7 +325,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CompanyId", "Code")
                         .IsUnique();
 
                     b.ToTable("Category", (string)null);
@@ -319,6 +337,7 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b01"),
                             Code = "GENERAL",
+                            CompanyId = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000001"),
                             CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "General"
@@ -620,6 +639,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -638,6 +660,8 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("Customer", (string)null);
                 });
@@ -780,6 +804,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -804,6 +831,8 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("CompanyId");
+
                     b.HasIndex("UnitOfMeasureId");
 
                     b.ToTable("Product", (string)null);
@@ -812,6 +841,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ERP.Domain.MasterData.Supplier", b =>
                 {
                     b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
@@ -832,6 +864,8 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.ToTable("Supplier", (string)null);
                 });
@@ -913,6 +947,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -938,7 +975,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CompanyId", "Code")
                         .IsUnique();
 
                     b.ToTable("TaxCode", (string)null);
@@ -953,6 +992,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -975,7 +1017,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CompanyId", "Code")
                         .IsUnique();
 
                     b.ToTable("UnitOfMeasure", (string)null);
@@ -985,6 +1029,7 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b02"),
                             Code = "UNIT",
+                            CompanyId = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000001"),
                             CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "Unit"
@@ -993,6 +1038,7 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("7f6a9325-d0a1-4d3b-9d16-9f8a579a8b03"),
                             Code = "KG",
+                            CompanyId = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000001"),
                             CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "Kilogram"
@@ -1002,6 +1048,9 @@ namespace ERP.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ERP.Domain.MasterData.Warehouse", b =>
                 {
                     b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAtUtc")
@@ -1025,6 +1074,8 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("WarehouseTypeId");
 
@@ -1072,6 +1123,107 @@ namespace ERP.Infrastructure.Persistence.Migrations
                             Code = "VIRTUAL",
                             Name = "Virtual"
                         });
+                });
+
+            modelBuilder.Entity("ERP.Domain.Tenancy.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeactivatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Company", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000001"),
+                            CreatedAtUtc = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "Empresa Principal"
+                        });
+                });
+
+            modelBuilder.Entity("ERP.Domain.Tenancy.Establishment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EstablishmentNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Establishment", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000002"),
+                            Code = "MAIN",
+                            CompanyId = new Guid("5f0a6d53-5e2d-4f65-aeb8-000000000001"),
+                            EstablishmentNumber = "001",
+                            Name = "Sede"
+                        });
+                });
+
+            modelBuilder.Entity("ERP.Domain.Tenancy.UserCompany", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserCompany", (string)null);
                 });
 
             modelBuilder.Entity("ERP.Domain.Identity.RefreshToken", b =>
@@ -1163,8 +1315,23 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ERP.Domain.MasterData.Category", b =>
+                {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERP.Domain.MasterData.Customer", b =>
                 {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("ERP.Domain.MasterData.CustomerCode", "Code", b1 =>
                         {
                             b1.Property<Guid>("CustomerId")
@@ -1177,9 +1344,6 @@ namespace ERP.Infrastructure.Persistence.Migrations
                                 .HasColumnName("Code");
 
                             b1.HasKey("CustomerId");
-
-                            b1.HasIndex("Value")
-                                .IsUnique();
 
                             b1.ToTable("Customer");
 
@@ -1217,6 +1381,12 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ERP.Domain.MasterData.UnitOfMeasure", null)
                         .WithMany()
                         .HasForeignKey("UnitOfMeasureId")
@@ -1236,9 +1406,6 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ProductId");
 
-                            b1.HasIndex("Value")
-                                .IsUnique();
-
                             b1.ToTable("Product");
 
                             b1.WithOwner()
@@ -1251,6 +1418,12 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ERP.Domain.MasterData.Supplier", b =>
                 {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.OwnsOne("ERP.Domain.MasterData.SupplierCode", "Code", b1 =>
                         {
                             b1.Property<Guid>("SupplierId")
@@ -1263,9 +1436,6 @@ namespace ERP.Infrastructure.Persistence.Migrations
                                 .HasColumnName("Code");
 
                             b1.HasKey("SupplierId");
-
-                            b1.HasIndex("Value")
-                                .IsUnique();
 
                             b1.ToTable("Supplier");
 
@@ -1295,8 +1465,32 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ERP.Domain.MasterData.TaxCode", b =>
+                {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.MasterData.UnitOfMeasure", b =>
+                {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ERP.Domain.MasterData.Warehouse", b =>
                 {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ERP.Domain.MasterData.WarehouseType", "WarehouseType")
                         .WithMany()
                         .HasForeignKey("WarehouseTypeId")
@@ -1316,9 +1510,6 @@ namespace ERP.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("WarehouseId");
 
-                            b1.HasIndex("Value")
-                                .IsUnique();
-
                             b1.ToTable("Warehouse");
 
                             b1.WithOwner()
@@ -1329,6 +1520,97 @@ namespace ERP.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("WarehouseType");
+                });
+
+            modelBuilder.Entity("ERP.Domain.Tenancy.Company", b =>
+                {
+                    b.OwnsOne("ERP.Domain.Tenancy.CompanyFiscalProfile", "FiscalProfile", b1 =>
+                        {
+                            b1.Property<Guid>("CompanyId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("VatRegime")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)");
+
+                            b1.HasKey("CompanyId");
+
+                            b1.ToTable("CompanyFiscalProfile", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("CompanyId");
+
+                            b1.OwnsOne("ERP.Domain.Tenancy.FiscalAddress", "FiscalAddress", b2 =>
+                                {
+                                    b2.Property<Guid>("CompanyFiscalProfileCompanyId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<string>("Value")
+                                        .IsRequired()
+                                        .HasMaxLength(500)
+                                        .HasColumnType("character varying(500)")
+                                        .HasColumnName("FiscalAddress");
+
+                                    b2.HasKey("CompanyFiscalProfileCompanyId");
+
+                                    b2.ToTable("CompanyFiscalProfile");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("CompanyFiscalProfileCompanyId");
+                                });
+
+                            b1.OwnsOne("ERP.Domain.Tenancy.Nif", "Nif", b2 =>
+                                {
+                                    b2.Property<Guid>("CompanyFiscalProfileCompanyId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<string>("Value")
+                                        .IsRequired()
+                                        .HasMaxLength(20)
+                                        .HasColumnType("character varying(20)")
+                                        .HasColumnName("Nif");
+
+                                    b2.HasKey("CompanyFiscalProfileCompanyId");
+
+                                    b2.ToTable("CompanyFiscalProfile");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("CompanyFiscalProfileCompanyId");
+                                });
+
+                            b1.Navigation("FiscalAddress")
+                                .IsRequired();
+
+                            b1.Navigation("Nif")
+                                .IsRequired();
+                        });
+
+                    b.Navigation("FiscalProfile");
+                });
+
+            modelBuilder.Entity("ERP.Domain.Tenancy.Establishment", b =>
+                {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany("Establishments")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ERP.Domain.Tenancy.UserCompany", b =>
+                {
+                    b.HasOne("ERP.Domain.Tenancy.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ERP.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ERP.Domain.Identity.Role", b =>
@@ -1353,6 +1635,11 @@ namespace ERP.Infrastructure.Persistence.Migrations
                     b.Navigation("Addresses");
 
                     b.Navigation("Contacts");
+                });
+
+            modelBuilder.Entity("ERP.Domain.Tenancy.Company", b =>
+                {
+                    b.Navigation("Establishments");
                 });
 #pragma warning restore 612, 618
         }

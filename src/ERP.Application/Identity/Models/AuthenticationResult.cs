@@ -2,6 +2,7 @@ namespace ERP.Application.Identity.Models;
 
 public sealed record AuthenticationResult(
     Guid UserId,
+    Guid CompanyId,
     string Email,
     string AccessToken,
     DateTime AccessTokenExpiresAtUtc,

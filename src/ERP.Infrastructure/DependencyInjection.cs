@@ -6,6 +6,10 @@ using ERP.Infrastructure.Identity.Options;
 using ERP.Infrastructure.Identity.Repositories;
 using ERP.Application.MasterData.Abstractions;
 using ERP.Infrastructure.MasterData.Repositories;
+using ERP.Application.Tenancy.Abstractions;
+using ERP.Domain.Tenancy;
+using ERP.Infrastructure.Tenancy;
+using ERP.Infrastructure.Tenancy.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +29,9 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentCompanyProvider, CurrentCompanyProvider>();
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -47,6 +54,8 @@ public static class DependencyInjection
         services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<ICurrencyRepository, CurrencyRepository>();
         services.AddScoped<IPaymentTermRepository, PaymentTermRepository>();
+        services.AddScoped<ICompanyRepository, CompanyRepository>();
+        services.AddScoped<IUserCompanyRepository, UserCompanyRepository>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
