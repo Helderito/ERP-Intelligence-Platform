@@ -176,4 +176,43 @@ This is the base on which all fiscal (EP-015) and future transactional modules a
 - **Missed query filter → cross-company data leak** — mitigated by a global filter + explicit isolation tests.
 - **Current-company resolution coupling to auth** — kept minimal (one company per user), Identity unchanged.
 
-Sprint 09b begins once 09a is validated and merged.
+Sprint 09b begins once 09a is validated and merged. **09a is merged (PR #36).**
+
+---
+
+# 11. Sprint 09b — Master Data Fiscal Extensions & Tax-Engine Catalogues
+
+Built on the 09a tenancy base. Mostly additive/reference work, but large enough to be delivered in **two Pull Requests** to stay reviewable:
+
+- **09b-1 — Tax-engine catalogues (global).** The fiscal foundation the documents will use.
+- **09b-2 — Master Data fiscal extensions.** Adds fiscal fields to Customer/Supplier/Product/Currency, referencing the catalogues from 09b-1.
+
+09b-1 is delivered first because Product's fiscal classification (09b-2) references the tax categories defined in 09b-1.
+
+## 11.1 Sprint 09b-1 — Tax-engine catalogues (global)
+
+**Scope.** Move `TaxCode` from Master Data (Sprint 08a) into the **FiscalCompliance** context and extend it; add the tax-engine catalogues. All are **global** (national law): `CompanyId` **nullable**, `null` = global, seeded once and shared by all companies (per-company override deferred). This **corrects 09a**, where `TaxCode` was scoped company-owned (NOT NULL).
+
+- `TaxCode`/TaxTable extended: `taxType` {IVA|IS|NS|OUTROS}, `taxCountryRegion`, `saftTaxCode` {NOR|ISE|RED|INT|NS}, `percentage`/`fixedAmount`, `regime`, `legalReference`, `validFrom`/`validTo`, nullable `exemptionReasonCode`; **`CompanyId` made nullable (global)** via an additive migration.
+- `TaxRegime` (General|Simplified|CashVat|Exclusion), `TaxRate`, `TaxRule`.
+- `TaxExemptionReason` — **seed the AGT IVA M-code catalogue** (M10–M24, M30–M38, M80–M86, M90–M93, M00/M02/M04) with `Classification`, `LegalReference`, `DocumentMention`.
+- `WithholdingTaxRule` (II 6.5% / non-resident 15% / self-billing 2%|6.5% / IRT 6.5% / IAC), `StampDutyRule` (recibo de quitação 1% + table).
+- Read + manage endpoints under a fiscal permission; catalogues are versioned reference data (validFrom/To), not company-scoped.
+
+**Excluded from 09b-1:** the MD extensions (09b-2), and any FiscalDocument/numbering/signature/SAF-T logic (Sprints 10–12).
+
+## 11.2 Sprint 09b-2 — Master Data fiscal extensions
+
+- `Customer`/`Supplier`: `CustomerFiscalIdentity` value object (NIF, `customerKind`, `taxIdStatus`) + structured fiscal address + fiscal country + final-consumer handling; a **non-blocking** `NifValidationService` (structural validation only; never blocks issuance).
+- `Product`: fiscal classification (`ProductType`, SAF-T product code, **tax category** referencing 09b-1, customs details) via `ProductTaxClassification`.
+- `Currency`: a small `ExchangeRate` aggregate (rates by date/source) for FX/export documents; the seeded currency list stays tenant-agnostic.
+- Frontend: fiscal fields on the Customer/Supplier/Product screens; Portuguese UI.
+
+## 11.3 Definition of Done (09b, both PRs)
+
+- Catalogues seeded and manageable; `TaxCode` global (nullable CompanyId); M-code catalogue present on a fresh DB.
+- Customer/Supplier carry a validated (non-blocking) NIF + fiscal address; Product carries fiscal classification; Currency has exchange rates.
+- Existing modules keep working; tenancy isolation intact (global catalogues shared, company data isolated).
+- Backend unit + integration tests AND frontend tests; CI green; living docs updated.
+
+Sprint 10 (fiscal document core) begins once 09b is validated and merged.
